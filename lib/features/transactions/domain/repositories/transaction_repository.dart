@@ -5,5 +5,7 @@ abstract interface class TransactionRepository {
 
   Future<void> addTransaction(TransactionEntity transaction);
 
+  Future<void> updateTransaction(TransactionEntity transaction);
+
   Future<void> deleteTransaction(String id);
 }
