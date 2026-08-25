@@ -1,8 +1,18 @@
 # 📋 TASK TRACKER - MONEYTRACKER APP
 
-> **Cara pakai file ini:** Jika sesi terputus, minta AI agent membaca file ini + `AGENTS.md` + `PRD.md`,
-> lalu lanjutkan dari task berstatus `[ ]` berikutnya. Jangan kerjakan beberapa task sekaligus —
-> 1 task = 1 commit, agar setiap perubahan bisa di-review dan dipelajari.
+> **🔄 PROTOKOL RESUME (untuk AI agent di sesi baru):**
+> Saat user membuka sesi baru di project ini, LAKUKAN:
+> 1. Baca file ini + `AGENTS.md` + `PRD.md` secara lengkap.
+> 2. Cari task `[ ]` pertama yang belum dicentang — itu posisi progres sekarang.
+> 3. Cek `git log --oneline` + `git branch` untuk verifikasi commit terakhir & branch aktif.
+> 4. Sampaikan ringkasan posisi progres ke user, lalu **minta konfirmasi** sebelum mengerjakan apa pun.
+>
+> **⚠️ GAYA KERJA YANG DIINGINKAN USER:**
+> - 1 task kecil = 1 commit. JANGAN kerjakan banyak task sekaligus.
+> - Sebelum eksekusi task, jelaskan dulu rencananya (file apa, isi apa, kenapa) dalam bahasa Indonesia yang mudah dipahami pemula, lalu MINTA PERSSETUJUAN.
+> - Setelah eksekusi, jelaskan poin-poin pembelajaran dari kode yang dibuat (user sedang belajar).
+> - **Commit & push DILAKUKAN MANUAL OLEH USER** — AI hanya memberikan deskripsi commit yang disarankan.
+> - Gunakan analogi sederhana saat menjelaskan konsep (contoh: model = penerjemah, repo = dapur/teller bank).
 
 ---
 
@@ -25,6 +35,7 @@
 | Firebase project | `money-tracker-e22c0` (sudah terkonfigurasi penuh) |
 | Pola data layer | Entity (domain) → Model extends Entity (`toMap`/`fromMap`) → FirestoreRepoImpl → Provider DI |
 | Error pattern | Repo melempar custom Exception berbahasa Indonesia → Notifier menampilkan SnackBar |
+| Git workflow | **Commit & push manual oleh user** (AI hanya memberi deskripsi commit). Branch per fase: `feature/fase1-dashboard` (Task 3–6) → merge ke `main` saat fase tuntas, dst. |
 
 ⚠️ **Prasyarat:** Cloud Firestore harus sudah aktif di Firebase Console + security rules mengizinkan read/write.
 
@@ -42,8 +53,8 @@
   File: `savings/data/models/savings_goal_model.dart`, `savings/data/repositories/firestore_savings_goal_repository.dart`, `savings/data/providers/savings_goal_repository_provider.dart`
   Koleksi Firestore: `savings_goals`, stream diurutkan per `deadline` (terdekat dulu).
 
-- [ ] **Task 3 — App shell**
-  Rewrite `main.dart`: bungkus `ProviderScope`, tema Material 3, halaman shell dengan `NavigationBar` 4 tab. Isi tab masih placeholder sederhana. Update `test/widget_test.dart` agar tidak test counter app lama.
+- [x] **Task 3 — App shell**
+  Rewrite `main.dart`: `ProviderScope`, `MoneyTrackerApp` (ConsumerWidget) tema M3 hijau + darkTheme. Baru: `lib/core/navigation/app_shell.dart` — NavigationBar 4 tab (Beranda/Target/Riwayat/Pengaturan) + IndexedStack, isi tab masih placeholder. Test diperbarui: smoke test nav bar + pindah tab. Branch: `feature/fase1-dashboard`.
 
 - [ ] **Task 4 — Dashboard bagian 1: Card Saldo + Status Anggaran**
   Use case/provider kalkulasi saldo (income − expense bulan berjalan) dari stream transaksi. UI: Card Saldo Utama + `LinearProgressIndicator` status anggaran.
@@ -87,9 +98,12 @@
 
 ```
 lib/
-├── main.dart                        ← masih template default (diubah di Task 3)
+├── main.dart                        ✅ rewritten (Task 3): ProviderScope + tema M3 hijau
 ├── firebase_options.dart            ← config Firebase (generated)
-├── core/firebase/firebase_providers.dart
+├── core/
+│   ├── firebase/firebase_providers.dart
+│   └── navigation/app_shell.dart    ✅ NavigationBar 4 tab + IndexedStack
+```
 └── features/
     ├── transactions/
     │   ├── domain/
@@ -118,3 +132,4 @@ lib/
 |---------|------|---------|
 | 2026-08-25 | Task 1 | Data layer transaksi selesai, analyze bersih, commit `637e390` |
 | 2026-08-25 | Task 2 | Data layer savings selesai, analyze bersih. Konsep saldo (income−expense) vs batas anggaran (SharedPreferences) sudah dikonfirmasi ke user |
+| 2026-08-25 | Task 3 | App shell selesai di branch `feature/fase1-dashboard`. Analyze + test bersih (2 smoke test). Pelajaran: IndexedStack memasang semua child di tree → finder perlu `find.descendant` |
