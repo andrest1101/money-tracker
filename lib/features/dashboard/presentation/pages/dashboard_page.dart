@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
 import '../providers/dashboard_providers.dart';
+import '../widgets/category_expense_pie_card.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -27,6 +28,8 @@ class DashboardPage extends ConsumerWidget {
             _BalanceCard(summary: summary),
             const SizedBox(height: 16),
             _BudgetStatusSection(summary: summary),
+            const SizedBox(height: 16),
+            const CategoryExpensePieCard(),
           ],
         ),
       ),
