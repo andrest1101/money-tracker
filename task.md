@@ -62,8 +62,8 @@
 - [x] **Task 5 — Dashboard bagian 2: PieChart kategori**
   Donat chart (tanpa label irisan) + legenda warna (nama kategori, nominal, persen), palet 8 warna round-robin, empty state teks ramah. File: `dashboard/domain/entities/category_expense_entity.dart`, `dashboard/domain/usecases/calculate_category_expenses_usecase.dart`, provider `categoryExpensesProvider`, widget modular `dashboard/presentation/widgets/category_expense_pie_card.dart`. ⚠️ `fl_chart` diturunkan & dipatok exact `1.0.0` (v1.1.0 butuh vector_math baru yang tak kompatibel dgn Flutter 3.32.x).
 
-- [ ] **Task 6 — Quick Add Form (bottom sheet)**
-  Form nominal, tipe (income/expense), kategori, tanggal, catatan. Validasi kosong, simpan via repo, SnackBar sukses/gagal, auto-pop. FAB trigger di Dashboard.
+- [x] **Task 6 — Quick Add Form (bottom sheet)**
+  Form nominal, SegmentedButton tipe, chips kategori dinamis (default general bukan PRD: Makanan/Transportasi/Bensin/Pulsa & Kuota/Hiburan/Kos & Tagihan/Belanja/Lainnya utk expense; Uang Kiriman/Beasiswa/Gaji Part-time utk income; chip "Baru" utk custom; kategori dari transaksi lama otomatis jadi chip), tanggal default hari ini, catatan opsional. Validasi inline, simpan via QuickAddController → repo, SnackBar sukses/gagal, auto-pop. FAB "Catat" di Dashboard. ID = microsecond epoch. File: `transactions/presentation/providers/quick_add_controller.dart`, `transactions/presentation/widgets/quick_add_transaction_sheet.dart`. **FASE 1 TUNTAS** ✅
 
 ### FASE 2 — Anggaran & Tabungan
 
@@ -113,6 +113,9 @@ lib/
     │       ├── models/transaction_model.dart             ✅
     │       ├── repositories/firestore_transaction_repository.dart ✅
     │       └── providers/transaction_repository_provider.dart     ✅
+    ├── presentation/  ← (di bawah features/transactions)
+    │   ├── providers/quick_add_controller.dart           ✅ (Task 6)
+    │   └── widgets/quick_add_transaction_sheet.dart      ✅ (Task 6)
     ├── savings/
     │   ├── domain/
     │   │   ├── entities/savings_goal_entity.dart         ✅
@@ -144,3 +147,4 @@ lib/
 | 2026-08-25 | Task 3 | App shell selesai di branch `feature/fase1-dashboard`. Analyze + test bersih (2 smoke test). Pelajaran: IndexedStack memasang semua child di tree → finder perlu `find.descendant` |
 | 2026-08-25 | Task 4 | Dashboard bagian 1 selesai. Analyze + test bersih. Keputusan: progress bar disembunyikan (hint teks) sampai batas anggaran tersimpan (Task 7). `budgetLimitProvider` pakai `Notifier` (Riverpod 3, bukan StateProvider). Format Rupiah manual di `core/utils/rupiah_formatter.dart` karena tanpa dependensi `intl` |
 | 2026-08-25 | Task 5 | PieChart kategori selesai (donat + legenda). Analyze + test bersih. Pelajaran penting: fl_chart 1.1.0 gagal compile saat test karena butuh `Matrix4.translateByDouble` (vector_math ≥2.2) sedangkan Flutter 3.32.x bawa vector_math 2.1.4 → solusi: pin exact `fl_chart: 1.0.0`. Pelajaran Dart lain: static const antar-kelas tidak bisa diakses bare-name → jadikan top-level const |
+| 2026-08-25 | Task 6 | Quick Add Form selesai — **FASE 1 TUNTAS** 🎉. Keputusan: kategori general (bukan contoh PRD), chips beda utk income/expense, chip "Baru" utk custom, kategori belajar dari data Firestore. Test bertambah jadi 3 (validasi nominal tanpa Firebase). Analyze + test bersih. **NEXT: PR `feature/fase1-dashboard` → `main`, lalu buat branch `feature/fase2-anggaran-tabungan`** |

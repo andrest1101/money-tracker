@@ -40,6 +40,54 @@ final categoryExpensesProvider =
   );
 });
 
+const _defaultExpenseCategories = [
+  'Makanan',
+  'Transportasi',
+  'Bensin',
+  'Pulsa & Kuota',
+  'Hiburan',
+  'Kos & Tagihan',
+  'Belanja',
+  'Lainnya',
+];
+
+const _defaultIncomeCategories = [
+  'Uang Kiriman',
+  'Beasiswa',
+  'Gaji Part-time',
+];
+
+final expenseCategoriesProvider = Provider<List<String>>((ref) {
+  return _mergeCategories(
+    defaults: _defaultExpenseCategories,
+    transactions: ref.watch(transactionsStreamProvider).value ?? const [],
+    type: TransactionType.expense,
+  );
+});
+
+final incomeCategoriesProvider = Provider<List<String>>((ref) {
+  return _mergeCategories(
+    defaults: _defaultIncomeCategories,
+    transactions: ref.watch(transactionsStreamProvider).value ?? const [],
+    type: TransactionType.income,
+  );
+});
+
+List<String> _mergeCategories({
+  required List<String> defaults,
+  required List<TransactionEntity> transactions,
+  required TransactionType type,
+}) {
+  final merged = [...defaults];
+  for (final transaction in transactions) {
+    if (transaction.type != type) continue;
+    if (!merged.contains(transaction.category)) {
+      merged.add(transaction.category);
+    }
+  }
+  return merged;
+}
+
 class BudgetLimit extends Notifier<double?> {
   @override
   double? build() => null;

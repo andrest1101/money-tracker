@@ -22,4 +22,17 @@ void main() {
 
     expect(find.text('Riwayat transaksi akan dibangun di Task 10-12'), findsOneWidget);
   });
+
+  testWidgets('quick add sheet memvalidasi nominal kosong', (tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MoneyTrackerApp()));
+
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Simpan'));
+    await tester.tap(find.text('Simpan'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nominal wajib diisi'), findsOneWidget);
+  });
 }

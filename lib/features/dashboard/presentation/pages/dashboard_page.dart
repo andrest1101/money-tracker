@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/category_expense_pie_card.dart';
@@ -15,6 +16,15 @@ class DashboardPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('MoneyTracker')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) => const QuickAddTransactionSheet(),
+        ),
+        icon: const Icon(Icons.add),
+        label: const Text('Catat'),
+      ),
       body: summaryAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => _DashboardErrorView(
