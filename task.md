@@ -38,8 +38,9 @@
   File: `lib/core/firebase/firebase_providers.dart`, `transactions/data/models/transaction_model.dart`, `transactions/data/repositories/firestore_transaction_repository.dart`, `transactions/data/providers/transaction_repository_provider.dart`
   Commit: `637e390`
 
-- [ ] **Task 2 — Data layer Savings**
-  Buat `SavingsGoalModel` (toMap/fromMap), `FirestoreSavingsGoalRepository` (implementasi interface `savings_goal_repository.dart`), provider DI di `savings/data/`. Koleksi Firestore: `savings_goals`. Pola sama persis dengan Task 1.
+- [x] **Task 2 — Data layer Savings**
+  File: `savings/data/models/savings_goal_model.dart`, `savings/data/repositories/firestore_savings_goal_repository.dart`, `savings/data/providers/savings_goal_repository_provider.dart`
+  Koleksi Firestore: `savings_goals`, stream diurutkan per `deadline` (terdekat dulu).
 
 - [ ] **Task 3 — App shell**
   Rewrite `main.dart`: bungkus `ProviderScope`, tema Material 3, halaman shell dengan `NavigationBar` 4 tab. Isi tab masih placeholder sederhana. Update `test/widget_test.dart` agar tidak test counter app lama.
@@ -102,7 +103,10 @@ lib/
     │   ├── domain/
     │   │   ├── entities/savings_goal_entity.dart         ✅
     │   │   └── repositories/savings_goal_repository.dart ✅ (interface)
-    │   └── data/                    ← Task 2 mengisi folder ini
+    │   └── data/
+    │       ├── models/savings_goal_model.dart            ✅
+    │       ├── repositories/firestore_savings_goal_repository.dart ✅
+    │       └── providers/savings_goal_repository_provider.dart     ✅
     └── dashboard/{domain,data,presentation}/  ← Task 4-5 mengisi
 ```
 
@@ -113,3 +117,4 @@ lib/
 | Tanggal | Task | Catatan |
 |---------|------|---------|
 | 2026-08-25 | Task 1 | Data layer transaksi selesai, analyze bersih, commit `637e390` |
+| 2026-08-25 | Task 2 | Data layer savings selesai, analyze bersih. Konsep saldo (income−expense) vs batas anggaran (SharedPreferences) sudah dikonfirmasi ke user |
