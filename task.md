@@ -56,8 +56,8 @@
 - [x] **Task 3 — App shell**
   Rewrite `main.dart`: `ProviderScope`, `MoneyTrackerApp` (ConsumerWidget) tema M3 hijau + darkTheme. Baru: `lib/core/navigation/app_shell.dart` — NavigationBar 4 tab (Beranda/Target/Riwayat/Pengaturan) + IndexedStack, isi tab masih placeholder. Test diperbarui: smoke test nav bar + pindah tab. Branch: `feature/fase1-dashboard`.
 
-- [ ] **Task 4 — Dashboard bagian 1: Card Saldo + Status Anggaran**
-  Use case/provider kalkulasi saldo (income − expense bulan berjalan) dari stream transaksi. UI: Card Saldo Utama + `LinearProgressIndicator` status anggaran.
+- [x] **Task 4 — Dashboard bagian 1: Card Saldo + Status Anggaran**
+  Use case kalkulasi saldo (income − expense bulan berjalan) dari stream transaksi. UI: Card Saldo Utama + status anggaran (bar tersembunyi sampai batas diatur di Task 7). File: `dashboard/domain/entities/monthly_summary_entity.dart`, `dashboard/domain/usecases/calculate_monthly_summary_usecase.dart`, `dashboard/presentation/providers/dashboard_providers.dart`, `dashboard/presentation/pages/dashboard_page.dart`, plus helper `core/utils/rupiah_formatter.dart`.
 
 - [ ] **Task 5 — Dashboard bagian 2: PieChart kategori**
   PieChart `fl_chart` pengeluaran per kategori bulan berjalan.
@@ -121,7 +121,13 @@ lib/
     │       ├── models/savings_goal_model.dart            ✅
     │       ├── repositories/firestore_savings_goal_repository.dart ✅
     │       └── providers/savings_goal_repository_provider.dart     ✅
-    └── dashboard/{domain,data,presentation}/  ← Task 4-5 mengisi
+    └── dashboard/
+        ├── domain/
+        │   ├── entities/monthly_summary_entity.dart          ✅ (Task 4)
+        │   └── usecases/calculate_monthly_summary_usecase.dart ✅ (Task 4)
+        └── presentation/
+            ├── providers/dashboard_providers.dart            ✅ (Task 4: stream + summary + budgetLimit Notifier)
+            └── pages/dashboard_page.dart                     ✅ (Task 4)
 ```
 
 ---
@@ -133,3 +139,4 @@ lib/
 | 2026-08-25 | Task 1 | Data layer transaksi selesai, analyze bersih, commit `637e390` |
 | 2026-08-25 | Task 2 | Data layer savings selesai, analyze bersih. Konsep saldo (income−expense) vs batas anggaran (SharedPreferences) sudah dikonfirmasi ke user |
 | 2026-08-25 | Task 3 | App shell selesai di branch `feature/fase1-dashboard`. Analyze + test bersih (2 smoke test). Pelajaran: IndexedStack memasang semua child di tree → finder perlu `find.descendant` |
+| 2026-08-25 | Task 4 | Dashboard bagian 1 selesai. Analyze + test bersih. Keputusan: progress bar disembunyikan (hint teks) sampai batas anggaran tersimpan (Task 7). `budgetLimitProvider` pakai `Notifier` (Riverpod 3, bukan StateProvider). Format Rupiah manual di `core/utils/rupiah_formatter.dart` karena tanpa dependensi `intl` |
