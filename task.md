@@ -99,7 +99,7 @@
 ### FASE 3 — Riwayat
 
 - [x] **Task 10 — Riwayat Transaksi**
-  Daftar grouped per tanggal, urut descending (data sudah descending dari Task 1). File: `transactions/domain/usecases/group_transactions_by_date_usecase.dart` (format bulan Indonesia), `presentation/providers/history_providers.dart` (groupedTransactionsProvider), `presentation/pages/history_page.dart` (ListView grouped + empty state), `presentation/widgets/transaction_tile.dart` (widget reusable: warna merah/hijau sesuai tipe). Bonus: warna saldo di dashboard merah (minus) / hijau (plus). Bugfix: alokasi > sisa target ditolak (hard cap).
+  Daftar grouped per tanggal, urut descending (data sudah descending dari Task 1). File: `transactions/domain/usecases/group_transactions_by_date_usecase.dart` (format bulan Indonesia), `presentation/providers/history_providers.dart` (groupedTransactionsProvider + filter/search + dailySummary), `presentation/pages/history_page.dart` (Card-based grouped list + filter chips + search bar + ringkasan harian + empty state), `presentation/widgets/transaction_tile.dart` (Card design + waktu + ikon dinamis + tap aksi), `presentation/widgets/category_icon.dart` (ikon dinamis per kategori dengan warna). Bonus: warna saldo di dashboard merah (minus) / hijau (plus). Bugfix: alokasi > sisa target ditolak (hard cap).
 
 - [ ] **Task 11 — Edit Transaksi**
   Buka form Task 6 dengan data terisi, update ke Firestore via `updateTransaction`.
@@ -142,13 +142,14 @@ lib/
     │   │   ├── repositories/firestore_transaction_repository.dart ✅
     │   │   └── providers/transaction_repository_provider.dart     ✅
     │   └── presentation/
-    │       ├── pages/history_page.dart                   ✅ (Task 10) daftar grouped per tanggal
+    │       ├── pages/history_page.dart                   ✅ (Task 10) Card-based grouped + filter + search + ringkasan harian
     │       ├── providers/
     │       │   ├── quick_add_controller.dart             ✅ (Task 6)
-    │       │   └── history_providers.dart                ✅ (Task 10) groupedTransactionsProvider
+    │       │   └── history_providers.dart                ✅ (Task 10) grouped + filter + search + dailySummary
     │       └── widgets/
     │           ├── quick_add_transaction_sheet.dart      ✅ (Task 6)
-    │           └── transaction_tile.dart                 ✅ (Task 10) widget reusable
+    │           ├── transaction_tile.dart                 ✅ (Task 10) Card + waktu + ikon dinamis + tap aksi
+    │           └── category_icon.dart                    ✅ (Task 10) ikon dinamis per kategori
     ├── savings/
     │   ├── domain/
     │   │   ├── entities/savings_goal_entity.dart         ✅
@@ -196,3 +197,4 @@ lib/
 | 2026-08-26 | Task 8 | Overspending Alert selesai (3 tingkat: aman / siaga ≥80% / lewat ≥100%). Logika di domain (`BudgetStatusEntity`, `CheckBudgetStatusUseCase` threshold const 0.8, limit ≤0 aman); UI hanya merender. Ekstraksi widget `_BudgetAlertContent` (terima double non-null) memecahkan error null-promotion. Bar merah + ikon warning + pesan siaga/lewat + persen. Test threshold 5 unit → total **21 passed**, analyze bersih. Catatan teknis: edit paralel ke file yang sama bisa saling menimpa → edit same-file harus berurutan |
 | 2026-08-26 | Task 9 | Halaman Target Tabungan selesai — **FASE 2 TUNTAS 🎉**. Pelajaran 1: **WriteBatch** = dua operasi Firestore (update goal + buat transaksi) dalam satu paket atomik, mencegah kondisi "uang keluar tapi goal tidak naik" bila salah satu gagal. Pelajaran 2: alokasi dianalogikan transaksi expense khusus → saldo, pie chart & alert otomatis konsisten tanpa logika baru (satu sumber kebenaran). Pelajaran 3: kegagalan test "pindah tab" membongkar bug edit-ku sendiri — SavingsPage masuk tapi placeholder Target lupa dihapus → 5 halaman utk 4 tab; test widget terbukti penjaga yang efektif. Validasi alokasi inline di sheet memakai use case yang sama dgn controller (aturan tidak diduplikasi) |
 | 2026-08-26 | Task 10 | Riwayat transaksi selesai (grouped per tanggal + empty state + transaction_tile reusable). Bonus: warna saldo dashboard merah/hijau sesuai tipe (standar UX finance app). Bugfix over-allocation: alokasi > sisa target ditolak (hard cap) via AllocateToGoalUseCase + 2 test baru → total **32/32 test passed**. Pelajaran: import path relatif di subfolder presentation perlu naik ke features/ dulu (`../../../` bukan `../`), dan widget test harus di-update saat placeholder diganti widget asli |
+| 2026-08-26 | UI History | Redesign halaman Riwayat: Card-based per tanggal dengan ringkasan harian (total +/- per hari), filter chips (Semua/Pemasukan/Pengeluaran), search bar minimalis, transaction tile baru dengan ikon dinamis per kategori (12 warna), waktu transaksi, dan tap aksi (edit/hapus placeholder). Provider baru: filter + search + dailySummary. Catatan: `StateProvider` dihapus di Riverpod 3.x → pakai `Notifier` pattern |
