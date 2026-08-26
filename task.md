@@ -22,11 +22,12 @@
 - **FASE 1 TUNTAS** — semua Task 1–6 ter-merge ke `main` via PR #3 + commit `54724a4`
 - Bonus terselamatkan: fix minSdk 23 untuk Firestore (`feeac7e`)
 - Pre-Task 7 ter-merge: `a3f265c` (bugfix overflow legenda + formatter titik ribuan)
-- Kode sehat: `flutter analyze` bersih, **25/25 test passed**
+- Kode sehat: `flutter analyze` bersih, **32/32 test passed**
 - **Task 7 SELESAI** — SettingsService persisten + tema tersambung (dibuat ulang, lihat log insiden)
 - **Task 8 SELESAI** — Overspending Alert 3 tingkat; Task 7+8 ter-push sebagai commit gabungan `83b13fe`
 - **Task 9 SELESAI — FASE 2 TUNTAS! 🎉** Halaman Target + alokasi dana atomik (WriteBatch) + form target baru
-- **NEXT: PR `feature/fase2-anggaran-tabungan` → `main` (fase tuntas), lalu branch `feature/fase3-riwayat` untuk Task 10**
+- **Task 10 SELESAI** — Riwayat transaksi grouped per tanggal + warna saldo merah/hijau + bugfix over-allocation
+- **NEXT: PR `feature/fase2-anggaran-tabungan` → `main` (fase tuntas), lalu branch `feature/fase3-riwayat` untuk Task 11**
 
 ---
 
@@ -97,8 +98,8 @@
 
 ### FASE 3 — Riwayat
 
-- [ ] **Task 10 — Riwayat Transaksi**
-  Daftar grouped per tanggal, urut descending (data sudah descending dari Task 1).
+- [x] **Task 10 — Riwayat Transaksi**
+  Daftar grouped per tanggal, urut descending (data sudah descending dari Task 1). File: `transactions/domain/usecases/group_transactions_by_date_usecase.dart` (format bulan Indonesia), `presentation/providers/history_providers.dart` (groupedTransactionsProvider), `presentation/pages/history_page.dart` (ListView grouped + empty state), `presentation/widgets/transaction_tile.dart` (widget reusable: warna merah/hijau sesuai tipe). Bonus: warna saldo di dashboard merah (minus) / hijau (plus). Bugfix: alokasi > sisa target ditolak (hard cap).
 
 - [ ] **Task 11 — Edit Transaksi**
   Buka form Task 6 dengan data terisi, update ke Firestore via `updateTransaction`.
@@ -134,19 +135,25 @@ lib/
     ├── transactions/
     │   ├── domain/
     │   │   ├── entities/transaction_entity.dart          ✅
-    │   │   └── repositories/transaction_repository.dart  ✅ (interface CRUD + watch)
-    │   └── data/
-    │       ├── models/transaction_model.dart             ✅
-    │       ├── repositories/firestore_transaction_repository.dart ✅
-    │       └── providers/transaction_repository_provider.dart     ✅
-    ├── presentation/  ← (di bawah features/transactions)
-    │   ├── providers/quick_add_controller.dart           ✅ (Task 6)
-    │   └── widgets/quick_add_transaction_sheet.dart      ✅ (Task 6)
+    │   │   ├── repositories/transaction_repository.dart  ✅ (interface CRUD + watch)
+    │   │   └── usecases/group_transactions_by_date_usecase.dart ✅ (Task 10) grouping per tanggal
+    │   ├── data/
+    │   │   ├── models/transaction_model.dart             ✅
+    │   │   ├── repositories/firestore_transaction_repository.dart ✅
+    │   │   └── providers/transaction_repository_provider.dart     ✅
+    │   └── presentation/
+    │       ├── pages/history_page.dart                   ✅ (Task 10) daftar grouped per tanggal
+    │       ├── providers/
+    │       │   ├── quick_add_controller.dart             ✅ (Task 6)
+    │       │   └── history_providers.dart                ✅ (Task 10) groupedTransactionsProvider
+    │       └── widgets/
+    │           ├── quick_add_transaction_sheet.dart      ✅ (Task 6)
+    │           └── transaction_tile.dart                 ✅ (Task 10) widget reusable
     ├── savings/
     │   ├── domain/
     │   │   ├── entities/savings_goal_entity.dart         ✅
     │   │   ├── repositories/savings_goal_repository.dart ✅ (Task 9: + allocateToGoal)
-    │   │   └── usecases/allocate_to_goal_usecase.dart    ✅ (Task 9) validasi alokasi
+    │   │   └── usecases/allocate_to_goal_usecase.dart    ✅ (Task 9: validasi alokasi + Task 10: hard cap over-allocation)
     │   ├── data/
     │   │   ├── models/savings_goal_model.dart            ✅
     │   │   ├── repositories/firestore_savings_goal_repository.dart ✅ (Task 9: WriteBatch)
@@ -165,7 +172,7 @@ lib/
         │   └── usecases/check_budget_status_usecase.dart     ✅ (Task 8) threshold 80%/100%
         └── presentation/
             ├── providers/dashboard_providers.dart            ✅ (Task 4-5: stream + summary + kategori; Task 7: budgetLimit pindah ke core/local_storage)
-            ├── pages/dashboard_page.dart                     ✅ (Task 4; Task 8: _BudgetAlertContent bar merah)
+            ├── pages/dashboard_page.dart                     ✅ (Task 4; Task 8: _BudgetAlertContent bar merah; Task 10: saldo warna merah/hijau)
             └── widgets/category_expense_pie_card.dart        ✅ (Task 5)
 ```
 
@@ -188,3 +195,4 @@ lib/
 | 2026-08-26 | ⚠️ Insiden | Seluruh perubahan Task 7 yang BELUM di-commit hilang dari disk saat sesi Task 8 (main.dart & dashboard_providers.dart revert, core/local_storage/, test settings & widget hilang — diduga buffer/undo editor menimpa file). Penanganan: audit `git status --short` + `git log`, lalu buat ulang semuanya. **Pelajaran: commit segera saat task hijau; jangan tumpuk banyak perubahan belum-commit; hati-hati undo/buffer editor pada file yang sedang diedit AI** |
 | 2026-08-26 | Task 8 | Overspending Alert selesai (3 tingkat: aman / siaga ≥80% / lewat ≥100%). Logika di domain (`BudgetStatusEntity`, `CheckBudgetStatusUseCase` threshold const 0.8, limit ≤0 aman); UI hanya merender. Ekstraksi widget `_BudgetAlertContent` (terima double non-null) memecahkan error null-promotion. Bar merah + ikon warning + pesan siaga/lewat + persen. Test threshold 5 unit → total **21 passed**, analyze bersih. Catatan teknis: edit paralel ke file yang sama bisa saling menimpa → edit same-file harus berurutan |
 | 2026-08-26 | Task 9 | Halaman Target Tabungan selesai — **FASE 2 TUNTAS 🎉**. Pelajaran 1: **WriteBatch** = dua operasi Firestore (update goal + buat transaksi) dalam satu paket atomik, mencegah kondisi "uang keluar tapi goal tidak naik" bila salah satu gagal. Pelajaran 2: alokasi dianalogikan transaksi expense khusus → saldo, pie chart & alert otomatis konsisten tanpa logika baru (satu sumber kebenaran). Pelajaran 3: kegagalan test "pindah tab" membongkar bug edit-ku sendiri — SavingsPage masuk tapi placeholder Target lupa dihapus → 5 halaman utk 4 tab; test widget terbukti penjaga yang efektif. Validasi alokasi inline di sheet memakai use case yang sama dgn controller (aturan tidak diduplikasi) |
+| 2026-08-26 | Task 10 | Riwayat transaksi selesai (grouped per tanggal + empty state + transaction_tile reusable). Bonus: warna saldo dashboard merah/hijau sesuai tipe (standar UX finance app). Bugfix over-allocation: alokasi > sisa target ditolak (hard cap) via AllocateToGoalUseCase + 2 test baru → total **32/32 test passed**. Pelajaran: import path relatif di subfolder presentation perlu naik ke features/ dulu (`../../../` bukan `../`), dan widget test harus di-update saat placeholder diganti widget asli |

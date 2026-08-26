@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/savings/presentation/pages/savings_page.dart';
+import '../../features/transactions/presentation/pages/history_page.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -16,11 +17,7 @@ class _AppShellState extends State<AppShell> {
   static const List<Widget> _pages = [
     DashboardPage(),
     SavingsPage(),
-    _TabPlaceholder(
-      icon: Icons.receipt_long_outlined,
-      title: 'Riwayat',
-      subtitle: 'Riwayat transaksi akan dibangun di Task 10-12',
-    ),
+    HistoryPage(),
     _TabPlaceholder(
       icon: Icons.settings_outlined,
       title: 'Pengaturan',
