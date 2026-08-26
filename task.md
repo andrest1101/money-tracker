@@ -16,6 +16,16 @@
 
 ---
 
+## 📍 POSISI SAAT INI (update terakhir: 2026-08-26)
+
+- Branch aktif: `feature/fase2-anggaran-tabungan` (sudah di-push ke GitHub)
+- **FASE 1 TUNTAS** — semua Task 1–6 ter-merge ke `main` via PR #3 + commit `54724a4`
+- Bonus terselamatkan: fix minSdk 23 untuk Firestore (`feeac7e`)
+- Kode sehat: `flutter analyze` bersih, 3/3 widget test passed
+- **Task berikutnya: Task 7 — SettingsService (SharedPreferences)**
+
+---
+
 ## 🎯 Aturan Main (ringkasan dari PRD & AGENTS.md)
 
 1. Clean Architecture ketat: Domain (entitas, interface, use case) → Data (model, repo impl, provider) → Presentation (UI, Notifier).
@@ -36,6 +46,11 @@
 | Pola data layer | Entity (domain) → Model extends Entity (`toMap`/`fromMap`) → FirestoreRepoImpl → Provider DI |
 | Error pattern | Repo melempar custom Exception berbahasa Indonesia → Notifier menampilkan SnackBar |
 | Git workflow | **Commit & push manual oleh user** (AI hanya memberi deskripsi commit). Branch per fase: `feature/fase1-dashboard` (Task 3–6) → merge ke `main` saat fase tuntas, dst. |
+| Kategori transaksi | General, bukan contoh PRD: expense = Makanan/Transportasi/Bensin/Pulsa & Kuota/Hiburan/Kos & Tagihan/Belanja/Lainnya; income = Uang Kiriman/Beasiswa/Gaji Part-time. Chip "Baru" untuk custom + kategori dari transaksi lama otomatis jadi chip |
+| Dependensi chart | `fl_chart` dipatok exact `1.0.0` — v1.1.x butuh vector_math baru yang tidak kompatibel dengan Flutter 3.32.x |
+| Android minSdk | Hardcoded `23` di `android/app/build.gradle.kts` (syarat cloud_firestore 6.x) |
+| ID transaksi | `DateTime.now().microsecondsSinceEpoch.toString()` — tanpa dependensi uuid |
+| Progress bar anggaran | Disembunyikan (hint teks) sampai batas diatur; `budgetLimitProvider` (Notifier) menunggu SharedPreferences di Task 7-8 |
 
 ⚠️ **Prasyarat:** Cloud Firestore harus sudah aktif di Firebase Console + security rules mengizinkan read/write.
 
@@ -102,7 +117,8 @@ lib/
 ├── firebase_options.dart            ← config Firebase (generated)
 ├── core/
 │   ├── firebase/firebase_providers.dart
-│   └── navigation/app_shell.dart    ✅ NavigationBar 4 tab + IndexedStack
+│   ├── navigation/app_shell.dart    ✅ NavigationBar 4 tab + IndexedStack
+│   └── utils/rupiah_formatter.dart  ✅ (Task 4) format Rupiah tanpa dependensi
 ```
 └── features/
     ├── transactions/
@@ -148,3 +164,4 @@ lib/
 | 2026-08-25 | Task 4 | Dashboard bagian 1 selesai. Analyze + test bersih. Keputusan: progress bar disembunyikan (hint teks) sampai batas anggaran tersimpan (Task 7). `budgetLimitProvider` pakai `Notifier` (Riverpod 3, bukan StateProvider). Format Rupiah manual di `core/utils/rupiah_formatter.dart` karena tanpa dependensi `intl` |
 | 2026-08-25 | Task 5 | PieChart kategori selesai (donat + legenda). Analyze + test bersih. Pelajaran penting: fl_chart 1.1.0 gagal compile saat test karena butuh `Matrix4.translateByDouble` (vector_math ≥2.2) sedangkan Flutter 3.32.x bawa vector_math 2.1.4 → solusi: pin exact `fl_chart: 1.0.0`. Pelajaran Dart lain: static const antar-kelas tidak bisa diakses bare-name → jadikan top-level const |
 | 2026-08-25 | Task 6 | Quick Add Form selesai — **FASE 1 TUNTAS** 🎉. Keputusan: kategori general (bukan contoh PRD), chips beda utk income/expense, chip "Baru" utk custom, kategori belajar dari data Firestore. Test bertambah jadi 3 (validasi nominal tanpa Firebase). Analyze + test bersih. **NEXT: PR `feature/fase1-dashboard` → `main`, lalu buat branch `feature/fase2-anggaran-tabungan`** |
+| 2026-08-26 | Git cleanup | PR #3 merge ✓ → main sinkron. Audit seluruh branch: fase1-dashboard terhapus (sudah ter-merge), init-clean-architecture dihapus SETELAH diselamatkan fix minSdk 23 utk Firestore (`feeac7e` di main), master & agents/* terbukti 0 commit unik vs main. Branch aktif: `feature/fase2-anggaran-tabungan`. Pelajaran: sebelum hapus branch, cek `git branch --merged main` + `git log main..branch` |
