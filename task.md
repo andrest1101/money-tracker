@@ -22,10 +22,11 @@
 - **FASE 1 TUNTAS** — semua Task 1–6 ter-merge ke `main` via PR #3 + commit `54724a4`
 - Bonus terselamatkan: fix minSdk 23 untuk Firestore (`feeac7e`)
 - Pre-Task 7 ter-merge: `a3f265c` (bugfix overflow legenda + formatter titik ribuan)
-- Kode sehat: `flutter analyze` bersih, **21/21 test passed**
+- Kode sehat: `flutter analyze` bersih, **25/25 test passed**
 - **Task 7 SELESAI** — SettingsService persisten + tema tersambung (dibuat ulang, lihat log insiden)
-- **Task 8 SELESAI** — Overspending Alert 3 tingkat di dashboard
-- **Task berikutnya: Task 9 — Halaman Target Tabungan**
+- **Task 8 SELESAI** — Overspending Alert 3 tingkat; Task 7+8 ter-push sebagai commit gabungan `83b13fe`
+- **Task 9 SELESAI — FASE 2 TUNTAS! 🎉** Halaman Target + alokasi dana atomik (WriteBatch) + form target baru
+- **NEXT: PR `feature/fase2-anggaran-tabungan` → `main` (fase tuntas), lalu branch `feature/fase3-riwayat` untuk Task 10**
 
 ---
 
@@ -91,8 +92,8 @@
 - [x] **Task 8 — Overspending Alert**
   Bar status anggaran berubah MERAH saat pengeluaran ≥80% batas. File: `dashboard/domain/entities/budget_status_entity.dart` (enum BudgetLevel safe/warning/exceeded + spentRatio), `dashboard/domain/usecases/check_budget_status_usecase.dart` (threshold const 0.8; limit ≤0 → aman rasio 0), refactor `_BudgetStatusSection` → ekstrak `_BudgetAlertContent` (terima `double` non-null agar null-promotion jalan): bar merah + ikon warning + pesan beda utk siaga/lewat + persen di teks. Keputusan user: 1A (3 tingkat) & 2A (ikon+teks, aksesibilitas). Test: 5 unit threshold → total 21 passed.
 
-- [ ] **Task 9 — Halaman Target Tabungan**
-  List goals + indikator progres + dialog "Alokasikan Dana" (pindah saldo utama → `currentAmount`). Validasi saldo cukup.
+- [x] **Task 9 — Halaman Target Tabungan**
+  List goals + indikator progres + dialog "Alokasikan Dana" + form target baru (keputusan user: 1A/2A/3A). File: `savings/domain/usecases/allocate_to_goal_usecase.dart` (+InvalidAllocationException), interface repo + `allocateToGoal` dengan **WriteBatch** atomik (update goal + set transaksi 'Alokasi Tabungan' sekaligus; nama koleksi transaksi kini publik di FirestoreTransactionRepository.collectionName), `presentation/providers/savings_providers.dart` (savingsGoalsStreamProvider + SavingsActionsController: addGoal & allocateToGoal), UI: `pages/savings_page.dart`, `widgets/goal_card.dart`, `widgets/allocate_fund_sheet.dart` (validasi inline pakai use case, formatter titik ribuan), `widgets/add_goal_sheet.dart`. app_shell: placeholder Target → SavingsPage. Baru juga `core/utils/date_formatter.dart` (formatDateShort). Test: 4 unit use case → total 25 passed. Keputusan desain penting: alokasi = transaksi expense kategori 'Alokasi Tabungan' agar saldo utama turun otomatis (tidak dobel hitung) dan ikut pie chart/batas anggaran.
 
 ### FASE 3 — Riwayat
 
@@ -144,11 +145,16 @@ lib/
     ├── savings/
     │   ├── domain/
     │   │   ├── entities/savings_goal_entity.dart         ✅
-    │   │   └── repositories/savings_goal_repository.dart ✅ (interface)
-    │   └── data/
-    │       ├── models/savings_goal_model.dart            ✅
-    │       ├── repositories/firestore_savings_goal_repository.dart ✅
-    │       └── providers/savings_goal_repository_provider.dart     ✅
+    │   │   ├── repositories/savings_goal_repository.dart ✅ (Task 9: + allocateToGoal)
+    │   │   └── usecases/allocate_to_goal_usecase.dart    ✅ (Task 9) validasi alokasi
+    │   ├── data/
+    │   │   ├── models/savings_goal_model.dart            ✅
+    │   │   ├── repositories/firestore_savings_goal_repository.dart ✅ (Task 9: WriteBatch)
+    │   │   └── providers/savings_goal_repository_provider.dart     ✅
+    │   └── presentation/
+    │       ├── pages/savings_page.dart                   ✅ (Task 9)
+    │       ├── providers/savings_providers.dart          ✅ (Task 9) stream + SavingsActionsController
+    │       └── widgets/                                  ✅ (Task 9) goal_card / allocate_fund_sheet / add_goal_sheet
     └── dashboard/
         ├── domain/
         │   ├── entities/monthly_summary_entity.dart          ✅ (Task 4)
@@ -181,3 +187,4 @@ lib/
 | 2026-08-26 | Task 7 | SettingsService selesai. Pola: prefs dimuat SEKALI di main() lalu inject via `sharedPreferencesProvider.overrideWithValue` → semua provider settings tetap SINKRON (tanpa loading state). `budgetLimitProvider` pindah ke core/local_storage (API sama), dashboard tak berubah logika. Tema = ThemeMode 3-state (system/light/dark default system), tersambung ke MaterialApp. Widget test perlu helper `buildApp()` dgn mock prefs. Pelajaran: provider yang melempar UnimplementedError = kontrak "wajib dioverride" |
 | 2026-08-26 | ⚠️ Insiden | Seluruh perubahan Task 7 yang BELUM di-commit hilang dari disk saat sesi Task 8 (main.dart & dashboard_providers.dart revert, core/local_storage/, test settings & widget hilang — diduga buffer/undo editor menimpa file). Penanganan: audit `git status --short` + `git log`, lalu buat ulang semuanya. **Pelajaran: commit segera saat task hijau; jangan tumpuk banyak perubahan belum-commit; hati-hati undo/buffer editor pada file yang sedang diedit AI** |
 | 2026-08-26 | Task 8 | Overspending Alert selesai (3 tingkat: aman / siaga ≥80% / lewat ≥100%). Logika di domain (`BudgetStatusEntity`, `CheckBudgetStatusUseCase` threshold const 0.8, limit ≤0 aman); UI hanya merender. Ekstraksi widget `_BudgetAlertContent` (terima double non-null) memecahkan error null-promotion. Bar merah + ikon warning + pesan siaga/lewat + persen. Test threshold 5 unit → total **21 passed**, analyze bersih. Catatan teknis: edit paralel ke file yang sama bisa saling menimpa → edit same-file harus berurutan |
+| 2026-08-26 | Task 9 | Halaman Target Tabungan selesai — **FASE 2 TUNTAS 🎉**. Pelajaran 1: **WriteBatch** = dua operasi Firestore (update goal + buat transaksi) dalam satu paket atomik, mencegah kondisi "uang keluar tapi goal tidak naik" bila salah satu gagal. Pelajaran 2: alokasi dianalogikan transaksi expense khusus → saldo, pie chart & alert otomatis konsisten tanpa logika baru (satu sumber kebenaran). Pelajaran 3: kegagalan test "pindah tab" membongkar bug edit-ku sendiri — SavingsPage masuk tapi placeholder Target lupa dihapus → 5 halaman utk 4 tab; test widget terbukti penjaga yang efektif. Validasi alokasi inline di sheet memakai use case yang sama dgn controller (aturan tidak diduplikasi) |
