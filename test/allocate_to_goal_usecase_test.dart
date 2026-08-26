@@ -59,5 +59,26 @@ void main() {
 
       expect(newCurrent, 1250000);
     });
+
+    test('nominal melebihi sisa target ditolak', () {
+      expect(
+        () => useCase.execute(
+          goal: goal,
+          amount: 4500000,
+          availableBalance: 5000000,
+        ),
+        throwsA(isA<InvalidAllocationException>()),
+      );
+    });
+
+    test('nominal tepat sebesar sisa target diterima', () {
+      final newCurrent = useCase.execute(
+        goal: goal,
+        amount: 4000000,
+        availableBalance: 5000000,
+      );
+
+      expect(newCurrent, 5000000);
+    });
   });
 }
