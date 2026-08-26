@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../providers/quick_add_controller.dart';
@@ -128,7 +128,7 @@ class _QuickAddTransactionSheetState
   String? _validateAmount(String? value) {
     final raw = value?.trim() ?? '';
     if (raw.isEmpty) return 'Nominal wajib diisi';
-    final parsed = double.tryParse(raw);
+    final parsed = double.tryParse(raw.replaceAll('.', ''));
     if (parsed == null) return 'Nominal harus berupa angka';
     if (parsed <= 0) return 'Nominal harus lebih dari 0';
     return null;
@@ -145,7 +145,8 @@ class _QuickAddTransactionSheetState
       return;
     }
 
-    final amount = double.tryParse(_amountController.text.trim()) ?? 0;
+    final amount =
+        double.tryParse(_amountController.text.trim().replaceAll('.', '')) ?? 0;
 
     final transaction = TransactionEntity(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
@@ -220,12 +221,12 @@ class _QuickAddTransactionSheetState
                 TextFormField(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [ThousandsSeparatorInputFormatter()],
                   validator: _validateAmount,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     labelText: 'Nominal',
-                    hintText: '25000',
+                    hintText: '25.000',
                     prefixText: 'Rp ',
                     border: OutlineInputBorder(),
                   ),

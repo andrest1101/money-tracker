@@ -22,6 +22,7 @@
 - **FASE 1 TUNTAS** — semua Task 1–6 ter-merge ke `main` via PR #3 + commit `54724a4`
 - Bonus terselamatkan: fix minSdk 23 untuk Firestore (`feeac7e`)
 - Kode sehat: `flutter analyze` bersih, 3/3 widget test passed
+- Pre-Task 7 selesai: bugfix overflow legenda pie chart + input nominal live format titik ribuan (lihat log 2026-08-26)
 - **Task berikutnya: Task 7 — SettingsService (SharedPreferences)**
 
 ---
@@ -165,3 +166,5 @@ lib/
 | 2026-08-25 | Task 5 | PieChart kategori selesai (donat + legenda). Analyze + test bersih. Pelajaran penting: fl_chart 1.1.0 gagal compile saat test karena butuh `Matrix4.translateByDouble` (vector_math ≥2.2) sedangkan Flutter 3.32.x bawa vector_math 2.1.4 → solusi: pin exact `fl_chart: 1.0.0`. Pelajaran Dart lain: static const antar-kelas tidak bisa diakses bare-name → jadikan top-level const |
 | 2026-08-25 | Task 6 | Quick Add Form selesai — **FASE 1 TUNTAS** 🎉. Keputusan: kategori general (bukan contoh PRD), chips beda utk income/expense, chip "Baru" utk custom, kategori belajar dari data Firestore. Test bertambah jadi 3 (validasi nominal tanpa Firebase). Analyze + test bersih. **NEXT: PR `feature/fase1-dashboard` → `main`, lalu buat branch `feature/fase2-anggaran-tabungan`** |
 | 2026-08-26 | Git cleanup | PR #3 merge ✓ → main sinkron. Audit seluruh branch: fase1-dashboard terhapus (sudah ter-merge), init-clean-architecture dihapus SETELAH diselamatkan fix minSdk 23 utk Firestore (`feeac7e` di main), master & agents/* terbukti 0 commit unik vs main. Branch aktif: `feature/fase2-anggaran-tabungan`. Pelajaran: sebelum hapus branch, cek `git branch --merged main` + `git log main..branch` |
+| 2026-08-26 | Bugfix | Overflow legenda pie chart ("RIGHT OVERFLOWED BY 20 PIXELS") saat nominal besar (contoh Rp 1.300.000). Akar masalah: `FittedBox` dalam `Row` tak menerima batasan lebar → tidak pernah men-scale-down. Fix: `LayoutBuilder` + `ConstrainedBox(maxWidth: 50% lebar legenda)`; bonus pie chart 168→144 (hole 36 / ring 30). Pelajaran: FittedBox hanya bekerja kalau constraints-nya bounded |
+| 2026-08-26 | Enhancement | Input nominal live format titik ribuan: `core/utils/thousands_separator_input_formatter.dart` (`ThousandsSeparatorInputFormatter`, kursor dipertahankan, membuang non-digit), dipasang di Quick Add sheet (hint `25.000`, parsing `replaceAll('.')` sebelum `double.tryParse`). 8 test formatter baru → total 11 passed, analyze bersih. Formatter reusable utk Task 11 (edit) & Task 13 (batas anggaran). Pelajaran dari test gagal: `replaceAll('.', '')` tidak cukup — wajib filter code unit digit 0x30–0x39 |
