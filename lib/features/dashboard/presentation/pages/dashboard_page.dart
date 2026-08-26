@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
+import '../../domain/usecases/check_budget_status_usecase.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/category_expense_pie_card.dart';
 
@@ -197,26 +199,77 @@ class _BudgetStatusSection extends ConsumerWidget {
                   ),
                 ],
               )
-            else ...[
-              LinearProgressIndicator(
-                value: budgetLimit > 0
-                    ? (summary.totalExpense / budgetLimit).clamp(0.0, 1.0)
-                    : null,
-                minHeight: 10,
-                borderRadius: BorderRadius.circular(5),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${formatRupiah(summary.totalExpense)} terpakai '
-                'dari batas ${formatRupiah(budgetLimit)}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
+            else
+              _BudgetAlertContent(summary: summary, budgetLimit: budgetLimit),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _BudgetAlertContent extends StatelessWidget {
+  const _BudgetAlertContent({
+    required this.summary,
+    required this.budgetLimit,
+  });
+
+  final MonthlySummaryEntity summary;
+  final double budgetLimit;
+
+  static const _checkBudgetStatus = CheckBudgetStatusUseCase();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final status = _checkBudgetStatus.execute(
+      totalExpense: summary.totalExpense,
+      budgetLimit: budgetLimit,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LinearProgressIndicator(
+          value: status.spentRatio.clamp(0.0, 1.0),
+          minHeight: 10,
+          borderRadius: BorderRadius.circular(5),
+          color: status.isSafe ? null : theme.colorScheme.error,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${formatRupiah(summary.totalExpense)} terpakai '
+          'dari batas ${formatRupiah(budgetLimit)} '
+          '(${(status.spentRatio * 100).round()}%)',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        if (!status.isSafe) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                size: 18,
+                color: theme.colorScheme.error,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  status.isExceeded
+                      ? 'Batas anggaran bulanan terlampaui! Saatnya evaluasi pengeluaran.'
+                      : 'Hampir melebihi batas anggaran bulanan!',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }
