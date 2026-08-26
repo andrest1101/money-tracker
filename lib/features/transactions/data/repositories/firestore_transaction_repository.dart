@@ -22,10 +22,10 @@ class FirestoreTransactionRepository implements TransactionRepository {
 
   final FirebaseFirestore _firestore;
 
-  static const String _collectionName = 'transactions';
+  static const String collectionName = 'transactions';
 
   CollectionReference<Map<String, dynamic>> get _transactionsRef =>
-      _firestore.collection(_collectionName);
+      _firestore.collection(collectionName);
 
   @override
   Stream<List<TransactionEntity>> watchTransactions() async* {

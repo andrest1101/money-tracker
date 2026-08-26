@@ -1,0 +1,63 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:money_tracker/features/savings/domain/entities/savings_goal_entity.dart';
+import 'package:money_tracker/features/savings/domain/usecases/allocate_to_goal_usecase.dart';
+
+void main() {
+  const useCase = AllocateToGoalUseCase();
+
+  final goal = SavingsGoalEntity(
+    id: 'goal-1',
+    title: 'UKT Semester 3',
+    targetAmount: 5000000,
+    currentAmount: 1000000,
+    deadline: DateTime(2026, 12, 31),
+  );
+
+  group('AllocateToGoalUseCase', () {
+    test('alokasi valid menambahkan currentAmount', () {
+      final newCurrent = useCase.execute(
+        goal: goal,
+        amount: 500000,
+        availableBalance: 2000000,
+      );
+
+      expect(newCurrent, 1500000);
+    });
+
+    test('nominal nol atau negatif ditolak', () {
+      expect(
+        () => useCase.execute(goal: goal, amount: 0, availableBalance: 100),
+        throwsA(isA<InvalidAllocationException>()),
+      );
+      expect(
+        () => useCase.execute(
+          goal: goal,
+          amount: -50000,
+          availableBalance: 100000,
+        ),
+        throwsA(isA<InvalidAllocationException>()),
+      );
+    });
+
+    test('nominal melebihi saldo utama ditolak', () {
+      expect(
+        () => useCase.execute(
+          goal: goal,
+          amount: 300000,
+          availableBalance: 250000,
+        ),
+        throwsA(isA<InvalidAllocationException>()),
+      );
+    });
+
+    test('nominal tepat sebesar saldo masih diterima', () {
+      final newCurrent = useCase.execute(
+        goal: goal,
+        amount: 250000,
+        availableBalance: 250000,
+      );
+
+      expect(newCurrent, 1250000);
+    });
+  });
+}

@@ -1,3 +1,4 @@
+import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../entities/savings_goal_entity.dart';
 
 abstract interface class SavingsGoalRepository {
@@ -8,4 +9,10 @@ abstract interface class SavingsGoalRepository {
   Future<void> updateGoal(SavingsGoalEntity goal);
 
   Future<void> deleteGoal(String id);
+
+  Future<void> allocateToGoal({
+    required SavingsGoalEntity goal,
+    required double newCurrentAmount,
+    required TransactionEntity allocationTransaction,
+  });
 }

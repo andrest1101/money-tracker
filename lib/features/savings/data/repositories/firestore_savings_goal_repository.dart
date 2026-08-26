@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../transactions/data/repositories/firestore_transaction_repository.dart';
+import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../transactions/data/models/transaction_model.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../../domain/repositories/savings_goal_repository.dart';
 import '../models/savings_goal_model.dart';
@@ -66,6 +69,36 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
       await _goalsRef.doc(id).delete();
     } catch (e) {
       throw SavingsGoalRepositoryException('Gagal menghapus target tabungan', e);
+    }
+  }
+
+  @override
+  Future<void> allocateToGoal({
+    required SavingsGoalEntity goal,
+    required double newCurrentAmount,
+    required TransactionEntity allocationTransaction,
+  }) async {
+    try {
+      final updatedGoal = SavingsGoalModel.fromEntity(
+        goal.copyWith(currentAmount: newCurrentAmount),
+      );
+      final transaction = TransactionModel.fromEntity(allocationTransaction);
+
+      final batch = _firestore.batch();
+      batch.update(_goalsRef.doc(goal.id), updatedGoal.toMap());
+      batch.set(
+        _firestore
+            .collection(FirestoreTransactionRepository.collectionName)
+            .doc(transaction.id),
+        transaction.toMap(),
+      );
+
+      await batch.commit();
+    } catch (e) {
+      throw SavingsGoalRepositoryException(
+        'Gagal mengalokasikan dana ke target',
+        e,
+      );
     }
   }
 }
