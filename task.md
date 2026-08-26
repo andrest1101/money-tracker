@@ -18,12 +18,14 @@
 
 ## 📍 POSISI SAAT INI (update terakhir: 2026-08-26)
 
-- Branch aktif: `feature/fase2-anggaran-tabungan` (sudah di-push ke GitHub)
+- Branch aktif: `feature/fase2-anggaran-tabungan`
 - **FASE 1 TUNTAS** — semua Task 1–6 ter-merge ke `main` via PR #3 + commit `54724a4`
 - Bonus terselamatkan: fix minSdk 23 untuk Firestore (`feeac7e`)
-- Kode sehat: `flutter analyze` bersih, 3/3 widget test passed
-- Pre-Task 7 selesai: bugfix overflow legenda pie chart + input nominal live format titik ribuan (lihat log 2026-08-26)
-- **Task berikutnya: Task 7 — SettingsService (SharedPreferences)**
+- Pre-Task 7 ter-merge: `a3f265c` (bugfix overflow legenda + formatter titik ribuan)
+- Kode sehat: `flutter analyze` bersih, **21/21 test passed**
+- **Task 7 SELESAI** — SettingsService persisten + tema tersambung (dibuat ulang, lihat log insiden)
+- **Task 8 SELESAI** — Overspending Alert 3 tingkat di dashboard
+- **Task berikutnya: Task 9 — Halaman Target Tabungan**
 
 ---
 
@@ -83,11 +85,11 @@
 
 ### FASE 2 — Anggaran & Tabungan
 
-- [ ] **Task 7 — SettingsService (SharedPreferences)**
-  Service + provider untuk simpan/baca batas anggaran bulanan & dark mode. Dibuat lebih awal karena Task 8 membutuhkannya.
+- [x] **Task 7 — SettingsService (SharedPreferences)**
+  Service + provider simpan/baca batas anggaran bulanan & dark mode. File: `core/local_storage/settings_service.dart` (SettingsService + SettingsServiceException), `core/local_storage/settings_providers.dart` (sharedPreferencesProvider wajib di-override di main, settingsServiceProvider, budgetLimitProvider pindah dari dashboard_providers, appThemeModeProvider ThemeMode 3-state system/light/dark). main.dart: preload prefs → `overrideWithValue`; MaterialApp watch `appThemeModeProvider`. Keputusan user: tema 3 pilihan (default system), wiring tema sekalian di Task 7. Test: 5 unit via mock. ⚠️ Pernah hilang dari disk karena belum di-commit — dibuat ulang utuh (lihat log insiden).
 
-- [ ] **Task 8 — Overspending Alert**
-  Progress bar dashboard berubah **MERAH** jika pengeluaran ≥ 80% batas anggaran (dari SharedPreferences).
+- [x] **Task 8 — Overspending Alert**
+  Bar status anggaran berubah MERAH saat pengeluaran ≥80% batas. File: `dashboard/domain/entities/budget_status_entity.dart` (enum BudgetLevel safe/warning/exceeded + spentRatio), `dashboard/domain/usecases/check_budget_status_usecase.dart` (threshold const 0.8; limit ≤0 → aman rasio 0), refactor `_BudgetStatusSection` → ekstrak `_BudgetAlertContent` (terima `double` non-null agar null-promotion jalan): bar merah + ikon warning + pesan beda utk siaga/lewat + persen di teks. Keputusan user: 1A (3 tingkat) & 2A (ikon+teks, aksesibilitas). Test: 5 unit threshold → total 21 passed.
 
 - [ ] **Task 9 — Halaman Target Tabungan**
   List goals + indikator progres + dialog "Alokasikan Dana" (pindah saldo utama → `currentAmount`). Validasi saldo cukup.
@@ -115,11 +117,17 @@
 ```
 lib/
 ├── main.dart                        ✅ rewritten (Task 3): ProviderScope + tema M3 hijau
+│                                      ✅ (Task 7): preload prefs + override + watch appThemeModeProvider
 ├── firebase_options.dart            ← config Firebase (generated)
 ├── core/
 │   ├── firebase/firebase_providers.dart
+│   ├── local_storage/
+│   │   ├── settings_service.dart      ✅ (Task 7) baca/simpan budget limit + theme mode
+│   │   └── settings_providers.dart    ✅ (Task 7) DI prefs + budgetLimitProvider + appThemeModeProvider
 │   ├── navigation/app_shell.dart    ✅ NavigationBar 4 tab + IndexedStack
-│   └── utils/rupiah_formatter.dart  ✅ (Task 4) format Rupiah tanpa dependensi
+│   └── utils/
+│       ├── rupiah_formatter.dart                      ✅ (Task 4)
+│       └── thousands_separator_input_formatter.dart   ✅ (pre-Task 7) titik ribuan live
 ```
 └── features/
     ├── transactions/
@@ -145,11 +153,13 @@ lib/
         ├── domain/
         │   ├── entities/monthly_summary_entity.dart          ✅ (Task 4)
         │   ├── entities/category_expense_entity.dart         ✅ (Task 5)
+        │   ├── entities/budget_status_entity.dart            ✅ (Task 8) enum BudgetLevel + spentRatio
         │   ├── usecases/calculate_monthly_summary_usecase.dart ✅ (Task 4)
-        │   └── usecases/calculate_category_expenses_usecase.dart ✅ (Task 5)
+        │   ├── usecases/calculate_category_expenses_usecase.dart ✅ (Task 5)
+        │   └── usecases/check_budget_status_usecase.dart     ✅ (Task 8) threshold 80%/100%
         └── presentation/
-            ├── providers/dashboard_providers.dart            ✅ (Task 4-5: stream + summary + kategori + budgetLimit Notifier)
-            ├── pages/dashboard_page.dart                     ✅ (Task 4)
+            ├── providers/dashboard_providers.dart            ✅ (Task 4-5: stream + summary + kategori; Task 7: budgetLimit pindah ke core/local_storage)
+            ├── pages/dashboard_page.dart                     ✅ (Task 4; Task 8: _BudgetAlertContent bar merah)
             └── widgets/category_expense_pie_card.dart        ✅ (Task 5)
 ```
 
@@ -168,3 +178,6 @@ lib/
 | 2026-08-26 | Git cleanup | PR #3 merge ✓ → main sinkron. Audit seluruh branch: fase1-dashboard terhapus (sudah ter-merge), init-clean-architecture dihapus SETELAH diselamatkan fix minSdk 23 utk Firestore (`feeac7e` di main), master & agents/* terbukti 0 commit unik vs main. Branch aktif: `feature/fase2-anggaran-tabungan`. Pelajaran: sebelum hapus branch, cek `git branch --merged main` + `git log main..branch` |
 | 2026-08-26 | Bugfix | Overflow legenda pie chart ("RIGHT OVERFLOWED BY 20 PIXELS") saat nominal besar (contoh Rp 1.300.000). Akar masalah: `FittedBox` dalam `Row` tak menerima batasan lebar → tidak pernah men-scale-down. Fix: `LayoutBuilder` + `ConstrainedBox(maxWidth: 50% lebar legenda)`; bonus pie chart 168→144 (hole 36 / ring 30). Pelajaran: FittedBox hanya bekerja kalau constraints-nya bounded |
 | 2026-08-26 | Enhancement | Input nominal live format titik ribuan: `core/utils/thousands_separator_input_formatter.dart` (`ThousandsSeparatorInputFormatter`, kursor dipertahankan, membuang non-digit), dipasang di Quick Add sheet (hint `25.000`, parsing `replaceAll('.')` sebelum `double.tryParse`). 8 test formatter baru → total 11 passed, analyze bersih. Formatter reusable utk Task 11 (edit) & Task 13 (batas anggaran). Pelajaran dari test gagal: `replaceAll('.', '')` tidak cukup — wajib filter code unit digit 0x30–0x39 |
+| 2026-08-26 | Task 7 | SettingsService selesai. Pola: prefs dimuat SEKALI di main() lalu inject via `sharedPreferencesProvider.overrideWithValue` → semua provider settings tetap SINKRON (tanpa loading state). `budgetLimitProvider` pindah ke core/local_storage (API sama), dashboard tak berubah logika. Tema = ThemeMode 3-state (system/light/dark default system), tersambung ke MaterialApp. Widget test perlu helper `buildApp()` dgn mock prefs. Pelajaran: provider yang melempar UnimplementedError = kontrak "wajib dioverride" |
+| 2026-08-26 | ⚠️ Insiden | Seluruh perubahan Task 7 yang BELUM di-commit hilang dari disk saat sesi Task 8 (main.dart & dashboard_providers.dart revert, core/local_storage/, test settings & widget hilang — diduga buffer/undo editor menimpa file). Penanganan: audit `git status --short` + `git log`, lalu buat ulang semuanya. **Pelajaran: commit segera saat task hijau; jangan tumpuk banyak perubahan belum-commit; hati-hati undo/buffer editor pada file yang sedang diedit AI** |
+| 2026-08-26 | Task 8 | Overspending Alert selesai (3 tingkat: aman / siaga ≥80% / lewat ≥100%). Logika di domain (`BudgetStatusEntity`, `CheckBudgetStatusUseCase` threshold const 0.8, limit ≤0 aman); UI hanya merender. Ekstraksi widget `_BudgetAlertContent` (terima double non-null) memecahkan error null-promotion. Bar merah + ikon warning + pesan siaga/lewat + persen. Test threshold 5 unit → total **21 passed**, analyze bersih. Catatan teknis: edit paralel ke file yang sama bisa saling menimpa → edit same-file harus berurutan |

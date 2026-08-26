@@ -87,15 +87,3 @@ List<String> _mergeCategories({
   }
   return merged;
 }
-
-class BudgetLimit extends Notifier<double?> {
-  @override
-  double? build() => null;
-
-  void setBudgetLimit(double? limit) {
-    state = limit;
-  }
-}
-
-final budgetLimitProvider =
-    NotifierProvider<BudgetLimit, double?>(BudgetLimit.new);

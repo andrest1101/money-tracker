@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/local_storage/settings_providers.dart';
 import 'core/navigation/app_shell.dart';
 import 'firebase_options.dart';
 
@@ -9,8 +11,16 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  final sharedPreferences = await SharedPreferences.getInstance();
 
-  runApp(const ProviderScope(child: MoneyTrackerApp()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      ],
+      child: const MoneyTrackerApp(),
+    ),
+  );
 }
 
 class MoneyTrackerApp extends ConsumerWidget {
@@ -29,7 +39,7 @@ class MoneyTrackerApp extends ConsumerWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, brightness: Brightness.dark),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: ref.watch(appThemeModeProvider),
       home: const AppShell(),
     );
   }
