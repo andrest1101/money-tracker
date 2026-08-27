@@ -37,10 +37,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               height: 4,
               margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurfaceVariant
-                    .withValues(alpha: 0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -49,9 +48,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 transaction.category,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 4),
@@ -60,8 +59,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               child: Text(
                 formatRupiah(transaction.amount),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -73,9 +72,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,
-                  builder: (_) => QuickAddTransactionSheet(
-                    transaction: transaction,
-                  ),
+                  builder: (_) =>
+                      QuickAddTransactionSheet(transaction: transaction),
                 );
               },
             ),
@@ -96,6 +94,28 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             const SizedBox(height: 8),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showDailyOverview(
+    String date,
+    List<TransactionEntity> transactions,
+    ({double income, double expense}) summary,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => _DailyOverviewSheet(
+        date: date,
+        transactions: transactions,
+        summary: summary,
+        onTransactionTap: (transaction) {
+          Navigator.pop(sheetContext);
+          _showTransactionOptions(transaction);
+        },
+        onTransactionDismissed: _confirmDelete,
       ),
     );
   }
@@ -201,19 +221,24 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         icon: const Icon(Icons.clear, size: 20),
                         onPressed: () {
                           _searchController.clear();
-                          ref.read(historySearchQueryProvider.notifier).setQuery('');
+                          ref
+                              .read(historySearchQueryProvider.notifier)
+                              .setQuery('');
                         },
                       )
                     : null,
                 isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.3),
+                fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
               ),
             ),
           ),
@@ -237,7 +262,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   selected: filter == TransactionType.income,
                   color: Colors.green,
                   onTap: () {
-                    ref.read(historyFilterProvider.notifier).setType(TransactionType.income);
+                    ref
+                        .read(historyFilterProvider.notifier)
+                        .setType(TransactionType.income);
                   },
                 ),
                 const SizedBox(width: 8),
@@ -246,7 +273,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   selected: filter == TransactionType.expense,
                   color: Colors.red,
                   onTap: () {
-                    ref.read(historyFilterProvider.notifier).setType(TransactionType.expense);
+                    ref
+                        .read(historyFilterProvider.notifier)
+                        .setType(TransactionType.expense);
                   },
                 ),
               ],
@@ -280,7 +309,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                                     filter != null
                                 ? 'Coba ubah filter atau kata kunci pencarianmu.'
                                 : 'Semua transaksimu akan muncul di sini. '
-                                    'Yuk mulai catat pengeluaran atau pemasukan!',
+                                      'Yuk mulai catat pengeluaran atau pemasukan!',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
@@ -313,57 +342,96 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.calendar_today,
-                                      size: 16,
-                                      color:
-                                          theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      date,
-                                      style: theme.textTheme.titleSmall
-                                          ?.copyWith(
-                                        fontWeight: FontWeight.w700,
+                              InkWell(
+                                onTap: summary == null
+                                    ? null
+                                    : () => _showDailyOverview(
+                                        date,
+                                        transactions,
+                                        summary,
                                       ),
-                                    ),
-                                    const Spacer(),
-                                    if (summary != null) ...[
-                                      if (summary.expense > 0)
-                                        Flexible(
-                                          child: Text(
-                                            '-${formatRupiah(summary.expense)}',
-                                            style: theme.textTheme.bodySmall
-                                                ?.copyWith(
-                                              color: Colors.red.shade600,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(16),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    12,
+                                    12,
+                                    12,
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
                                           ),
                                         ),
-                                      if (summary.income > 0 &&
-                                          summary.expense > 0)
-                                        const SizedBox(width: 6),
-                                      if (summary.income > 0)
-                                        Flexible(
-                                          child: Text(
-                                            '+${formatRupiah(summary.income)}',
-                                            style: theme.textTheme.bodySmall
-                                                ?.copyWith(
-                                              color: Colors.green.shade700,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                        child: Icon(
+                                          Icons.calendar_today_rounded,
+                                          size: 17,
+                                          color: theme.colorScheme.primary,
                                         ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              date,
+                                              style: theme.textTheme.titleSmall
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              '${transactions.length} transaksi  •  Ketuk untuk overview',
+                                              style: theme.textTheme.labelSmall
+                                                  ?.copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (summary != null)
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            if (summary.income > 0)
+                                              _SummaryAmount(
+                                                text:
+                                                    '+${formatRupiah(summary.income)}',
+                                                color: Colors.green.shade700,
+                                              ),
+                                            if (summary.expense > 0)
+                                              _SummaryAmount(
+                                                text:
+                                                    '-${formatRupiah(summary.expense)}',
+                                                color: Colors.red.shade600,
+                                              ),
+                                          ],
+                                        ),
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        Icons.chevron_right_rounded,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                      ),
                                     ],
-                                  ],
+                                  ),
                                 ),
                               ),
                               const Divider(height: 1),
@@ -381,6 +449,190 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                       );
                     },
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryAmount extends StatelessWidget {
+  const _SummaryAmount({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+        color: color,
+        fontWeight: FontWeight.w700,
+      ),
+      textAlign: TextAlign.end,
+      softWrap: false,
+    );
+  }
+}
+
+class _DailyOverviewSheet extends StatelessWidget {
+  const _DailyOverviewSheet({
+    required this.date,
+    required this.transactions,
+    required this.summary,
+    required this.onTransactionTap,
+    required this.onTransactionDismissed,
+  });
+
+  final String date;
+  final List<TransactionEntity> transactions;
+  final ({double income, double expense}) summary;
+  final ValueChanged<TransactionEntity> onTransactionTap;
+  final ValueChanged<TransactionEntity> onTransactionDismissed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final net = summary.income - summary.expense;
+    final netColor = net >= 0 ? Colors.green.shade700 : Colors.red.shade600;
+
+    return SafeArea(
+      child: FractionallySizedBox(
+        heightFactor: 0.9,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Ringkasan Harian', style: theme.textTheme.labelLarge),
+                  const SizedBox(height: 3),
+                  Text(
+                    date,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _OverviewMetric(
+                          label: 'Pemasukan',
+                          value: formatRupiah(summary.income),
+                          color: Colors.green.shade700,
+                          icon: Icons.south_west_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _OverviewMetric(
+                          label: 'Pengeluaran',
+                          value: formatRupiah(summary.expense),
+                          color: Colors.red.shade600,
+                          icon: Icons.north_east_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: netColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Selisih bersih',
+                          style: theme.textTheme.labelLarge,
+                        ),
+                        Text(
+                          '${net >= 0 ? '+' : '-'}${formatRupiah(net.abs())}',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: netColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Daftar transaksi',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.only(bottom: 24),
+                itemCount: transactions.length,
+                itemBuilder: (context, index) => TransactionTile(
+                  transaction: transactions[index],
+                  onTap: () => onTransactionTap(transactions[index]),
+                  onDismissed: () =>
+                      onTransactionDismissed(transactions[index]),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OverviewMetric extends StatelessWidget {
+  const _OverviewMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 8),
+          Text(label, style: Theme.of(context).textTheme.labelSmall),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -414,8 +666,9 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? chipColor.withValues(alpha: 0.15)
-              : theme.colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.3),
+              : theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected

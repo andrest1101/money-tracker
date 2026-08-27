@@ -24,15 +24,12 @@ class TransactionTile extends StatelessWidget {
 
   Widget _buildDismissBackground(BuildContext context, {required bool isLeft}) {
     final theme = Theme.of(context);
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.red.shade600,
-            Colors.red.shade700,
-          ],
+          colors: [Colors.red.shade600, Colors.red.shade700],
           begin: isLeft ? Alignment.centerLeft : Alignment.centerRight,
           end: isLeft ? Alignment.centerRight : Alignment.centerLeft,
         ),
@@ -43,11 +40,7 @@ class TransactionTile extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.delete_sweep_rounded,
-            color: Colors.white,
-            size: 32,
-          ),
+          Icon(Icons.delete_sweep_rounded, color: Colors.white, size: 32),
           const SizedBox(height: 4),
           Text(
             'Hapus',
@@ -131,17 +124,19 @@ class TransactionTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 120),
-                  child: Text(
-                    '$sign${formatRupiah(transaction.amount)}',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: color,
-                      fontWeight: FontWeight.bold,
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '$sign${formatRupiah(transaction.amount)}',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.end,
+                      softWrap: false,
                     ),
-                    textAlign: TextAlign.end,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

@@ -30,7 +30,8 @@
 - **Task 11 SELESAI** — Edit Transaksi: dual mode form (tambah/edit) + UI polished + edit alokasi dari 2 tempat (History & Savings page)
 - **Enhancement Task 11** — Edit alokasi ke 0 (auto-delete with confirmation) + Sorting Target Tabungan (newest/oldest/progress) + field `createdAt`
 - **Task 12 SELESAI — FASE 3 TUNTAS! 🎉** Hapus Transaksi: Dismissible swipe + button + dialog konfirmasi + handle delete alokasi atomik
-- **NEXT: Task 13 (Settings Page) → FASE 4 TUNTAS → PR ke main**
+- **Task 13 SELESAI — FASE 4 TUNTAS! 🎉** Halaman Pengaturan (Tema, Batas Anggaran) + **Redesign Premium UI** (Profil, Privacy Mode, Siklus Anggaran, Ekspor/Hapus Data).
+- **NEXT: Lakukan PR dari `feature/fase2-anggaran-tabungan` ke `main`**
 
 ---
 
@@ -112,8 +113,14 @@
 
 ### FASE 4 — Personalisasi
 
-- [ ] **Task 13 — Settings Page**
-  Toggle Dark Mode (SharedPreferences) + input Batas Anggaran Bulanan.
+- [x] **Task 13 — Settings Page & Premium UI Redesign**
+  Halaman pengaturan yang komprehensif dan profesional layaknya aplikasi FinTech modern. File: `settings_page.dart` (dirombak total menjadi modular card), `settings_service.dart` & `settings_providers.dart` (tambah state: nama pengguna, mode privasi, siklus anggaran bulanan). Fitur:
+  - Profil Pengguna: Avatar inisial, nama yang bisa diubah, status sinkronisasi cloud.
+  - Privasi & Tampilan: Tema (Sistem/Terang/Gelap) menggunakan `_ThemeChip` yang responsif, dan Toggle **Mode Privasi** (Sembunyikan Saldo) yang terhubung ke Dashboard.
+  - Keuangan: Dialog Atur Batas Anggaran (dengan ribuan formatter) & Siklus Anggaran (Tanggal gajian 1-28).
+  - Manajemen Data: Placeholder untuk Ekspor CSV dan Hapus Semua Data (lengkap dengan dialog konfirmasi *Danger Zone*).
+  - Info Dev: Versi aplikasi & kredit pembuat (Andre).
+  **FASE 4 TUNTAS 🎉**
 
 ---
 
@@ -206,3 +213,5 @@ lib/
 | 2026-08-26 | Bugfix alokasi edit | Fix bug: edit transaksi alokasi tabungan gagal ("Target tabungan tidak ditemukan"). Akar masalah: `_updateAllocationTransaction()` baca `savingsGoalsStreamProvider.value` — stream bisa masih loading → null → list kosong → `firstWhere` throw. Fix: tambah `getGoalById(String id)` di `SavingsGoalRepository` interface + impl Firestore (fetch langsung dari doc), refactor `_updateAllocationTransaction()` pakai `getGoalById()` alih-alih stream. Hapus import `savings_providers.dart` yang tidak terpakai. **32/32 test passed** |
 | 2026-08-27 | Enhancement Task 11 | **Dual edit allocation**: GoalCard jadi expandable dengan riwayat alokasi (tap item → edit). Edit alokasi sekarang bisa dari History page ATAU Savings page. **Edit to 0 with auto-delete**: Validasi allow 0 dengan warning message, dialog konfirmasi "Withdraw Semua Alokasi?", auto-delete transaction + restore goal amount (logic di `_updateAllocationTransaction`). **Sorting target tabungan**: Tambah field `createdAt` di SavingsGoalEntity & Model, `SavingsSortController` (Notifier dengan SharedPreferences), `sortedSavingsGoalsProvider` (newest/oldest/progress), dropdown di AppBar SavingsPage. Fix: tambah `getTransactionById()` di TransactionRepository untuk fetch old transaction langsung dari Firestore (bukan stream). **32/32 test passed**. Pelajaran: stream provider bisa null saat loading → jangan andalkan untuk data kritis; pakai direct fetch via `getById()`. Expandable UI pattern: `ConsumerStatefulWidget` + `bool _isExpanded` + conditional rendering |
 | 2026-08-27 | Task 12 | Hapus Transaksi selesai — **FASE 3 TUNTAS 🎉**. **Dual delete options**: Dismissible swipe gesture (cepat) ATAU button di bottom sheet (hati-hati). **Dismissible background**: Gradient merah dengan ikon `delete_sweep_rounded` + label "Hapus" (Column layout untuk visual yang lebih menarik). **Delete logic**: `QuickAddController.deleteTransaction()` dengan conditional: jika alokasi → `deleteAllocation()` (WriteBatch atomik: delete transaction + restore goal currentAmount); jika non-alokasi → direct delete. **Dialog konfirmasi**: Async fetch goal title untuk transaksi alokasi, pesan berbeda: "Alokasi sebesar [amount] untuk [goal] akan dihapus dan uang kembali ke saldo utama" vs "Transaksi [kategori] sebesar [amount] akan dihapus permanen". **SnackBar feedback**: Hijau untuk sukses, merah untuk error, pesan berbeda untuk alokasi vs non-alokasi. **confirmDismiss**: Return false agar tidak auto-dismiss, dialog yang handle manual. **32/32 test passed**. Pelajaran: Dismissible + dialog konfirmasi = UX terbaik (gesture cepat tapi tetap aman). WriteBatch untuk delete alokasi mencegah inconsistency (transaction hilang tapi goal tidak update) |
+| 2026-08-27 | Bugfix UI | Fix UI overflow pada Android: 1. `history_page.dart` & `transaction_tile.dart` (Teks nominal meluber ke kanan jika panjang -> dibungkus `ConstrainedBox` & `Flexible`). 2. `settings_page.dart` (`SegmentedButton` tema meluber ke bawah karena padding bawaan -> diganti dengan custom `_ThemeChip` berbaris `Expanded` yang sangat responsif). |
+| 2026-08-27 | Task 13 | Settings Page redesign kelas Premium — **FASE 4 TUNTAS 🎉**. UI pengaturan dirombak agar tidak polos. Tambah fitur: Nama pengguna, status sinkronisasi, **Mode Privasi** (sembunyikan saldo di dashboard), dan siklus anggaran. Layer Data diperbarui di `settings_service.dart`. **32/32 test passed**. Pelajaran: UI Settings yang baik di aplikasi finance harus membangkitkan rasa aman & personalisasi (identitas, privasi, danger zone jelas). |

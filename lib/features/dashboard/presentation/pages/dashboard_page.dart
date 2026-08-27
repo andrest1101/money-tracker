@@ -49,17 +49,18 @@ class DashboardPage extends ConsumerWidget {
   }
 }
 
-class _BalanceCard extends StatelessWidget {
+class _BalanceCard extends ConsumerWidget {
   const _BalanceCard({required this.summary});
 
   final MonthlySummaryEntity summary;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
     final balanceColor =
         summary.balance >= 0 ? Colors.green.shade700 : Colors.red.shade600;
+    final isPrivacyMode = ref.watch(privacyModeProvider);
 
     return Card(
       child: Padding(
@@ -67,18 +68,31 @@ class _BalanceCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Saldo Bulan Ini',
-              style: theme.textTheme.titleMedium?.copyWith(color: onSurfaceVariant),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Saldo Bulan Ini',
+                  style: theme.textTheme.titleMedium?.copyWith(color: onSurfaceVariant),
+                ),
+                GestureDetector(
+                  onTap: () => ref.read(privacyModeProvider.notifier).toggle(),
+                  child: Icon(
+                    isPrivacyMode ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                    size: 20,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                formatRupiah(summary.balance),
+                isPrivacyMode ? 'Rp •••••••' : formatRupiah(summary.balance),
                 style: theme.textTheme.displaySmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: balanceColor,
+                  color: isPrivacyMode ? onSurfaceVariant : balanceColor,
                 ),
               ),
             ),
@@ -89,8 +103,8 @@ class _BalanceCard extends StatelessWidget {
                   child: _AmountTile(
                     icon: Icons.south_west,
                     label: 'Pemasukan',
-                    amount: formatRupiah(summary.totalIncome),
-                    color: Colors.green.shade700,
+                    amount: isPrivacyMode ? 'Rp •••' : formatRupiah(summary.totalIncome),
+                    color: isPrivacyMode ? onSurfaceVariant : Colors.green.shade700,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -98,8 +112,8 @@ class _BalanceCard extends StatelessWidget {
                   child: _AmountTile(
                     icon: Icons.north_east,
                     label: 'Pengeluaran',
-                    amount: formatRupiah(summary.totalExpense),
-                    color: Colors.red.shade600,
+                    amount: isPrivacyMode ? 'Rp •••' : formatRupiah(summary.totalExpense),
+                    color: isPrivacyMode ? onSurfaceVariant : Colors.red.shade600,
                   ),
                 ),
               ],

@@ -42,87 +42,22 @@ Uncommitted (Task 12, 6 files, +186 -18):
 
 ---
 
-## ✅ Apa yang Baru Selesai (Task 12)
+## ✅ Apa yang Baru Selesai
 
-**Fitur:** Hapus Transaksi - Dismissible swipe kiri/kanan + dialog konfirmasi + handle alokasi atomik.
-
-**File diubah:**
-1. `lib/features/transactions/presentation/providers/quick_add_controller.dart:27-40` - `deleteTransaction()` cek `isAllocation` → panggil `savingsRepo.deleteAllocation()` (restore `currentAmount`) else direct delete. Sudah handle `newGoalAmount < 0`.
-2. `lib/features/savings/domain/repositories/savings_goal_repository.dart:22-27` - tambah `deleteAllocation({goalId, newGoalAmount, transactionId})`
-3. `lib/features/savings/data/repositories/firestore_savings_goal_repository.dart:148-176` - implement `deleteAllocation` dengan `WriteBatch` (update goal + delete transaction atomik)
-4. `lib/features/transactions/presentation/pages/history_page.dart:101-167` - `_confirmDelete` jadi async: fetch goal title jika alokasi, dialog confirm bool, panggil controller, SnackBar hijau/merah beda pesan alokasi vs biasa
-5. `lib/features/transactions/presentation/widgets/transaction_tile.dart:17-95` - tambah `onDismissed`, `_buildDismissBackground()` gradient merah `delete_sweep_rounded` + label Hapus, wrap dengan `Dismissible` (confirmDismiss return false, trigger dialog manual)
-6. `task.md` - tandai Task 12 selesai + log
-
-**Verifikasi:** `flutter analyze` No issues, `flutter test` 32/32 (sebelum Task 12, perlu re-run setelah commit).
-
-**Belum di-commit:** User melakukan commit manual. Commit message disarankan ada di chat sebelumnya (feat: add delete transaction...). Jangan auto-commit.
-
----
-
-## 🐛 Bug + Feature Request Aktif (BELUM DIKERJAKAN, prioritas berikutnya)
-
-### 1. Sorting Target Tabungan Bug
-**Laporan user (2026-08-27):**
-- Dropdown sorting di `savings_page.dart:52-69` (Terbaru/Terlama/Progress Tinggi)
-- **Hanya `Progress Tinggi` yang berfungsi**, `Terbaru` dan `Terlama` tidak mengubah urutan card.
-
-**Analisis awal:**
-- `savings_providers.dart:10-14` `watchGoals()` sekarang `orderBy('createdAt', descending:true)` (sudah di-fix dari `orderBy('deadline')` di commit 28812ff)
-- `savings_providers.dart:55-77` `sortedSavingsGoalsProvider` melakukan client-side sort:
-  ```dart
-  newest: b.createdAt.compareTo(a.createdAt)
-  oldest: a.createdAt.compareTo(b.createdAt)
-  progress: b.progress.compareTo(a.progress)
-  ```
-- `savings_page.dart:42` sudah pakai `sortedSavingsGoalsProvider` (bukan stream langsung) → seharusnya bekerja.
-- **Hipotesis bug:**
-  1. Data lama di Firestore (`kabel`, `laptop Tuf` 4000) dibuat **sebelum field `createdAt` ada** → `SavingsGoalModel.fromMap` di `savings_goal_model.dart:31` pakai `_parseDate(map['createdAt'])` → jika null → `return DateTime.now()` → semua goal lama dapat `createdAt` hampir identik (saat dibaca sekarang, bukan saat dibuat) → sort tidak terlihat.
-  2. Atau `createdAt` tersimpan tapi microsecond sama (buat berurutan cepat) → perbedaan tidak terlihat.
-  3. Perlu cek Firestore Console: apakah `createdAt` field ada dan berbeda? Jika tidak, perlu data migration / fallback pakai `id` (microsecondsSinceEpoch) atau `deadline`.
-
-**Rencana fix (disetujui user, belum eksekusi):**
-- Opsi A (dipilih): tetap `orderBy('createdAt', desc)` di server, client handle oldest/progress. Untuk data lama tanpa `createdAt`, fallback sort pakai `id` atau `deadline` jika `createdAt` null/identik.
-- Alternatif: Jika bug bukan data, cek apakah `SavingsSortController` persist ke SharedPreferences (`settings_service.dart:30-47` sudah ada `getSavingsSortOption/setSavingsSortOption`) bekerja, dan dropdown `onChanged` trigger rebuild.
-
-### 2. Fitur Arsip / Tab Selesai untuk Target Tabungan
-**Request user:**
-- Card yang sudah selesai (contoh `kabel` 4000/4000) mengganggu list aktif. Jika banyak card, jadi semak.
-- Ingin **otomatis masuk ke menu selesai / arsip** yang terpisah dari ongoing.
-- User bisa bedakan arsip vs tidak, lebih mudah.
-- UI jangan polos, harus seperti app profesional.
-
-**Rekomendasi yang DISETUJUI user:**
-- **Opsi 1 Tab System:** `SavingsPage` pakai `TabBar` dengan 2 tab: `Aktif` (progress < 1.0) vs `Selesai` (progress >= 1.0). Default tab `Aktif`. Tampilkan count badge `Aktif (3)` `Selesai (2)`.
-- **Field:** Tidak tambah field baru, pakai computed `isCompleted => progress >= 1.0` (single source of truth, backward compatible). Jika nanti butuh arsip manual, baru tambah `isArchived`.
-- **Sorting:** Fix dulu dengan `createdAt` desc sebagai default. Sorting preference disimpan per-device via SharedPreferences (sudah ada).
-- **Visual:** Completed cards opacity 0.7 + checkmark / badge "Selesai" + warna berbeda, bukan hilang total.
-
-**File yang akan diubah untuk fitur ini (belum dikerjakan):**
-- `lib/features/savings/domain/entities/savings_goal_entity.dart` - tambah getter `isCompleted`
-- `lib/features/savings/presentation/providers/savings_providers.dart` - tambah `activeSavingsGoalsProvider` dan `completedSavingsGoalsProvider` (filter dari `sortedSavingsGoalsProvider`), atau filter langsung dari `savingsGoalsStreamProvider`
-- `lib/features/savings/presentation/pages/savings_page.dart` - ganti `Scaffold` body jadi `DefaultTabController` + `TabBar` + `TabBarView`, AppBar tetap ada dropdown sorting, FAB tetap. Empty state per tab berbeda. Butuh UI professional: TabBar dengan indicator rounded, card count, animasi.
-- `lib/features/savings/presentation/widgets/goal_card.dart` - update visual untuk completed: opacity, badge, disable tombol Alokasikan Dana (sudah ada `isReached` logic).
-- `lib/features/savings/data/repositories/firestore_savings_goal_repository.dart` - tidak perlu ubah query, cukup client filter. Jika mau auto-archive, nanti tambah `isArchived` field.
-- `lib/core/local_storage/settings_service.dart` - sudah ada sorting pref, tidak perlu.
-
-**Urutan eksekusi yang disepakati:**
-1. Fix sorting bug dulu (HIGH PRIORITY) - investigasi data `createdAt`
-2. Implement Tab Aktif/Selesai (MEDIUM)
-3. Polish UI professional (MEDIUM)
+1. **Fix Bug UI Android:** Memperbaiki teks nominal yang meluber (`history_page.dart` & `transaction_tile.dart`) dengan `ConstrainedBox` dan `Flexible`. Serta memperbaiki `SegmentedButton` tema yang wrap ke bawah dengan menggantinya menjadi desain `_ThemeChip` kustom.
+2. **Task 13 (Premium Settings UI):** Merombak total halaman Pengaturan agar terlihat seperti aplikasi finansial modern. Menambahkan Avatar/Nama, status sinkronisasi, sakelar Mode Privasi (sensor saldo di beranda), pengaturan Siklus Anggaran, dan tombol *Danger Zone* hapus data (sementara masih placeholder UI).
 
 ---
 
 ## 📋 NEXT TASK YANG TERTUNDA
 
-### Task 13 - Settings Page (dari PRD Fase 4)
-- Toggle Dark Mode (SharedPreferences) - sebagian sudah di Task 7 (`settings_service.dart`, `settings_providers.dart`, `appThemeModeProvider`), tinggal buat UI halaman.
-- Input Batas Anggaran Bulanan - `budgetLimitProvider` sudah ada, tinggal buat UI form + validasi + SnackBar.
-- File target: `lib/features/settings/presentation/pages/settings_page.dart` (belum ada), route di `app_shell.dart`.
-
-**Tapi sebelum Task 13, selesaikan dulu:**
-1. Commit Task 12 (manual oleh user)
-2. Fix sorting bug + Implement Tab Selesai/Arsip (sesuai request terbaru, dianggap enhancement Task 12 / Task 12.5)
+Karena FASE 1-4 sudah selesai semua secara fundamental, langkah selanjutnya adalah:
+1. **User melakukan commit manual:** `git add .` dan `git commit -m "feat: redesign settings page with professional layout and privacy mode"`
+2. **Pull Request:** Merge branch ini (`feature/fase2-anggaran-tabungan`) ke `main`.
+3. **Penyempurnaan Opsional:**
+   - Melengkapi fitur Ekspor CSV.
+   - Melengkapi fitur Hapus Data Massal (Danger Zone).
+   - Halaman FAQ / Pusat Bantuan.
 
 ---
 
