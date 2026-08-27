@@ -42,13 +42,15 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
     if (!_formKey.currentState!.validate()) return;
 
     final amount = double.tryParse(_amountController.text.trim().replaceAll('.', '')) ?? 0;
+    final now = DateTime.now();
 
     final goal = SavingsGoalEntity(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: now.microsecondsSinceEpoch.toString(),
       title: _titleController.text.trim(),
       targetAmount: amount,
       currentAmount: 0,
       deadline: _deadline,
+      createdAt: now,
     );
 
     final success = await ref.read(savingsActionsControllerProvider.notifier).addGoal(goal);

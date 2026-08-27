@@ -21,6 +21,7 @@ class SettingsService {
 
   static const String _budgetLimitKey = 'monthly_budget_limit';
   static const String _themeModeKey = 'theme_mode';
+  static const String _savingsSortKey = 'savings_sort_option';
 
   double? getBudgetLimit() {
     try {
@@ -60,6 +61,22 @@ class SettingsService {
       await _sharedPreferences.setString(_themeModeKey, mode.name);
     } catch (e) {
       throw SettingsServiceException('Gagal menyimpan mode tema', e);
+    }
+  }
+
+  String getSavingsSortOption() {
+    try {
+      return _sharedPreferences.getString(_savingsSortKey) ?? 'newest';
+    } catch (e) {
+      throw SettingsServiceException('Gagal memuat preferensi urutan target', e);
+    }
+  }
+
+  Future<void> setSavingsSortOption(String option) async {
+    try {
+      await _sharedPreferences.setString(_savingsSortKey, option);
+    } catch (e) {
+      throw SettingsServiceException('Gagal menyimpan preferensi urutan target', e);
     }
   }
 }

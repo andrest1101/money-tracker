@@ -5,6 +5,7 @@ class SavingsGoalEntity {
     required this.targetAmount,
     required this.currentAmount,
     required this.deadline,
+    required this.createdAt,
   });
 
   final String id;
@@ -12,6 +13,7 @@ class SavingsGoalEntity {
   final double targetAmount;
   final double currentAmount;
   final DateTime deadline;
+  final DateTime createdAt;
 
   double get progress {
     if (targetAmount <= 0) return 0;
@@ -29,6 +31,7 @@ class SavingsGoalEntity {
     double? targetAmount,
     double? currentAmount,
     DateTime? deadline,
+    DateTime? createdAt,
   }) {
     return SavingsGoalEntity(
       id: id ?? this.id,
@@ -36,6 +39,7 @@ class SavingsGoalEntity {
       targetAmount: targetAmount ?? this.targetAmount,
       currentAmount: currentAmount ?? this.currentAmount,
       deadline: deadline ?? this.deadline,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -47,10 +51,11 @@ class SavingsGoalEntity {
         other.title == title &&
         other.targetAmount == targetAmount &&
         other.currentAmount == currentAmount &&
-        other.deadline == deadline;
+        other.deadline == deadline &&
+        other.createdAt == createdAt;
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, title, targetAmount, currentAmount, deadline);
+      Object.hash(id, title, targetAmount, currentAmount, deadline, createdAt);
 }

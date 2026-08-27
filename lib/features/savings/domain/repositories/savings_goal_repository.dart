@@ -10,9 +10,17 @@ abstract interface class SavingsGoalRepository {
 
   Future<void> deleteGoal(String id);
 
+  Future<SavingsGoalEntity> getGoalById(String id);
+
   Future<void> allocateToGoal({
     required SavingsGoalEntity goal,
     required double newCurrentAmount,
     required TransactionEntity allocationTransaction,
+  });
+
+  Future<void> updateAllocation({
+    required String goalId,
+    required double newGoalAmount,
+    required TransactionEntity updatedTransaction,
   });
 }

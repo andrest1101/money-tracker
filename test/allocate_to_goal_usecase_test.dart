@@ -11,6 +11,7 @@ void main() {
     targetAmount: 5000000,
     currentAmount: 1000000,
     deadline: DateTime(2026, 12, 31),
+    createdAt: DateTime(2026, 8, 1),
   );
 
   group('AllocateToGoalUseCase', () {

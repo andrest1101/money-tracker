@@ -26,13 +26,50 @@ class SavingsPage extends ConsumerWidget {
     );
   }
 
+  String _getSortLabel(SavingsSortOption option) {
+    switch (option) {
+      case SavingsSortOption.newest:
+        return 'Terbaru';
+      case SavingsSortOption.oldest:
+        return 'Terlama';
+      case SavingsSortOption.progress:
+        return 'Progress Tinggi';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final goalsAsync = ref.watch(savingsGoalsStreamProvider);
+    final goalsAsync = ref.watch(sortedSavingsGoalsProvider);
+    final sortOption = ref.watch(savingsSortControllerProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Target Tabungan')),
+      appBar: AppBar(
+        title: const Text('Target Tabungan'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: DropdownButton<SavingsSortOption>(
+              value: sortOption,
+              icon: const Icon(Icons.sort),
+              underline: const SizedBox(),
+              items: SavingsSortOption.values.map((option) {
+                return DropdownMenuItem(
+                  value: option,
+                  child: Text(_getSortLabel(option)),
+                );
+              }).toList(),
+              onChanged: (option) {
+                if (option != null) {
+                  ref
+                      .read(savingsSortControllerProvider.notifier)
+                      .setSortOption(option);
+                }
+              },
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddGoalSheet(context),
         icon: const Icon(Icons.add),

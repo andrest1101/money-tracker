@@ -16,7 +16,7 @@
 
 ---
 
-## 📍 POSISI SAAT INI (update terakhir: 2026-08-26)
+## 📍 POSISI SAAT INI (update terakhir: 2026-08-27)
 
 - Branch aktif: `feature/fase2-anggaran-tabungan`
 - **FASE 1 TUNTAS** — semua Task 1–6 ter-merge ke `main` via PR #3 + commit `54724a4`
@@ -27,7 +27,9 @@
 - **Task 8 SELESAI** — Overspending Alert 3 tingkat; Task 7+8 ter-push sebagai commit gabungan `83b13fe`
 - **Task 9 SELESAI — FASE 2 TUNTAS! 🎉** Halaman Target + alokasi dana atomik (WriteBatch) + form target baru
 - **Task 10 SELESAI** — Riwayat transaksi grouped per tanggal + warna saldo merah/hijau + bugfix over-allocation
-- **NEXT: PR `feature/fase2-anggaran-tabungan` → `main` (fase tuntas), lalu branch `feature/fase3-riwayat` untuk Task 11**
+- **Task 11 SELESAI** — Edit Transaksi: dual mode form (tambah/edit) + UI polished + edit alokasi dari 2 tempat (History & Savings page)
+- **Enhancement Task 11** — Edit alokasi ke 0 (auto-delete with confirmation) + Sorting Target Tabungan (newest/oldest/progress) + field `createdAt`
+- **NEXT: Task 12 (Hapus Transaksi) → FASE 3 TUNTAS → PR ke main**
 
 ---
 
@@ -101,8 +103,8 @@
 - [x] **Task 10 — Riwayat Transaksi**
   Daftar grouped per tanggal, urut descending (data sudah descending dari Task 1). File: `transactions/domain/usecases/group_transactions_by_date_usecase.dart` (format bulan Indonesia), `presentation/providers/history_providers.dart` (groupedTransactionsProvider + filter/search + dailySummary), `presentation/pages/history_page.dart` (Card-based grouped list + filter chips + search bar + ringkasan harian + empty state), `presentation/widgets/transaction_tile.dart` (Card design + waktu + ikon dinamis + tap aksi), `presentation/widgets/category_icon.dart` (ikon dinamis per kategori dengan warna). Bonus: warna saldo di dashboard merah (minus) / hijau (plus). Bugfix: alokasi > sisa target ditolak (hard cap).
 
-- [ ] **Task 11 — Edit Transaksi**
-  Buka form Task 6 dengan data terisi, update ke Firestore via `updateTransaction`.
+- [x] **Task 11 — Edit Transaksi**
+  Buka form Task 6 dengan data terisi, update ke Firestore via `updateTransaction`. File: `quick_add_controller.dart` (+updateTransaction method + `_updateAllocationTransaction` dengan fetch langsung dari Firestore), `quick_add_transaction_sheet.dart` (dual mode: tambah/edit, pre-fill form, judul/tombol dinamis, UI polished, validasi allow 0 untuk alokasi + dialog konfirmasi withdraw), `history_page.dart` (koneksi edit ke form), `goal_card.dart` (expandable riwayat alokasi + edit langsung dari card). Bugfix: `getTransactionById()` + `getGoalById()` langsung dari Firestore (bukan stream). Enhancement: Edit alokasi ke 0 auto-delete transaksi dengan konfirmasi user. Dual edit option: History page & Savings page (expandable card). Field baru: `goalId` di TransactionEntity untuk link ke target tabungan, `createdAt` di SavingsGoalEntity untuk sorting. Sorting target tabungan: newest/oldest/progress (dropdown di AppBar, saved to SharedPreferences). Test: 32/32 passed.
 
 - [ ] **Task 12 — Hapus Transaksi**
   `Dismissible` (swipe kiri/kanan) + dialog konfirmasi sebelum `deleteTransaction`.
@@ -198,3 +200,7 @@ lib/
 | 2026-08-26 | Task 9 | Halaman Target Tabungan selesai — **FASE 2 TUNTAS 🎉**. Pelajaran 1: **WriteBatch** = dua operasi Firestore (update goal + buat transaksi) dalam satu paket atomik, mencegah kondisi "uang keluar tapi goal tidak naik" bila salah satu gagal. Pelajaran 2: alokasi dianalogikan transaksi expense khusus → saldo, pie chart & alert otomatis konsisten tanpa logika baru (satu sumber kebenaran). Pelajaran 3: kegagalan test "pindah tab" membongkar bug edit-ku sendiri — SavingsPage masuk tapi placeholder Target lupa dihapus → 5 halaman utk 4 tab; test widget terbukti penjaga yang efektif. Validasi alokasi inline di sheet memakai use case yang sama dgn controller (aturan tidak diduplikasi) |
 | 2026-08-26 | Task 10 | Riwayat transaksi selesai (grouped per tanggal + empty state + transaction_tile reusable). Bonus: warna saldo dashboard merah/hijau sesuai tipe (standar UX finance app). Bugfix over-allocation: alokasi > sisa target ditolak (hard cap) via AllocateToGoalUseCase + 2 test baru → total **32/32 test passed**. Pelajaran: import path relatif di subfolder presentation perlu naik ke features/ dulu (`../../../` bukan `../`), dan widget test harus di-update saat placeholder diganti widget asli |
 | 2026-08-26 | UI History | Redesign halaman Riwayat: Card-based per tanggal dengan ringkasan harian (total +/- per hari), filter chips (Semua/Pemasukan/Pengeluaran), search bar minimalis, transaction tile baru dengan ikon dinamis per kategori (12 warna), waktu transaksi, dan tap aksi (edit/hapus placeholder). Provider baru: filter + search + dailySummary. Catatan: `StateProvider` dihapus di Riverpod 3.x → pakai `Notifier` pattern |
+| 2026-08-26 | Task 11 | Edit Transaksi selesai — dual mode form (tambah/edit). `QuickAddTransactionSheet` terima `TransactionEntity?` → pre-fill form saat edit, judul "Edit Transaksi", tombol "Perbarui", ID dipertahankan. `QuickAddController` +`updateTransaction()` method. UI polished: warna dinamis mengikuti tipe (merah expense/hijau income), border bulat, section headers, icon di judul. Koneksi dari history tap → edit → form → update Firestore → stream refresh. **32/32 test passed** |
+| 2026-08-26 | Bugfix alokasi | Fix bug: edit transaksi alokasi tabungan tidak update `currentAmount` goal. Akar masalah: tidak ada field `goalId` di `TransactionEntity`. Fix: tambah `goalId` (nullable) ke entity + model, set `goalId: goal.id` saat alokasi, tambah `updateAllocation()` di repository (WriteBatch atomik: update transaksi + goal), update `QuickAddController._updateAllocationTransaction()` (hitung selisih, apply ke goal). Backward compatible: transaksi lama `goalId: null` tetap bisa di-edit normal. **32/32 test passed** |
+| 2026-08-26 | Bugfix alokasi edit | Fix bug: edit transaksi alokasi tabungan gagal ("Target tabungan tidak ditemukan"). Akar masalah: `_updateAllocationTransaction()` baca `savingsGoalsStreamProvider.value` — stream bisa masih loading → null → list kosong → `firstWhere` throw. Fix: tambah `getGoalById(String id)` di `SavingsGoalRepository` interface + impl Firestore (fetch langsung dari doc), refactor `_updateAllocationTransaction()` pakai `getGoalById()` alih-alih stream. Hapus import `savings_providers.dart` yang tidak terpakai. **32/32 test passed** |
+| 2026-08-27 | Enhancement Task 11 | **Dual edit allocation**: GoalCard jadi expandable dengan riwayat alokasi (tap item → edit). Edit alokasi sekarang bisa dari History page ATAU Savings page. **Edit to 0 with auto-delete**: Validasi allow 0 dengan warning message, dialog konfirmasi "Withdraw Semua Alokasi?", auto-delete transaction + restore goal amount (logic di `_updateAllocationTransaction`). **Sorting target tabungan**: Tambah field `createdAt` di SavingsGoalEntity & Model, `SavingsSortController` (Notifier dengan SharedPreferences), `sortedSavingsGoalsProvider` (newest/oldest/progress), dropdown di AppBar SavingsPage. Fix: tambah `getTransactionById()` di TransactionRepository untuk fetch old transaction langsung dari Firestore (bukan stream). **32/32 test passed**. Pelajaran: stream provider bisa null saat loading → jangan andalkan untuk data kritis; pakai direct fetch via `getById()`. Expandable UI pattern: `ConsumerStatefulWidget` + `bool _isExpanded` + conditional rendering |
