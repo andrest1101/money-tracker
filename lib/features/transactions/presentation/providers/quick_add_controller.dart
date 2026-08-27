@@ -38,6 +38,37 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
     }
   }
 
+  Future<bool> deleteTransaction(TransactionEntity transaction) async {
+    state = const AsyncLoading();
+    try {
+      if (transaction.isAllocation && transaction.goalId != null) {
+        // Delete allocation transaction and restore goal amount
+        final savingsRepo = ref.read(savingsGoalRepositoryProvider);
+        final goal = await savingsRepo.getGoalById(transaction.goalId!);
+        final newGoalAmount = goal.currentAmount - transaction.amount;
+
+        if (newGoalAmount < 0) {
+          throw Exception('Tidak dapat menghapus alokasi: saldo target menjadi negatif');
+        }
+
+        await savingsRepo.deleteAllocation(
+          goalId: goal.id,
+          newGoalAmount: newGoalAmount,
+          transactionId: transaction.id,
+        );
+      } else {
+        // Regular transaction, just delete
+        final repository = ref.read(transactionRepositoryProvider);
+        await repository.deleteTransaction(transaction.id);
+      }
+      state = const AsyncData(null);
+      return true;
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+      return false;
+    }
+  }
+
   Future<void> _updateAllocationTransaction(
     TransactionEntity transaction,
   ) async {

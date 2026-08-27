@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../savings/data/providers/savings_goal_repository_provider.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../providers/history_providers.dart';
+import '../providers/quick_add_controller.dart';
 import '../widgets/quick_add_transaction_sheet.dart';
 import '../widgets/transaction_tile.dart';
 
@@ -98,8 +100,22 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     );
   }
 
-  void _confirmDelete(TransactionEntity transaction) {
-    showDialog<void>(
+  void _confirmDelete(TransactionEntity transaction) async {
+    // Get goal title if allocation transaction
+    String? goalTitle;
+    if (transaction.isAllocation && transaction.goalId != null) {
+      try {
+        final savingsRepo = ref.read(savingsGoalRepositoryProvider);
+        final goal = await savingsRepo.getGoalById(transaction.goalId!);
+        goalTitle = goal.title;
+      } catch (e) {
+        // Ignore if goal not found
+      }
+    }
+
+    if (!mounted) return;
+
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         icon: Icon(
@@ -109,23 +125,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ),
         title: const Text('Hapus Transaksi?'),
         content: Text(
-          'Transaksi ${transaction.category} sebesar '
-          '${formatRupiah(transaction.amount)} akan dihapus permanen.',
+          transaction.isAllocation && goalTitle != null
+              ? 'Alokasi sebesar ${formatRupiah(transaction.amount)} untuk "$goalTitle" akan dihapus dan uang kembali ke saldo utama.'
+              : 'Transaksi ${transaction.category} sebesar ${formatRupiah(transaction.amount)} akan dihapus permanen.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Batal'),
           ),
           FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fitur hapus akan tersedia di Task 12'),
-                ),
-              );
-            },
+            onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
@@ -134,6 +144,35 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ],
       ),
     );
+
+    if (confirm != true || !mounted) return;
+
+    final success = await ref
+        .read(quickAddControllerProvider.notifier)
+        .deleteTransaction(transaction);
+
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (success) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            transaction.isAllocation
+                ? 'Alokasi berhasil dihapus dan uang dikembalikan ke saldo'
+                : 'Transaksi berhasil dihapus',
+          ),
+          backgroundColor: Colors.green.shade700,
+        ),
+      );
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text('Gagal menghapus transaksi. Coba lagi ya.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 
   @override
@@ -324,6 +363,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                                 (t) => TransactionTile(
                                   transaction: t,
                                   onTap: () => _showTransactionOptions(t),
+                                  onDismissed: () => _confirmDelete(t),
                                 ),
                               ),
                               const SizedBox(height: 4),

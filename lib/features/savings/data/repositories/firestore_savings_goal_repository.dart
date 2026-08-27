@@ -33,7 +33,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   @override
   Stream<List<SavingsGoalEntity>> watchGoals() async* {
     try {
-      yield* _goalsRef.orderBy('deadline').snapshots().map(
+      yield* _goalsRef.orderBy('createdAt', descending: true).snapshots().map(
             (snapshot) => snapshot.docs
                 .map((doc) => SavingsGoalModel.fromMap(doc.id, doc.data()))
                 .toList(),
@@ -140,6 +140,36 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
     } catch (e) {
       throw SavingsGoalRepositoryException(
         'Gagal memperbarui alokasi tabungan',
+        e,
+      );
+    }
+  }
+
+  @override
+  Future<void> deleteAllocation({
+    required String goalId,
+    required double newGoalAmount,
+    required String transactionId,
+  }) async {
+    try {
+      final batch = _firestore.batch();
+      
+      // Update goal currentAmount
+      batch.update(_goalsRef.doc(goalId), {
+        'currentAmount': newGoalAmount,
+      });
+      
+      // Delete transaction
+      batch.delete(
+        _firestore
+            .collection(FirestoreTransactionRepository.collectionName)
+            .doc(transactionId),
+      );
+
+      await batch.commit();
+    } catch (e) {
+      throw SavingsGoalRepositoryException(
+        'Gagal menghapus alokasi tabungan',
         e,
       );
     }

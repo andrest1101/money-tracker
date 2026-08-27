@@ -23,4 +23,10 @@ abstract interface class SavingsGoalRepository {
     required double newGoalAmount,
     required TransactionEntity updatedTransaction,
   });
+
+  Future<void> deleteAllocation({
+    required String goalId,
+    required double newGoalAmount,
+    required String transactionId,
+  });
 }
