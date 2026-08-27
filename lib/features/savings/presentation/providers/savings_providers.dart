@@ -76,6 +76,20 @@ final sortedSavingsGoalsProvider =
   });
 });
 
+final activeGoalsProvider =
+    Provider<AsyncValue<List<SavingsGoalEntity>>>((ref) {
+  return ref.watch(sortedSavingsGoalsProvider).whenData(
+        (goals) => goals.where((g) => !g.isCompleted).toList(),
+      );
+});
+
+final completedGoalsProvider =
+    Provider<AsyncValue<List<SavingsGoalEntity>>>((ref) {
+  return ref.watch(sortedSavingsGoalsProvider).whenData(
+        (goals) => goals.where((g) => g.isCompleted).toList(),
+      );
+});
+
 class SavingsActionsController extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncData(null);
@@ -84,6 +98,20 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
     state = const AsyncLoading();
     try {
       await ref.read(savingsGoalRepositoryProvider).addGoal(goal);
+      state = const AsyncData(null);
+      return true;
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+      return false;
+    }
+  }
+
+  Future<bool> deleteGoal(SavingsGoalEntity goal) async {
+    state = const AsyncLoading();
+    try {
+      await ref
+          .read(savingsGoalRepositoryProvider)
+          .deleteGoalWithAllocations(goal.id);
       state = const AsyncData(null);
       return true;
     } catch (e) {

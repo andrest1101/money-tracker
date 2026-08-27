@@ -25,6 +25,8 @@ class SavingsGoalEntity {
     return targetAmount - currentAmount;
   }
 
+  bool get isCompleted => progress >= 1.0;
+
   SavingsGoalEntity copyWith({
     String? id,
     String? title,

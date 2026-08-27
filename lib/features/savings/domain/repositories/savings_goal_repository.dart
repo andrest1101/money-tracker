@@ -10,6 +10,9 @@ abstract interface class SavingsGoalRepository {
 
   Future<void> deleteGoal(String id);
 
+  /// Hapus goal beserta semua transaksi alokasi-nya dalam satu batch atomik.
+  Future<void> deleteGoalWithAllocations(String goalId);
+
   Future<SavingsGoalEntity> getGoalById(String id);
 
   Future<void> allocateToGoal({

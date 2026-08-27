@@ -3,184 +3,135 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
-import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../providers/savings_providers.dart';
+import 'edit_allocation_sheet.dart';
 
 class GoalCard extends ConsumerStatefulWidget {
   const GoalCard({
     super.key,
     required this.goal,
     required this.onAllocate,
+    required this.onDelete,
   });
 
   final SavingsGoalEntity goal;
   final VoidCallback onAllocate;
+  final VoidCallback onDelete;
 
   @override
   ConsumerState<GoalCard> createState() => _GoalCardState();
 }
 
-class _GoalCardState extends ConsumerState<GoalCard> {
+class _GoalCardState extends ConsumerState<GoalCard>
+    with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
+  late final AnimationController _expandController;
+  late final Animation<double> _expandAnimation;
 
-  void _showEditAllocationSheet(BuildContext context, transaction) {
+  @override
+  void initState() {
+    super.initState();
+    _expandController = AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _expandController.dispose();
+    super.dispose();
+  }
+
+  void _toggleExpand() {
+    setState(() => _isExpanded = !_isExpanded);
+    if (_isExpanded) {
+      _expandController.forward();
+    } else {
+      _expandController.reverse();
+    }
+  }
+
+  void _showEditAllocationSheet(BuildContext context, allocation) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => QuickAddTransactionSheet(transaction: transaction),
+      useSafeArea: true,
+      builder: (_) => EditAllocationSheet(
+        transaction: allocation,
+        goal: widget.goal,
+      ),
     );
+  }
+
+  Color _progressColor(double progress, ColorScheme cs) {
+    if (progress >= 1.0) return const Color(0xFF2E7D32); // dark green
+    if (progress >= 0.7) return const Color(0xFF388E3C); // green
+    if (progress >= 0.4) return const Color(0xFF1976D2); // blue
+    return cs.primary;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isReached = widget.goal.remainingAmount <= 0;
-    final allocations = ref.watch(allocationTransactionsProvider(widget.goal.id));
+    final cs = theme.colorScheme;
+    final goal = widget.goal;
+    final isCompleted = goal.isCompleted;
+    final allocations =
+        ref.watch(allocationTransactionsProvider(goal.id));
+    final progress = goal.progress;
+    final progressColor = _progressColor(progress, cs);
 
     return Card(
+      elevation: isCompleted ? 0 : 1,
+      shadowColor: cs.shadow.withValues(alpha: 0.08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: isCompleted
+            ? BorderSide(
+                color: const Color(0xFF2E7D32).withValues(alpha: 0.4),
+                width: 1.5,
+              )
+            : BorderSide.none,
+      ),
+      color: isCompleted
+          ? const Color(0xFF2E7D32).withValues(alpha: 0.05)
+          : cs.surface,
       child: Column(
         children: [
+          // ── Main Card Content ──────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Title row + progress % + delete button
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Left: icon + title
                     Expanded(
-                      child: Text(
-                        widget.goal.title,
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Text(
-                      '${(widget.goal.progress * 100).round()}%',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                LinearProgressIndicator(
-                  value: widget.goal.progress,
-                  minHeight: 10,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      formatRupiah(widget.goal.currentAmount),
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      'dari ${formatRupiah(widget.goal.targetAmount)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  isReached
-                      ? 'Target tercapai! 🎉'
-                      : 'Sisa ${formatRupiah(widget.goal.remainingAmount)} • '
-                          'tenggat ${formatDateShort(widget.goal.deadline)}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: isReached
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.tonalIcon(
-                    onPressed: isReached ? null : widget.onAllocate,
-                    icon: const Icon(Icons.account_balance_wallet_outlined),
-                    label: const Text('Alokasikan Dana'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (allocations.isNotEmpty)
-            InkWell(
-              onTap: () => setState(() => _isExpanded = !_isExpanded),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  border: Border(
-                    top: BorderSide(
-                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.history,
-                      size: 18,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Riwayat Alokasi (${allocations.length})',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    Icon(
-                      _isExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          if (_isExpanded && allocations.isNotEmpty)
-            Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-              ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                itemCount: allocations.length,
-                separatorBuilder: (_, __) => Divider(
-                  height: 16,
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
-                ),
-                itemBuilder: (context, index) {
-                  final transaction = allocations[index];
-                  return InkWell(
-                    onTap: () => _showEditAllocationSheet(context, transaction),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            width: 42,
+                            height: 42,
                             decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(8),
+                              color: progressColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
-                              Icons.savings_outlined,
-                              size: 20,
-                              color: Colors.green.shade700,
+                              isCompleted
+                                  ? Icons.emoji_events_rounded
+                                  : Icons.savings_rounded,
+                              color: progressColor,
+                              size: 22,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -189,32 +140,351 @@ class _GoalCardState extends ConsumerState<GoalCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  formatRupiah(transaction.amount),
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
+                                  goal.title,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: isCompleted
+                                        ? const Color(0xFF2E7D32)
+                                        : cs.onSurface,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                Text(
-                                  formatDateShort(transaction.date),
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                if (isCompleted)
+                                  Text(
+                                    'Target tercapai!',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: const Color(0xFF2E7D32),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  )
+                                else
+                                  Text(
+                                    'Tenggat ${formatDateShort(goal.deadline)}',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: cs.onSurfaceVariant,
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
-                          ),
-                          Icon(
-                            Icons.edit_outlined,
-                            size: 18,
-                            color: theme.colorScheme.primary,
                           ),
                         ],
                       ),
                     ),
-                  );
-                },
+                    // Right: percent + delete
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: progressColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${(progress * 100).round()}%',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: progressColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        SizedBox(
+                          width: 34,
+                          height: 34,
+                          child: IconButton(
+                            onPressed: widget.onDelete,
+                            padding: EdgeInsets.zero,
+                            iconSize: 18,
+                            icon: Icon(
+                              Icons.delete_outline_rounded,
+                              color: cs.onSurfaceVariant
+                                  .withValues(alpha: 0.6),
+                            ),
+                            tooltip: 'Hapus target',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Progress bar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 8,
+                    backgroundColor:
+                        progressColor.withValues(alpha: 0.12),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(progressColor),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Amount row
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          formatRupiah(goal.currentAmount),
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: progressColor,
+                          ),
+                        ),
+                        Text(
+                          'dari ${formatRupiah(goal.targetAmount)}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    if (!isCompleted)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            formatRupiah(goal.remainingAmount),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                          Text(
+                            'lagi',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Allocate button
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: widget.onAllocate,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: progressColor,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: Icon(
+                      isCompleted
+                          ? Icons.add_circle_outline_rounded
+                          : Icons.account_balance_wallet_rounded,
+                      size: 18,
+                    ),
+                    label: Text(
+                      isCompleted ? 'Tambah Lagi' : 'Alokasikan Dana',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Allocation History expandable ──────────────────────────
+          if (allocations.isNotEmpty) ...[
+            Divider(
+              height: 1,
+              color: cs.outlineVariant.withValues(alpha: 0.35),
+            ),
+            InkWell(
+              onTap: _toggleExpand,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.history_rounded,
+                      size: 16,
+                      color: progressColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Riwayat Alokasi',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: progressColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: progressColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${allocations.length}',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: progressColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    AnimatedRotation(
+                      turns: _isExpanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 250),
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 20,
+                        color: progressColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+            SizeTransition(
+              sizeFactor: _expandAnimation,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHighest.withValues(alpha: 0.15),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding:
+                      const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  itemCount: allocations.length,
+                  separatorBuilder: (_, __) => Divider(
+                    height: 12,
+                    color: cs.outlineVariant.withValues(alpha: 0.25),
+                  ),
+                  itemBuilder: (context, index) {
+                    final tx = allocations[index];
+                    return InkWell(
+                      onTap: () =>
+                          _showEditAllocationSheet(context, tx),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                          horizontal: 4,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: progressColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.savings_outlined,
+                                size: 18,
+                                color: progressColor,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    formatRupiah(tx.amount),
+                                    style: theme.textTheme.bodyMedium
+                                        ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        formatDateShort(tx.date),
+                                        style: theme
+                                            .textTheme.bodySmall
+                                            ?.copyWith(
+                                          color: cs.onSurfaceVariant,
+                                        ),
+                                      ),
+                                      if (tx.note.isNotEmpty) ...[
+                                        Text(
+                                          '  •  ',
+                                          style: theme
+                                              .textTheme.bodySmall
+                                              ?.copyWith(
+                                            color: cs.onSurfaceVariant,
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            tx.note,
+                                            style: theme
+                                                .textTheme.bodySmall
+                                                ?.copyWith(
+                                              color: cs.onSurfaceVariant,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: cs.surfaceContainerHighest
+                                    .withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.edit_rounded,
+                                size: 14,
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

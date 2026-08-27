@@ -81,27 +81,25 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
     final oldAmount = oldTransaction.amount;
     final newAmount = transaction.amount;
 
+    // Hitung newGoalAmount dari selisih: kurangi kontribusi lama, tambah kontribusi baru
+    // Gunakan aritmatika eksplisit tanpa floating point accumulation
+    final newGoalAmount = goal.currentAmount - oldAmount + newAmount;
+
     // If newAmount is 0, delete transaction and restore goal amount
     if (newAmount == 0) {
-      final newGoalAmount = goal.currentAmount - oldAmount;
-      
-      if (newGoalAmount < 0) {
+      final restoredAmount = goal.currentAmount - oldAmount;
+
+      if (restoredAmount < 0) {
         throw Exception('Nominal edit membuat target tabungan negatif');
       }
 
-      await savingsRepo.updateAllocation(
+      await savingsRepo.deleteAllocation(
         goalId: goal.id,
-        newGoalAmount: newGoalAmount,
-        updatedTransaction: transaction.copyWith(amount: 0),
+        newGoalAmount: restoredAmount,
+        transactionId: transaction.id,
       );
-      
-      // Delete the transaction after updating goal
-      await transactionRepo.deleteTransaction(transaction.id);
       return;
     }
-
-    final diff = newAmount - oldAmount;
-    final newGoalAmount = goal.currentAmount + diff;
 
     if (newGoalAmount < 0) {
       throw Exception('Nominal edit membuat target tabungan negatif');
@@ -111,10 +109,21 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
       throw Exception('Nominal edit melebihi target tabungan (${goal.targetAmount.round()})');
     }
 
+    // Pastikan transaksi alokasi tetap bertipe expense dengan goalId yang sama
+    final correctedTransaction = TransactionEntity(
+      id: transaction.id,
+      amount: newAmount,
+      type: oldTransaction.type,
+      category: oldTransaction.category,
+      date: transaction.date,
+      note: transaction.note.isNotEmpty ? transaction.note : oldTransaction.note,
+      goalId: oldTransaction.goalId,
+    );
+
     await savingsRepo.updateAllocation(
       goalId: goal.id,
       newGoalAmount: newGoalAmount,
-      updatedTransaction: transaction,
+      updatedTransaction: correctedTransaction,
     );
   }
 }
