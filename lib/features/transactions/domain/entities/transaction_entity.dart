@@ -8,6 +8,7 @@ class TransactionEntity {
     required this.category,
     required this.date,
     required this.note,
+    this.goalId,
   });
 
   final String id;
@@ -16,8 +17,10 @@ class TransactionEntity {
   final String category;
   final DateTime date;
   final String note;
+  final String? goalId;
 
   bool get isExpense => type == TransactionType.expense;
+  bool get isAllocation => goalId != null;
 
   TransactionEntity copyWith({
     String? id,
@@ -26,6 +29,7 @@ class TransactionEntity {
     String? category,
     DateTime? date,
     String? note,
+    String? Function()? goalId,
   }) {
     return TransactionEntity(
       id: id ?? this.id,
@@ -34,6 +38,7 @@ class TransactionEntity {
       category: category ?? this.category,
       date: date ?? this.date,
       note: note ?? this.note,
+      goalId: goalId != null ? goalId() : this.goalId,
     );
   }
 
@@ -46,9 +51,10 @@ class TransactionEntity {
         other.type == type &&
         other.category == category &&
         other.date == date &&
-        other.note == note;
+        other.note == note &&
+        other.goalId == goalId;
   }
 
   @override
-  int get hashCode => Object.hash(id, amount, type, category, date, note);
+  int get hashCode => Object.hash(id, amount, type, category, date, note, goalId);
 }

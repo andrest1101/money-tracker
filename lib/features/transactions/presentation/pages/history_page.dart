@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../providers/history_providers.dart';
+import '../widgets/quick_add_transaction_sheet.dart';
 import '../widgets/transaction_tile.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
@@ -67,6 +68,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               title: const Text('Edit Transaksi'),
               onTap: () {
                 Navigator.pop(context);
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => QuickAddTransactionSheet(
+                    transaction: transaction,
+                  ),
+                );
               },
             ),
             ListTile(

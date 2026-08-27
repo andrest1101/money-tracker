@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../savings/data/providers/savings_goal_repository_provider.dart';
 import '../../data/providers/transaction_repository_provider.dart';
 import '../../domain/entities/transaction_entity.dart';
 
@@ -18,6 +19,72 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
       state = AsyncError(e, StackTrace.current);
       return false;
     }
+  }
+
+  Future<bool> updateTransaction(TransactionEntity transaction) async {
+    state = const AsyncLoading();
+    try {
+      if (transaction.isAllocation) {
+        await _updateAllocationTransaction(transaction);
+      } else {
+        final repository = ref.read(transactionRepositoryProvider);
+        await repository.updateTransaction(transaction);
+      }
+      state = const AsyncData(null);
+      return true;
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+      return false;
+    }
+  }
+
+  Future<void> _updateAllocationTransaction(
+    TransactionEntity transaction,
+  ) async {
+    final savingsRepo = ref.read(savingsGoalRepositoryProvider);
+    final transactionRepo = ref.read(transactionRepositoryProvider);
+
+    final goal = await savingsRepo.getGoalById(transaction.goalId!);
+    final oldTransaction = await transactionRepo.getTransactionById(transaction.id);
+
+    final oldAmount = oldTransaction.amount;
+    final newAmount = transaction.amount;
+
+    // If newAmount is 0, delete transaction and restore goal amount
+    if (newAmount == 0) {
+      final newGoalAmount = goal.currentAmount - oldAmount;
+      
+      if (newGoalAmount < 0) {
+        throw Exception('Nominal edit membuat target tabungan negatif');
+      }
+
+      await savingsRepo.updateAllocation(
+        goalId: goal.id,
+        newGoalAmount: newGoalAmount,
+        updatedTransaction: transaction.copyWith(amount: 0),
+      );
+      
+      // Delete the transaction after updating goal
+      await transactionRepo.deleteTransaction(transaction.id);
+      return;
+    }
+
+    final diff = newAmount - oldAmount;
+    final newGoalAmount = goal.currentAmount + diff;
+
+    if (newGoalAmount < 0) {
+      throw Exception('Nominal edit membuat target tabungan negatif');
+    }
+
+    if (newGoalAmount > goal.targetAmount) {
+      throw Exception('Nominal edit melebihi target tabungan (${goal.targetAmount.round()})');
+    }
+
+    await savingsRepo.updateAllocation(
+      goalId: goal.id,
+      newGoalAmount: newGoalAmount,
+      updatedTransaction: transaction,
+    );
   }
 }
 

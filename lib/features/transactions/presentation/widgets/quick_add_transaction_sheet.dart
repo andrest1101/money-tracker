@@ -23,7 +23,11 @@ const _monthNames = [
 ];
 
 class QuickAddTransactionSheet extends ConsumerStatefulWidget {
-  const QuickAddTransactionSheet({super.key});
+  const QuickAddTransactionSheet({super.key, this.transaction});
+
+  final TransactionEntity? transaction;
+
+  bool get isEditMode => transaction != null;
 
   @override
   ConsumerState<QuickAddTransactionSheet> createState() =>
@@ -41,6 +45,19 @@ class _QuickAddTransactionSheetState
   String? _selectedCategory;
   List<String> _extraCategories = const [];
   DateTime _selectedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isEditMode) {
+      final t = widget.transaction!;
+      _selectedType = t.type;
+      _selectedCategory = t.category;
+      _selectedDate = t.date;
+      _amountController.text = formatRupiah(t.amount).replaceFirst('Rp ', '');
+      _noteController.text = t.note;
+    }
+  }
 
   @override
   void dispose() {
@@ -130,6 +147,13 @@ class _QuickAddTransactionSheetState
     if (raw.isEmpty) return 'Nominal wajib diisi';
     final parsed = double.tryParse(raw.replaceAll('.', ''));
     if (parsed == null) return 'Nominal harus berupa angka';
+    if (parsed < 0) return 'Nominal tidak boleh negatif';
+    
+    // Allow 0 for allocation edit with warning
+    if (parsed == 0 && widget.isEditMode && widget.transaction?.isAllocation == true) {
+      return 'Nominal 0 akan withdraw semua alokasi (transaksi akan dihapus)';
+    }
+    
     if (parsed <= 0) return 'Nominal harus lebih dari 0';
     return null;
   }
@@ -148,18 +172,55 @@ class _QuickAddTransactionSheetState
     final amount =
         double.tryParse(_amountController.text.trim().replaceAll('.', '')) ?? 0;
 
+    // Show confirmation dialog if editing allocation to 0
+    if (widget.isEditMode && 
+        widget.transaction?.isAllocation == true && 
+        amount == 0) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Withdraw Semua Alokasi?'),
+          content: Text(
+            'Uang ${formatRupiah(widget.transaction!.amount)} akan kembali ke saldo utama dan riwayat alokasi ini akan dihapus.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.orange.shade700,
+              ),
+              child: const Text('Withdraw'),
+            ),
+          ],
+        ),
+      );
+      
+      if (confirm != true) return;
+    }
+
     final transaction = TransactionEntity(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: widget.isEditMode
+          ? widget.transaction!.id
+          : DateTime.now().microsecondsSinceEpoch.toString(),
       amount: amount,
       type: _selectedType,
       category: category,
       date: _selectedDate,
       note: _noteController.text.trim(),
+      goalId: widget.transaction?.goalId,
     );
 
-    final success = await ref
-        .read(quickAddControllerProvider.notifier)
-        .submit(transaction);
+    final success = widget.isEditMode
+        ? await ref
+            .read(quickAddControllerProvider.notifier)
+            .updateTransaction(transaction)
+        : await ref
+            .read(quickAddControllerProvider.notifier)
+            .submit(transaction);
 
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
@@ -168,14 +229,21 @@ class _QuickAddTransactionSheetState
       Navigator.of(context).pop();
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Transaksi ${formatRupiah(amount)} tersimpan!'),
+          content: Text(
+            widget.isEditMode
+                ? 'Transaksi berhasil diperbarui!'
+                : 'Transaksi ${formatRupiah(amount)} tersimpan!',
+          ),
         ),
       );
     } else {
       messenger.showSnackBar(
         SnackBar(
-          content:
-              const Text('Gagal menyimpan transaksi. Coba lagi ya.'),
+          content: Text(
+            widget.isEditMode
+                ? 'Gagal memperbarui transaksi. Coba lagi ya.'
+                : 'Gagal menyimpan transaksi. Coba lagi ya.',
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -187,6 +255,11 @@ class _QuickAddTransactionSheetState
     final theme = Theme.of(context);
     final categories = _categories;
     final isSaving = ref.watch(quickAddControllerProvider).isLoading;
+    final isEdit = widget.isEditMode;
+
+    final typeColor = _selectedType == TransactionType.expense
+        ? Colors.red.shade600
+        : Colors.green.shade700;
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -210,56 +283,107 @@ class _QuickAddTransactionSheetState
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Tambah Transaksi',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: typeColor.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isEdit ? Icons.edit : Icons.add,
+                        color: typeColor,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      isEdit ? 'Edit Transaksi' : 'Tambah Transaksi',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 TextFormField(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [ThousandsSeparatorInputFormatter()],
                   validator: _validateAmount,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  decoration: InputDecoration(
                     labelText: 'Nominal',
                     hintText: '25.000',
                     prefixText: 'Rp ',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SegmentedButton<TransactionType>(
-                  segments: const [
-                    ButtonSegment(
-                      value: TransactionType.expense,
-                      icon: Icon(Icons.north_east),
-                      label: Text('Pengeluaran'),
+                    prefixStyle: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: typeColor,
                     ),
-                    ButtonSegment(
-                      value: TransactionType.income,
-                      icon: Icon(Icons.south_west),
-                      label: Text('Pemasukan'),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
-                  selected: {_selectedType},
-                  onSelectionChanged: (selection) =>
-                      _switchType(selection.first),
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Kategori',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: typeColor,
+                        width: 2,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: SegmentedButton<TransactionType>(
+                    segments: const [
+                      ButtonSegment(
+                        value: TransactionType.expense,
+                        icon: Icon(Icons.north_east, size: 18),
+                        label: Text('Pengeluaran'),
+                      ),
+                      ButtonSegment(
+                        value: TransactionType.income,
+                        icon: Icon(Icons.south_west, size: 18),
+                        label: Text('Pemasukan'),
+                      ),
+                    ],
+                    selected: {_selectedType},
+                    onSelectionChanged: (selection) =>
+                        _switchType(selection.first),
+                    style: ButtonStyle(
+                      visualDensity: VisualDensity.compact,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Kategori',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -268,47 +392,127 @@ class _QuickAddTransactionSheetState
                       ChoiceChip(
                         label: Text(category),
                         selected: _selectedCategory == category,
+                        selectedColor: typeColor.withValues(alpha: 0.15),
+                        side: _selectedCategory == category
+                            ? BorderSide(color: typeColor.withValues(alpha: 0.5))
+                            : null,
                         onSelected: (_) =>
                             setState(() => _selectedCategory = category),
                       ),
                     ActionChip(
-                      avatar: const Icon(Icons.add, size: 18),
-                      label: const Text('Baru'),
+                      avatar: Icon(Icons.add, size: 18, color: typeColor),
+                      label: Text(
+                        'Baru',
+                        style: TextStyle(color: typeColor),
+                      ),
                       onPressed: _addCustomCategory,
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.event_outlined),
-                  label: Text(
-                    '${_selectedDate.day} ${_monthNames[_selectedDate.month - 1]} '
-                    '${_selectedDate.year}',
+                const SizedBox(height: 20),
+                Text(
+                  'Tanggal',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
+                InkWell(
+                  onTap: _pickDate,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 20,
+                          color: typeColor,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '${_selectedDate.day} ${_monthNames[_selectedDate.month - 1]} ${_selectedDate.year}',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          Icons.chevron_right,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Catatan',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 10),
                 TextFormField(
                   controller: _noteController,
                   maxLines: 2,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Catatan (opsional)',
+                  decoration: InputDecoration(
                     hintText: 'Contoh: makan siang di warteg',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: typeColor,
+                        width: 2,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
                 FilledButton.icon(
                   onPressed: isSaving ? null : _submit,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: typeColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   icon: isSaving
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
-                      : const Icon(Icons.check),
-                  label: Text(isSaving ? 'Menyimpan...' : 'Simpan'),
+                      : Icon(isEdit ? Icons.check : Icons.add),
+                  label: Text(
+                    isSaving
+                        ? (isEdit ? 'Memperbarui...' : 'Menyimpan...')
+                        : (isEdit ? 'Perbarui' : 'Simpan'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
