@@ -23,6 +23,12 @@ class AllocateToGoalUseCase {
     if (amount > availableBalance) {
       throw const InvalidAllocationException('Saldo utama tidak cukup untuk alokasi ini');
     }
+    if (amount > goal.remainingAmount) {
+      throw InvalidAllocationException(
+        'Nominal melebihi sisa target (${goal.remainingAmount.round()}). '
+        'Maksimal alokasi: ${goal.remainingAmount.round()}',
+      );
+    }
     return goal.currentAmount + amount;
   }
 }

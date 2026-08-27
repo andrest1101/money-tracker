@@ -33,7 +33,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   @override
   Stream<List<SavingsGoalEntity>> watchGoals() async* {
     try {
-      yield* _goalsRef.orderBy('deadline').snapshots().map(
+      yield* _goalsRef.orderBy('createdAt', descending: true).snapshots().map(
             (snapshot) => snapshot.docs
                 .map((doc) => SavingsGoalModel.fromMap(doc.id, doc.data()))
                 .toList(),
@@ -73,6 +73,48 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   }
 
   @override
+  Future<void> deleteGoalWithAllocations(String goalId) async {
+    try {
+      // Ambil semua transaksi alokasi untuk goal ini
+      final allocationDocs = await _firestore
+          .collection(FirestoreTransactionRepository.collectionName)
+          .where('goalId', isEqualTo: goalId)
+          .get();
+
+      final batch = _firestore.batch();
+
+      // Hapus semua transaksi alokasi
+      for (final doc in allocationDocs.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Hapus goal itu sendiri
+      batch.delete(_goalsRef.doc(goalId));
+
+      await batch.commit();
+    } catch (e) {
+      throw SavingsGoalRepositoryException(
+        'Gagal menghapus target dan alokasi tabungan',
+        e,
+      );
+    }
+  }
+
+  @override
+  Future<SavingsGoalEntity> getGoalById(String id) async {
+    try {
+      final doc = await _goalsRef.doc(id).get();
+      if (!doc.exists) {
+        throw SavingsGoalRepositoryException('Target tabungan tidak ditemukan');
+      }
+      return SavingsGoalModel.fromMap(doc.id, doc.data()!);
+    } catch (e) {
+      if (e is SavingsGoalRepositoryException) rethrow;
+      throw SavingsGoalRepositoryException('Gagal mengambil target tabungan', e);
+    }
+  }
+
+  @override
   Future<void> allocateToGoal({
     required SavingsGoalEntity goal,
     required double newCurrentAmount,
@@ -97,6 +139,65 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
     } catch (e) {
       throw SavingsGoalRepositoryException(
         'Gagal mengalokasikan dana ke target',
+        e,
+      );
+    }
+  }
+
+  @override
+  Future<void> updateAllocation({
+    required String goalId,
+    required double newGoalAmount,
+    required TransactionEntity updatedTransaction,
+  }) async {
+    try {
+      final transaction = TransactionModel.fromEntity(updatedTransaction);
+
+      final batch = _firestore.batch();
+      batch.update(_goalsRef.doc(goalId), {
+        'currentAmount': newGoalAmount,
+      });
+      batch.update(
+        _firestore
+            .collection(FirestoreTransactionRepository.collectionName)
+            .doc(transaction.id),
+        transaction.toMap(),
+      );
+
+      await batch.commit();
+    } catch (e) {
+      throw SavingsGoalRepositoryException(
+        'Gagal memperbarui alokasi tabungan',
+        e,
+      );
+    }
+  }
+
+  @override
+  Future<void> deleteAllocation({
+    required String goalId,
+    required double newGoalAmount,
+    required String transactionId,
+  }) async {
+    try {
+      final batch = _firestore.batch();
+      
+      // Update goal currentAmount
+      batch.update(_goalsRef.doc(goalId), {
+        'currentAmount': newGoalAmount,
+      });
+      
+      // Delete transaction
+      batch.delete(
+        _firestore
+            .collection(FirestoreTransactionRepository.collectionName)
+            .doc(transactionId),
+      );
+
+      await batch.commit();
+    } catch (e) {
+      throw SavingsGoalRepositoryException(
+        'Gagal menghapus alokasi tabungan',
         e,
       );
     }

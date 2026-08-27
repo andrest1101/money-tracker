@@ -10,6 +10,7 @@ class TransactionModel extends TransactionEntity {
     required super.category,
     required super.date,
     required super.note,
+    super.goalId,
   });
 
   factory TransactionModel.fromEntity(TransactionEntity entity) {
@@ -20,6 +21,7 @@ class TransactionModel extends TransactionEntity {
       category: entity.category,
       date: entity.date,
       note: entity.note,
+      goalId: entity.goalId,
     );
   }
 
@@ -31,6 +33,7 @@ class TransactionModel extends TransactionEntity {
       category: map['category'] as String? ?? '',
       date: _parseDate(map['date']),
       note: map['note'] as String? ?? '',
+      goalId: map['goalId'] as String?,
     );
   }
 
@@ -41,6 +44,7 @@ class TransactionModel extends TransactionEntity {
       'category': category,
       'date': Timestamp.fromDate(date),
       'note': note,
+      if (goalId != null) 'goalId': goalId,
     };
   }
 

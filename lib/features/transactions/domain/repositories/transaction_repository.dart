@@ -8,4 +8,6 @@ abstract interface class TransactionRepository {
   Future<void> updateTransaction(TransactionEntity transaction);
 
   Future<void> deleteTransaction(String id);
+
+  Future<TransactionEntity> getTransactionById(String id);
 }

@@ -68,4 +68,18 @@ class FirestoreTransactionRepository implements TransactionRepository {
       throw TransactionRepositoryException('Gagal menghapus transaksi', e);
     }
   }
+
+  @override
+  Future<TransactionEntity> getTransactionById(String id) async {
+    try {
+      final doc = await _transactionsRef.doc(id).get();
+      if (!doc.exists) {
+        throw const TransactionRepositoryException('Transaksi tidak ditemukan');
+      }
+      return TransactionModel.fromMap(doc.id, doc.data()!);
+    } catch (e) {
+      if (e is TransactionRepositoryException) rethrow;
+      throw TransactionRepositoryException('Gagal mengambil transaksi', e);
+    }
+  }
 }

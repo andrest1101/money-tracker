@@ -33,7 +33,7 @@ void main() {
     await tester.tap(find.text('Riwayat'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Riwayat transaksi akan dibangun di Task 10-12'), findsOneWidget);
+    expect(find.text('Belum ada transaksi'), findsOneWidget);
   });
 
   testWidgets('quick add sheet memvalidasi nominal kosong', (tester) async {

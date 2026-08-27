@@ -58,6 +58,8 @@ class _BalanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final balanceColor =
+        summary.balance >= 0 ? Colors.green.shade700 : Colors.red.shade600;
 
     return Card(
       child: Padding(
@@ -74,7 +76,10 @@ class _BalanceCard extends StatelessWidget {
               fit: BoxFit.scaleDown,
               child: Text(
                 formatRupiah(summary.balance),
-                style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: balanceColor,
+                ),
               ),
             ),
             const SizedBox(height: 16),
