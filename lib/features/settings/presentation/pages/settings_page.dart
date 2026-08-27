@@ -95,31 +95,98 @@ class _ThemeSelectionCard extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(
-                    value: ThemeMode.system,
-                    icon: Icon(Icons.brightness_auto_rounded),
-                    label: Text('Sistem'),
+              Row(
+                children: [
+                  _ThemeChip(
+                    icon: Icons.brightness_auto_rounded,
+                    label: 'Sistem',
+                    selected: currentTheme == ThemeMode.system,
+                    onTap: () => ref
+                        .read(appThemeModeProvider.notifier)
+                        .setThemeMode(ThemeMode.system),
                   ),
-                  ButtonSegment(
-                    value: ThemeMode.light,
-                    icon: Icon(Icons.light_mode_rounded),
-                    label: Text('Terang'),
+                  const SizedBox(width: 8),
+                  _ThemeChip(
+                    icon: Icons.light_mode_rounded,
+                    label: 'Terang',
+                    selected: currentTheme == ThemeMode.light,
+                    onTap: () => ref
+                        .read(appThemeModeProvider.notifier)
+                        .setThemeMode(ThemeMode.light),
                   ),
-                  ButtonSegment(
-                    value: ThemeMode.dark,
-                    icon: Icon(Icons.dark_mode_rounded),
-                    label: Text('Gelap'),
+                  const SizedBox(width: 8),
+                  _ThemeChip(
+                    icon: Icons.dark_mode_rounded,
+                    label: 'Gelap',
+                    selected: currentTheme == ThemeMode.dark,
+                    onTap: () => ref
+                        .read(appThemeModeProvider.notifier)
+                        .setThemeMode(ThemeMode.dark),
                   ),
                 ],
-                selected: {currentTheme},
-                onSelectionChanged: (selection) {
-                  ref.read(appThemeModeProvider.notifier).setThemeMode(selection.first);
-                },
-                style: ButtonStyle(
-                  visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeChip extends StatelessWidget {
+  const _ThemeChip({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected
+                ? cs.primary.withValues(alpha: 0.15)
+                : cs.surfaceContainerHighest.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected
+                  ? cs.primary.withValues(alpha: 0.6)
+                  : cs.outlineVariant.withValues(alpha: 0.4),
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: selected ? cs.primary : cs.onSurfaceVariant,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: selected ? cs.primary : cs.onSurfaceVariant,
+                  fontWeight:
+                      selected ? FontWeight.bold : FontWeight.normal,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

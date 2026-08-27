@@ -334,24 +334,32 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                                     const Spacer(),
                                     if (summary != null) ...[
                                       if (summary.expense > 0)
-                                        Text(
-                                          '-${formatRupiah(summary.expense)}',
-                                          style:
-                                              theme.textTheme.bodySmall?.copyWith(
-                                            color: Colors.red.shade600,
-                                            fontWeight: FontWeight.w600,
+                                        Flexible(
+                                          child: Text(
+                                            '-${formatRupiah(summary.expense)}',
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                              color: Colors.red.shade600,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       if (summary.income > 0 &&
                                           summary.expense > 0)
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 6),
                                       if (summary.income > 0)
-                                        Text(
-                                          '+${formatRupiah(summary.income)}',
-                                          style:
-                                              theme.textTheme.bodySmall?.copyWith(
-                                            color: Colors.green.shade700,
-                                            fontWeight: FontWeight.w600,
+                                        Flexible(
+                                          child: Text(
+                                            '+${formatRupiah(summary.income)}',
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                              color: Colors.green.shade700,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                     ],
