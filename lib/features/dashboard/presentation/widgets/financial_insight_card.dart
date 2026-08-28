@@ -20,6 +20,51 @@ class FinancialInsightCard extends StatelessWidget {
         ? (insight.expense == 0 ? 'Pengeluaran stabil' : 'Belum ada pembanding')
         : '${(insight.expenseChangeRatio.abs() * 100).round()}% ${improving ? 'lebih rendah' : 'lebih tinggi'}';
 
+    if (insight.transactionCount == 0) {
+      return Card(
+        elevation: 0,
+        color: colors.primaryContainer.withValues(alpha: 0.35),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.13),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.insights_outlined, color: colors.primary),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Insight sedang menunggu data',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tambahkan beberapa transaksi agar pola keuanganmu bisa dianalisis.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,

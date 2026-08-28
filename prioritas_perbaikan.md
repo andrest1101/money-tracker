@@ -11,7 +11,7 @@ atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
 | 2 | Hapus target dengan banyak riwayat alokasi | Selesai | Transaksi alokasi dihapus dalam chunk 450 dokumen, lalu target dihapus pada batch terpisah. |
 | 3 | Test lengkap filter History dan ringkasan | Selesai | Step 14 dibuat dengan use case filter dan test kombinasi dasar. |
 | 4 | Modularisasi halaman Settings | Selesai | Entry page dan komposisi content Settings sudah dipisah; section reusable sebelumnya juga berada di file widget terdedikasi. |
-| 5 | Empty state Dashboard yang lebih informatif | Belum selesai | Perlu CTA dan penjelasan khusus untuk pengguna baru. |
+| 5 | Empty state Dashboard yang lebih informatif | Selesai | Hero onboarding, empty chart, dan empty insight sudah memiliki copy, visual, serta CTA/informasi yang jelas. |
 | 6 | Status sinkronisasi yang lebih detail | Selesai sebagian | Loading, sukses, gagal, dan retry sudah tersedia; last synced/offline queue belum ada. |
 | 7 | Firebase Authentication dan isolasi data user | Belum selesai | Data masih memakai collection global dan belum memiliki uid. |
 
@@ -36,6 +36,16 @@ atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
 ## Step Berikutnya
 
 Prioritas aktif berikutnya adalah **Prioritas 5: empty state Dashboard yang lebih informatif**.
+
+Prioritas aktif berikutnya adalah **Prioritas 6 lanjutan: status sinkronisasi dengan waktu pembaruan terakhir**.
+
+## Step 19
+
+- Menambahkan hero empty state Dashboard untuk pengguna tanpa transaksi.
+- Menampilkan greeting pengguna dan CTA `Catat transaksi`.
+- Memperjelas empty state pie chart agar menjelaskan manfaat kategori pengeluaran.
+- Menambahkan empty state financial insight agar tidak terlihat seperti data error atau palsu.
+- Mempertahankan error state dan loading state sebagai kondisi yang berbeda.
 
 ## Step 17
 

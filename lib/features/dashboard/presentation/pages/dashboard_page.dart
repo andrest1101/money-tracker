@@ -10,6 +10,7 @@ import '../../domain/entities/budget_overview_entity.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/category_expense_pie_card.dart';
 import '../widgets/financial_insight_card.dart';
+import '../widgets/dashboard_empty_state.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -17,6 +18,7 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(monthlySummaryProvider);
+    final transactionsAsync = ref.watch(transactionsStreamProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('MoneyTracker')),
@@ -39,7 +41,17 @@ class DashboardPage extends ConsumerWidget {
         data: (summary) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _BalanceCard(summary: summary),
+            if (transactionsAsync.value?.isEmpty ?? false)
+              DashboardEmptyState(
+                userName: ref.watch(userNameProvider),
+                onAdd: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => const QuickAddTransactionSheet(),
+                ),
+              )
+            else
+              _BalanceCard(summary: summary),
             const SizedBox(height: 16),
             _BudgetStatusSection(summary: summary),
             const SizedBox(height: 16),
