@@ -9,10 +9,13 @@ import '../../domain/entities/monthly_summary_entity.dart';
 import '../../domain/usecases/calculate_category_expenses_usecase.dart';
 import '../../domain/usecases/calculate_budget_overview_usecase.dart';
 import '../../domain/usecases/calculate_monthly_summary_usecase.dart';
+import '../../domain/entities/financial_insight_entity.dart';
+import '../../domain/usecases/calculate_financial_insight_usecase.dart';
 
 const _calculateMonthlySummary = CalculateMonthlySummaryUseCase();
 const _calculateCategoryExpenses = CalculateCategoryExpensesUseCase();
 const _calculateBudgetOverview = CalculateBudgetOverviewUseCase();
+const _calculateFinancialInsight = CalculateFinancialInsightUseCase();
 
 final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((
   ref,
@@ -61,6 +64,21 @@ final budgetOverviewProvider = Provider<AsyncValue<BudgetOverviewEntity>>((
     (transactions) => _calculateBudgetOverview.execute(
       transactions: transactions,
       budgetLimit: budgetLimit,
+      cycleDay: cycleDay,
+    ),
+  );
+});
+
+final financialInsightProvider = Provider<AsyncValue<FinancialInsightEntity>>((
+  ref,
+) {
+  final transactions = ref.watch(transactionsStreamProvider);
+  final cycleDay = ref.watch(budgetCycleDateProvider);
+  return transactions.whenData(
+    (items) => _calculateFinancialInsight.execute(
+      transactions: items,
+      now: DateTime.now(),
+      period: FinancialInsightPeriod.monthly,
       cycleDay: cycleDay,
     ),
   );

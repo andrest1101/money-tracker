@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/local_storage/settings_providers.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../savings/data/providers/savings_goal_repository_provider.dart';
+import '../../../dashboard/domain/usecases/calculate_budget_cycle_period_usecase.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../providers/history_providers.dart';
 import '../providers/quick_add_controller.dart';
@@ -18,6 +21,7 @@ class HistoryPage extends ConsumerStatefulWidget {
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
   final _searchController = TextEditingController();
+  static const _periodFormatter = CalculateBudgetCyclePeriodUseCase();
 
   @override
   void dispose() {
@@ -200,6 +204,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final grouped = ref.watch(filteredGroupedTransactionsProvider);
     final dailySummary = ref.watch(dailySummaryProvider);
     final filter = ref.watch(historyFilterProvider);
+    final category = ref.watch(historyCategoryProvider);
+    final cycleOnly = ref.watch(historyCycleProvider);
+    final categories = ref.watch(historyCategoriesProvider);
+    final cycle = _periodFormatter.execute(
+      date: DateTime.now(),
+      cycleDay: ref.watch(budgetCycleDateProvider),
+    );
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -242,6 +253,50 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 38,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                FilterChip(
+                  label: const Text('Siklus aktif'),
+                  avatar: const Icon(Icons.autorenew_rounded, size: 16),
+                  selected: cycleOnly,
+                  onSelected: (_) =>
+                      ref.read(historyCycleProvider.notifier).toggle(),
+                ),
+                const SizedBox(width: 8),
+                ...categories.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(item),
+                      selected: category == item,
+                      onSelected: (selected) => ref
+                          .read(historyCategoryProvider.notifier)
+                          .setCategory(selected ? item : null),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (cycleOnly)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Siklus: ${formatDateShort(cycle.start)} - ${formatDateShort(cycle.end)}',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           const SizedBox(height: 8),
           SizedBox(
             height: 40,
@@ -298,7 +353,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                           const SizedBox(height: 16),
                           Text(
                             ref.watch(historySearchQueryProvider).isNotEmpty ||
-                                    filter != null
+                                    filter != null ||
+                                    category != null ||
+                                    cycleOnly
                                 ? 'Tidak ada transaksi yang cocok'
                                 : 'Belum ada transaksi',
                             style: theme.textTheme.headlineSmall,
@@ -306,7 +363,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                           const SizedBox(height: 8),
                           Text(
                             ref.watch(historySearchQueryProvider).isNotEmpty ||
-                                    filter != null
+                                    filter != null ||
+                                    category != null ||
+                                    cycleOnly
                                 ? 'Coba ubah filter atau kata kunci pencarianmu.'
                                 : 'Semua transaksimu akan muncul di sini. '
                                       'Yuk mulai catat pengeluaran atau pemasukan!',

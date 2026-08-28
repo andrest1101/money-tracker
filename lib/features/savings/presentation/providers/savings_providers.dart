@@ -6,6 +6,8 @@ import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../data/providers/savings_goal_repository_provider.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../../domain/usecases/allocate_to_goal_usecase.dart';
+import '../../domain/entities/allocation_summary_entity.dart';
+import '../../domain/usecases/calculate_allocation_summary_usecase.dart';
 
 final savingsGoalsStreamProvider = StreamProvider<List<SavingsGoalEntity>>((
   ref,
@@ -18,6 +20,14 @@ final allocationTransactionsProvider =
     Provider.family<List<TransactionEntity>, String>((ref, goalId) {
       final allTransactions = ref.watch(transactionsStreamProvider).value ?? [];
       return allTransactions.where((t) => t.goalId == goalId).toList();
+    });
+
+final allocationSummaryProvider =
+    Provider.family<AllocationSummaryEntity, String>((ref, goalId) {
+      const calculateSummary = CalculateAllocationSummaryUseCase();
+      return calculateSummary.execute(
+        ref.watch(allocationTransactionsProvider(goalId)),
+      );
     });
 
 enum SavingsSortOption { newest, oldest, progress }

@@ -92,7 +92,11 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Tahap hapus semua data: transaksi dan target dihapus dengan batch aman serta konfirmasi berlapis.
 - [x] Tahap target Aktif/Selesai: tab dan badge status sudah tersedia.
 - [x] Tahap status visual target: progress, target tercapai, tenggat dekat, dan tenggat terlewat.
-- [ ] Tahap berikutnya: penyempurnaan riwayat alokasi atau insight keuangan.
+- [x] Step 8: riwayat alokasi memiliki ringkasan total, jumlah aktivitas, dan alokasi terakhir.
+- [x] Step 9: riwayat transaksi memiliki filter kategori dinamis.
+- [x] Step 10: riwayat transaksi memiliki filter siklus anggaran aktif lintas bulan.
+- [x] Step 11: Dashboard memiliki insight keuangan berbasis siklus anggaran dan tren periode sebelumnya.
+- [ ] Tahap berikutnya: validasi UI langsung di device Android.
 
 ---
 

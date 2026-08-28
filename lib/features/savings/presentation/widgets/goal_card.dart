@@ -106,6 +106,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
     final goal = widget.goal;
     final isCompleted = goal.isCompleted;
     final allocations = ref.watch(allocationTransactionsProvider(goal.id));
+    final allocationSummary = ref.watch(allocationSummaryProvider(goal.id));
     final progress = goal.progress;
     final progressColor = _progressColor(progress, cs);
     final deadlineStatus = _deadlineStatus(goal, cs);
@@ -338,7 +339,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
           ),
 
           // ── Allocation History expandable ──────────────────────────
-          if (allocations.isNotEmpty) ...[
+          if (allocationSummary.count > 0) ...[
             Divider(
               height: 1,
               color: cs.outlineVariant.withValues(alpha: 0.35),
@@ -359,7 +360,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                     Icon(Icons.history_rounded, size: 16, color: progressColor),
                     const SizedBox(width: 8),
                     Text(
-                      'Riwayat Alokasi',
+                      'Aktivitas Alokasi',
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: progressColor,
                         fontWeight: FontWeight.w600,
@@ -376,7 +377,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        '${allocations.length}',
+                        '${allocationSummary.count}',
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: progressColor,
                           fontWeight: FontWeight.bold,
@@ -395,6 +396,28 @@ class _GoalCardState extends ConsumerState<GoalCard>
                     ),
                   ],
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Row(
+                children: [
+                  Text(
+                    'Total ${formatRupiah(allocationSummary.totalAmount)}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: progressColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (allocationSummary.latest != null)
+                    Text(
+                      'Terakhir ${formatDateShort(allocationSummary.latest!.date)}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                ],
               ),
             ),
             SizeTransition(

@@ -9,6 +9,7 @@ import '../../domain/entities/monthly_summary_entity.dart';
 import '../../domain/entities/budget_overview_entity.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/category_expense_pie_card.dart';
+import '../widgets/financial_insight_card.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -41,6 +42,14 @@ class DashboardPage extends ConsumerWidget {
             _BalanceCard(summary: summary),
             const SizedBox(height: 16),
             _BudgetStatusSection(summary: summary),
+            const SizedBox(height: 16),
+            ref
+                .watch(financialInsightProvider)
+                .when(
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (insight) => FinancialInsightCard(insight: insight),
+                ),
             const SizedBox(height: 16),
             const CategoryExpensePieCard(),
           ],

@@ -2,11 +2,13 @@ import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../entities/budget_overview_entity.dart';
 import '../entities/category_expense_entity.dart';
 import 'check_budget_status_usecase.dart';
+import 'calculate_budget_cycle_period_usecase.dart';
 
 class CalculateBudgetOverviewUseCase {
   const CalculateBudgetOverviewUseCase();
 
   static const _checkStatus = CheckBudgetStatusUseCase();
+  static const _calculatePeriod = CalculateBudgetCyclePeriodUseCase();
 
   BudgetOverviewEntity execute({
     required List<TransactionEntity> transactions,
@@ -15,8 +17,9 @@ class CalculateBudgetOverviewUseCase {
     DateTime? now,
   }) {
     final today = now ?? DateTime.now();
-    final start = _periodStart(today, cycleDay);
-    final end = _periodEnd(start, cycleDay);
+    final period = _calculatePeriod.execute(date: today, cycleDay: cycleDay);
+    final start = period.start;
+    final end = period.end;
     final totalDays = end.difference(start).inDays + 1;
     final elapsedDays = (today.difference(start).inDays + 1).clamp(
       1,
@@ -64,36 +67,5 @@ class CalculateBudgetOverviewUseCase {
           )
           .toList(),
     );
-  }
-
-  DateTime _periodStart(DateTime date, int cycleDay) {
-    final day = cycleDay.clamp(1, 31);
-    if (date.day >= day) {
-      return DateTime(
-        date.year,
-        date.month,
-        _validDay(date.year, date.month, day),
-      );
-    }
-    final previous = DateTime(date.year, date.month - 1);
-    return DateTime(
-      previous.year,
-      previous.month,
-      _validDay(previous.year, previous.month, day),
-    );
-  }
-
-  DateTime _periodEnd(DateTime start, int cycleDay) {
-    final next = DateTime(start.year, start.month + 1);
-    return DateTime(
-      next.year,
-      next.month,
-      _validDay(next.year, next.month, cycleDay),
-    ).subtract(const Duration(days: 1));
-  }
-
-  int _validDay(int year, int month, int requested) {
-    final lastDay = DateTime(year, month + 1, 0).day;
-    return requested.clamp(1, lastDay);
   }
 }
