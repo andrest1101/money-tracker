@@ -103,7 +103,9 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Step 12: Filter kategori History dipindahkan ke searchable bottom sheet dengan icon, jumlah transaksi, dan reset kategori.
 - [x] Step 13: Status sinkronisasi profil membaca stream Firestore, edit alokasi memvalidasi saldo bulan berjalan, dan branding footer menjadi Product by Andre Robert.
 - [x] Step 15: Operasi tambah, edit, dan hapus alokasi memakai Firestore Transaction untuk mencegah race condition.
-- [ ] Tahap berikutnya: validasi UI langsung di device Android dan chunked delete target.
+- [x] Step 16: Penghapusan target dengan banyak riwayat alokasi memakai chunked batch 450 dokumen dan batch terpisah untuk target.
+- [x] Step 17: Modularisasi awal Settings: section title, Help Center, FAQ sheet, dan branding dipindahkan ke widget terpisah tanpa mengubah UI premium.
+- [ ] Tahap berikutnya: validasi UI langsung di device Android dan modularisasi Settings.
 
 ---
 

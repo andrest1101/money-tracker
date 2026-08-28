@@ -7,6 +7,10 @@ import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../savings/presentation/providers/savings_providers.dart';
 import '../../../transactions/presentation/providers/transaction_export_controller.dart';
+import '../widgets/developer_card.dart';
+import '../widgets/help_center_entry.dart';
+import '../widgets/help_center_sheet.dart';
+import '../widgets/settings_section_title.dart';
 
 void _showSettingsSnackBar(
   BuildContext context, {
@@ -44,146 +48,8 @@ void _showHelpCenter(BuildContext context) {
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (_) => const _HelpCenterSheet(),
+    builder: (_) => const HelpCenterSheet(),
   );
-}
-
-class _HelpCenterSheet extends StatelessWidget {
-  const _HelpCenterSheet();
-
-  static const _faqs = [
-    (
-      'Bagaimana cara mencatat transaksi?',
-      'Tekan tombol Catat di Beranda, pilih pemasukan atau pengeluaran, lalu isi nominal dan kategorinya. Setelah disimpan, saldo dan riwayat akan diperbarui otomatis.',
-      Icons.add_circle_outline_rounded,
-    ),
-    (
-      'Apa itu siklus anggaran?',
-      'Siklus anggaran menentukan kapan periode anggaran dimulai. Contohnya, siklus tanggal 25 berarti periode berjalan dari tanggal 25 sampai tanggal 24 bulan berikutnya.',
-      Icons.calendar_month_outlined,
-    ),
-    (
-      'Bagaimana cara memakai target tabungan?',
-      'Buat target di menu Target, lalu pilih Alokasikan Dana. Alokasi dicatat sebagai transaksi khusus dan saldo target akan bertambah secara atomik.',
-      Icons.savings_outlined,
-    ),
-    (
-      'Mengapa saldo bisa berwarna merah?',
-      'Saldo berwarna merah berarti total pengeluaran pada periode berjalan lebih besar daripada pemasukan. Ini membantu kamu mengenali kebocoran dana lebih cepat.',
-      Icons.account_balance_wallet_outlined,
-    ),
-    (
-      'Apa fungsi Mode Privasi?',
-      'Mode Privasi menyamarkan nominal pada kartu saldo di Beranda. Data transaksi tetap aman dan tidak dihapus, sehingga kamu bisa membuka nominal kembali kapan saja.',
-      Icons.visibility_off_outlined,
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return SafeArea(
-      child: FractionallySizedBox(
-        heightFactor: 0.88,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [colors.primaryContainer, colors.secondaryContainer],
-                ),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 25,
-                    backgroundColor: colors.primary,
-                    child: Icon(
-                      Icons.support_agent_rounded,
-                      color: colors.onPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Pusat Bantuan',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Jawaban singkat untuk membantu mengatur keuanganmu.',
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 22),
-            Text(
-              'Pertanyaan umum',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              margin: EdgeInsets.zero,
-              elevation: 0,
-              clipBehavior: Clip.antiAlias,
-              color: colors.surfaceContainerHighest.withValues(alpha: 0.35),
-              child: Column(
-                children: [
-                  for (var i = 0; i < _faqs.length; i++) ...[
-                    ExpansionTile(
-                      leading: Icon(_faqs[i].$3, color: colors.primary),
-                      title: Text(
-                        _faqs[i].$1,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _faqs[i].$2,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (i < _faqs.length - 1)
-                      const Divider(height: 1, indent: 72),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Text(
-                'Masih membutuhkan bantuan? Hubungi Andre.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class SettingsPage extends ConsumerWidget {
@@ -204,20 +70,20 @@ class SettingsPage extends ConsumerWidget {
         children: [
           const _ProfileHeader(),
           const SizedBox(height: 16),
-          const _SectionTitle(title: 'PREFERENSI TAMPILAN & PRIVASI'),
+           const SettingsSectionTitle(title: 'PREFERENSI TAMPILAN & PRIVASI'),
           const _ThemeSelectionCard(),
           const _PrivacyCard(),
           const SizedBox(height: 24),
-          const _SectionTitle(title: 'PENGELOLAAN KEUANGAN'),
+           const SettingsSectionTitle(title: 'PENGELOLAAN KEUANGAN'),
           const _FinancialSettingsCard(),
           const SizedBox(height: 24),
-          const _SectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
+           const SettingsSectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
           const _DataManagementCard(),
           const SizedBox(height: 24),
-          const _SectionTitle(title: 'BANTUAN'),
-          const _HelpCenterEntry(),
-          const SizedBox(height: 32),
-          const _DeveloperCard(),
+           const SettingsSectionTitle(title: 'BANTUAN'),
+           HelpCenterEntry(onTap: () => _showHelpCenter(context)),
+           const SizedBox(height: 32),
+           const DeveloperCard(),
         ],
       ),
     );
@@ -225,26 +91,6 @@ class SettingsPage extends ConsumerWidget {
 }
 
 // ── Komponen Pembantu ────────────────────────────────────────────────────────
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.title});
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
-}
 
 // ── 1. Profile Header ────────────────────────────────────────────────────────
 
@@ -1282,114 +1128,6 @@ class _FinalDeleteConfirmationDialogState
           child: const Text('HAPUS SEMUA'),
         ),
       ],
-    );
-  }
-}
-
-class _HelpCenterEntry extends StatelessWidget {
-  const _HelpCenterEntry();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: 0,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: InkWell(
-          onTap: () => _showHelpCenter(context),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  colors.primaryContainer.withValues(alpha: 0.75),
-                  colors.surfaceContainerHighest.withValues(alpha: 0.45),
-                ],
-              ),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: colors.primary,
-                  foregroundColor: colors.onPrimary,
-                  child: const Icon(Icons.support_agent_rounded),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pusat Bantuan',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'Temukan jawaban dari pertanyaan umum',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: colors.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── 5. Developer Card ────────────────────────────────────────────────────────
-
-class _DeveloperCard extends StatelessWidget {
-  const _DeveloperCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          Icon(
-            Icons.code_rounded,
-            color: cs.primary.withValues(alpha: 0.5),
-            size: 32,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'MoneyTracker v1.0.0',
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: cs.onSurfaceVariant,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Product by Andre Robert',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

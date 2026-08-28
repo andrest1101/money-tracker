@@ -87,23 +87,25 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   @override
   Future<void> deleteGoalWithAllocations(String goalId) async {
     try {
-      // Ambil semua transaksi alokasi untuk goal ini
       final allocationDocs = await _firestore
           .collection(FirestoreTransactionRepository.collectionName)
           .where('goalId', isEqualTo: goalId)
           .get();
 
-      final batch = _firestore.batch();
-
-      // Hapus semua transaksi alokasi
-      for (final doc in allocationDocs.docs) {
-        batch.delete(doc.reference);
+      // Keep a safety margin below Firestore's 500-operation batch limit.
+      const batchSize = 450;
+      for (var offset = 0; offset < allocationDocs.docs.length; offset += batchSize) {
+        final end = (offset + batchSize).clamp(0, allocationDocs.docs.length);
+        final batch = _firestore.batch();
+        for (final doc in allocationDocs.docs.sublist(offset, end)) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
       }
 
-      // Hapus goal itu sendiri
-      batch.delete(_goalsRef.doc(goalId));
-
-      await batch.commit();
+      final goalBatch = _firestore.batch();
+      goalBatch.delete(_goalsRef.doc(goalId));
+      await goalBatch.commit();
     } catch (e) {
       throw SavingsGoalRepositoryException(
         'Gagal menghapus target dan alokasi tabungan',
