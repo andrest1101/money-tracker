@@ -16,7 +16,9 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(sharedPreferences)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      ],
       child: const _AuthGate(),
     ),
   );
@@ -32,8 +34,58 @@ class _AuthGate extends ConsumerWidget {
       loading: () => const MaterialApp(
         home: Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
-      error: (error, _) => MaterialApp(home: const MoneyTrackerApp()),
+      error: (error, _) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: _AuthErrorPage(
+          onRetry: () => ref.invalidate(anonymousAuthProvider),
+        ),
+      ),
       data: (_) => const MoneyTrackerApp(),
+    );
+  }
+}
+
+class _AuthErrorPage extends StatelessWidget {
+  const _AuthErrorPage({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.cloud_off_rounded,
+                size: 56,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Belum dapat menyambungkan akun',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'MoneyTracker perlu koneksi akun untuk menjaga data tetap pribadi dan tersinkronisasi.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Coba lagi'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -52,7 +104,10 @@ class MoneyTrackerApp extends ConsumerWidget {
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.green,
+          brightness: Brightness.dark,
+        ),
       ),
       themeMode: ref.watch(appThemeModeProvider),
       home: const AppShell(),

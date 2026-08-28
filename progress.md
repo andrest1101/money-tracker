@@ -20,8 +20,8 @@
 - **FASE 3 TUNTAS** (Task 10-12)
 - **FASE 4 TUNTAS** (Task 13 Settings Page & Premium UI)
 - **Enhancement UI selesai hari ini:** History interaktif + overview harian, pie chart kategori interaktif + detail kategori, dan Status Anggaran interaktif + overview siklus anggaran
-- **Kesehatan kode terakhir:** `flutter analyze` bersih, 34/34 test passed
-- **NEXT:** User melakukan commit manual perubahan hari ini, lalu validasi UI di device Android dan penyempurnaan fitur opsional
+- **Kesehatan kode terakhir:** `flutter analyze` bersih, 52/52 test passed
+- **NEXT:** User melakukan commit manual perubahan hari ini, deploy `firestore.rules`, lalu validasi auth dan UI di device Android.
 
 ### Git Status Saat Ini
 
@@ -56,7 +56,7 @@ Catatan: perubahan lokal lain yang sudah ada sebelum sesi ini tetap dijaga dan t
 4. **Pie chart interaktif:** Segmen dan legend dapat dipilih, kategori aktif di-highlight, informasi kategori muncul di tengah chart, dan tersedia bottom sheet detail kategori dengan total, persentase, rata-rata, transaksi terbesar, serta daftar transaksi.
 5. **Status Anggaran interaktif:** Card membaca transaksi aktual dan tanggal siklus anggaran. Overview menampilkan status, progress, sisa/kelebihan, periode, jumlah transaksi, rata-rata harian, proyeksi akhir periode, dan tiga kategori terbesar.
 6. **Domain budget overview:** Ditambahkan `BudgetOverviewEntity` dan `CalculateBudgetOverviewUseCase`, termasuk dukungan siklus yang melewati pergantian bulan.
-7. **Testing:** Ditambahkan `calculate_budget_overview_usecase_test.dart`; total terakhir 34 test lulus.
+7. **Testing:** Ditambahkan `calculate_budget_overview_usecase_test.dart`; total terakhir 52 test lulus.
 
 ---
 
@@ -108,9 +108,10 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Step 18: Entry page Settings dipisahkan dari komposisi content; `settings_page.dart` kini ringan dan implementasi tetap modular di folder widgets.
 - [x] Step 19: Empty state Dashboard dibuat informatif untuk transaksi, pie chart, dan financial insight dengan visual premium serta CTA.
 - [x] Step 20: Status sinkronisasi Settings menampilkan loading, sukses, offline/gagal, retry, dan waktu pembaruan terakhir.
-- [x] Step 21: Firebase Anonymous Authentication dan path user-scoped untuk transaksi serta target sudah diterapkan; implementasi aplikasi selesai sebagian.
-- [x] Recovery Fix: AuthGate tidak lagi memblokir aplikasi ketika Anonymous Auth belum aktif; repository memakai fallback collection lama sementara.
-- [ ] Tahap berikutnya: aktifkan Anonymous Auth di Firebase Console, terapkan security rules, migrasikan data lama, tambahkan account linking, lalu validasi UI/device Android.
+- [x] Step 21: Firebase Anonymous Authentication dan path user-scoped untuk transaksi serta target sudah diterapkan.
+- [x] Security hardening: AuthGate menampilkan error + retry saat Anonymous Auth gagal; repository tidak lagi memakai fallback collection global.
+- [x] Security rules: `firestore.rules` hanya mengizinkan user membaca/menulis `users/{uid}/...` miliknya sendiri dan menutup root collection lama.
+- [ ] Tahap berikutnya: aktifkan Anonymous Auth di Firebase Console, deploy rules, migrasikan data lama, tambahkan account linking, lalu validasi UI/device Android.
 
 ---
 
@@ -182,7 +183,7 @@ lib/
 
 - **Sesi 2026-08-28:** user memilih privacy mode tidak menyembunyikan nominal pada History; privacy mode tetap untuk Dashboard.
 - **Sesi 2026-08-28:** user meminta commit manual; AI tidak melakukan `git add`, `git commit`, atau push.
-- **Sesi lanjutan:** tahap 2 dan 3 selesai. Penyimpanan Settings sekarang menampilkan feedback floating `SnackBar`; FAQ placeholder diganti Pusat Bantuan interaktif. `flutter analyze` bersih dan 34/34 test lulus.
+- **Sesi lanjutan:** tahap 2 dan 3 selesai. Penyimpanan Settings sekarang menampilkan feedback floating `SnackBar`; FAQ placeholder diganti Pusat Bantuan interaktif. `flutter analyze` bersih dan 52/52 test lulus.
 
 ## 🧾 Commit Manual Sesi 2026-08-28
 

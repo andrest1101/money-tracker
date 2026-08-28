@@ -24,8 +24,8 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   FirestoreSavingsGoalRepository({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -34,14 +34,23 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
 
   CollectionReference<Map<String, dynamic>> get _goalsRef {
     final user = _auth.currentUser;
-    if (user == null) return _firestore.collection(_collectionName);
-    return _firestore.collection('users').doc(user.uid).collection(_collectionName);
+    if (user == null) {
+      throw const SavingsGoalRepositoryException(
+        'Sesi pengguna belum siap. Silakan coba lagi.',
+      );
+    }
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection(_collectionName);
   }
 
   CollectionReference<Map<String, dynamic>> get _transactionsRef {
     final user = _auth.currentUser;
     if (user == null) {
-      return _firestore.collection(FirestoreTransactionRepository.collectionName);
+      throw const SavingsGoalRepositoryException(
+        'Sesi pengguna belum siap. Silakan coba lagi.',
+      );
     }
     return _firestore
         .collection('users')
@@ -112,7 +121,11 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
 
       // Keep a safety margin below Firestore's 500-operation batch limit.
       const batchSize = 450;
-      for (var offset = 0; offset < allocationDocs.docs.length; offset += batchSize) {
+      for (
+        var offset = 0;
+        offset < allocationDocs.docs.length;
+        offset += batchSize
+      ) {
         final end = (offset + batchSize).clamp(0, allocationDocs.docs.length);
         final batch = _firestore.batch();
         for (final doc in allocationDocs.docs.sublist(offset, end)) {
@@ -136,8 +149,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   Future<void> deleteAllData() async {
     try {
       final goals = await _goalsRef.get();
-      final transactions = await _transactionsRef
-          .get();
+      final transactions = await _transactionsRef.get();
       final references = [
         ...goals.docs.map((doc) => doc.reference),
         ...transactions.docs.map((doc) => doc.reference),
@@ -205,9 +217,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
             'Nominal alokasi melebihi sisa target tabungan',
           );
         }
-        final updatedGoal = latestGoal.copyWith(
-          currentAmount: updatedAmount,
-        );
+        final updatedGoal = latestGoal.copyWith(currentAmount: updatedAmount);
 
         firestoreTransaction.update(
           goalReference,
@@ -236,8 +246,9 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
 
       await _firestore.runTransaction((firestoreTransaction) async {
         final goalSnapshot = await firestoreTransaction.get(goalReference);
-        final oldTransactionSnapshot =
-            await firestoreTransaction.get(transactionReference);
+        final oldTransactionSnapshot = await firestoreTransaction.get(
+          transactionReference,
+        );
         if (!goalSnapshot.exists) {
           throw const SavingsGoalRepositoryException(
             'Target tabungan tidak ditemukan',
@@ -257,7 +268,8 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
           oldTransactionSnapshot.id,
           oldTransactionSnapshot.data()!,
         );
-        final updatedAmount = latestGoal.currentAmount -
+        final updatedAmount =
+            latestGoal.currentAmount -
             oldTransaction.amount +
             transaction.amount;
         if (updatedAmount < 0) {
@@ -270,9 +282,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
             'Nominal alokasi melebihi target tabungan',
           );
         }
-        final updatedGoal = latestGoal.copyWith(
-          currentAmount: updatedAmount,
-        );
+        final updatedGoal = latestGoal.copyWith(currentAmount: updatedAmount);
 
         firestoreTransaction.update(
           goalReference,
@@ -300,8 +310,9 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
 
       await _firestore.runTransaction((firestoreTransaction) async {
         final goalSnapshot = await firestoreTransaction.get(goalReference);
-        final allocationSnapshot =
-            await firestoreTransaction.get(transactionReference);
+        final allocationSnapshot = await firestoreTransaction.get(
+          transactionReference,
+        );
         if (!goalSnapshot.exists) {
           throw const SavingsGoalRepositoryException(
             'Target tabungan tidak ditemukan',
@@ -327,9 +338,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
             'Tidak dapat menghapus alokasi: saldo target menjadi negatif',
           );
         }
-        final restoredGoal = latestGoal.copyWith(
-          currentAmount: restoredAmount,
-        );
+        final restoredGoal = latestGoal.copyWith(currentAmount: restoredAmount);
 
         firestoreTransaction.update(
           goalReference,
