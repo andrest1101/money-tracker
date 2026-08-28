@@ -111,7 +111,7 @@ final filteredGroupedTransactionsProvider =
 
 final dailySummaryProvider =
     Provider<Map<String, ({double income, double expense})>>((ref) {
-      final grouped = ref.watch(groupedTransactionsProvider);
+      final grouped = ref.watch(filteredGroupedTransactionsProvider);
 
       final summary = <String, ({double income, double expense})>{};
 

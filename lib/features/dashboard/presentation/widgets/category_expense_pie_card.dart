@@ -27,8 +27,26 @@ class CategoryExpensePieCard extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoryExpensesProvider);
 
     return categoriesAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (error, stackTrace) => const SizedBox.shrink(),
+      loading: () => const Card(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ),
+      error: (error, stackTrace) => Card(
+        child: ListTile(
+          leading: Icon(
+            Icons.cloud_off_outlined,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          title: const Text('Grafik pengeluaran tidak tersedia'),
+          trailing: IconButton(
+            tooltip: 'Coba lagi',
+            onPressed: () => ref.invalidate(categoryExpensesProvider),
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ),
+      ),
       data: (categories) {
         if (categories.isEmpty) {
           return const _EmptyExpenseCard();

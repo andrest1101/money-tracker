@@ -726,6 +726,8 @@ class _SetBudgetDialog extends ConsumerStatefulWidget {
 
 class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
   late final TextEditingController _controller;
+  String? _errorText;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -745,25 +747,34 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
   }
 
   Future<void> _save() async {
+    if (_isSaving) return;
     final raw = _controller.text.trim().replaceAll('.', '');
     final limit = double.tryParse(raw);
 
-    if (limit != null && limit >= 0) {
-      final saved = await ref
-          .read(budgetLimitProvider.notifier)
-          .setBudgetLimit(limit == 0 ? null : limit);
-      if (!mounted) return;
-      if (!saved) {
-        _showSettingsSnackBar(
-          context,
-          message: 'Batas anggaran gagal disimpan.',
-          isError: true,
-        );
-        return;
-      }
-      Navigator.of(context).pop();
-      _showSettingsSnackBar(context, message: 'Batas anggaran diperbarui.');
+    if (limit == null || limit < 0) {
+      setState(() => _errorText = 'Masukkan nominal anggaran yang valid.');
+      return;
     }
+
+    setState(() {
+      _errorText = null;
+      _isSaving = true;
+    });
+    final saved = await ref
+        .read(budgetLimitProvider.notifier)
+        .setBudgetLimit(limit == 0 ? null : limit);
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+    if (!saved) {
+      _showSettingsSnackBar(
+        context,
+        message: 'Batas anggaran gagal disimpan.',
+        isError: true,
+      );
+      return;
+    }
+    Navigator.of(context).pop();
+    _showSettingsSnackBar(context, message: 'Batas anggaran diperbarui.');
   }
 
   @override
@@ -790,6 +801,7 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
                 borderRadius: BorderRadius.circular(12),
               ),
               helperText: 'Isi 0 untuk mematikan peringatan',
+              errorText: _errorText,
             ),
             onSubmitted: (_) => _save(),
           ),
@@ -800,7 +812,16 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Batal'),
         ),
-        FilledButton(onPressed: _save, child: const Text('Simpan')),
+        FilledButton(
+          onPressed: _isSaving ? null : _save,
+          child: _isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Simpan'),
+        ),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );

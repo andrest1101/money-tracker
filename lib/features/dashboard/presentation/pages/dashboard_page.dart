@@ -46,8 +46,11 @@ class DashboardPage extends ConsumerWidget {
             ref
                 .watch(financialInsightProvider)
                 .when(
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  loading: () => const _DashboardSectionLoading(),
+                  error: (_, __) => _DashboardSectionError(
+                    label: 'Insight keuangan tidak tersedia',
+                    onRetry: () => ref.invalidate(financialInsightProvider),
+                  ),
                   data: (insight) => FinancialInsightCard(insight: insight),
                 ),
             const SizedBox(height: 16),
@@ -663,6 +666,42 @@ class _DashboardErrorView extends StatelessWidget {
               label: const Text('Coba Lagi'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardSectionLoading extends StatelessWidget {
+  const _DashboardSectionLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Card(
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+}
+
+class _DashboardSectionError extends StatelessWidget {
+  const _DashboardSectionError({required this.label, required this.onRetry});
+
+  final String label;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: Icon(Icons.cloud_off_outlined, color: Theme.of(context).colorScheme.error),
+        title: Text(label),
+        trailing: IconButton(
+          tooltip: 'Coba lagi',
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh_rounded),
         ),
       ),
     );

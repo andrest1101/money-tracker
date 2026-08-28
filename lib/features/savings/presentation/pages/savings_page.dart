@@ -190,7 +190,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                   emptyIcon: Icons.savings_outlined,
                   emptyTitle: 'Belum ada target aktif',
                   emptySubtitle:
-                      'Tap "Target Baru" untuk mulai menabung\ntoward impianmu!',
+                      'Tap "Target Baru" untuk mulai menabung\nuntuk impianmu!',
                   onAllocate: _showAllocateSheet,
                   onDelete: _confirmDeleteGoal,
                 ),

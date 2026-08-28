@@ -523,14 +523,21 @@ class _SummaryAmount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-        color: color,
-        fontWeight: FontWeight.w700,
+    return SizedBox(
+      width: 116,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerRight,
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+          ),
+          textAlign: TextAlign.end,
+          softWrap: false,
+        ),
       ),
-      textAlign: TextAlign.end,
-      softWrap: false,
     );
   }
 }
