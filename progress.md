@@ -102,7 +102,8 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Step 11: Dashboard memiliki insight keuangan berbasis siklus anggaran dan tren periode sebelumnya.
 - [x] Step 12: Filter kategori History dipindahkan ke searchable bottom sheet dengan icon, jumlah transaksi, dan reset kategori.
 - [x] Step 13: Status sinkronisasi profil membaca stream Firestore, edit alokasi memvalidasi saldo bulan berjalan, dan branding footer menjadi Product by Andre Robert.
-- [ ] Tahap berikutnya: validasi UI langsung di device Android.
+- [x] Step 15: Operasi tambah, edit, dan hapus alokasi memakai Firestore Transaction untuk mencegah race condition.
+- [ ] Tahap berikutnya: validasi UI langsung di device Android dan chunked delete target.
 
 ---
 
