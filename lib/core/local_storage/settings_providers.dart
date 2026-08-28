@@ -119,3 +119,21 @@ class BudgetCycleDate extends Notifier<int> {
 }
 
 final budgetCycleDateProvider = NotifierProvider<BudgetCycleDate, int>(BudgetCycleDate.new);
+
+class LastSuccessfulSync extends Notifier<DateTime?> {
+  @override
+  DateTime? build() => ref.watch(settingsServiceProvider).getLastSuccessfulSync();
+
+  Future<void> markNow() async {
+    final now = DateTime.now();
+    try {
+      await ref.read(settingsServiceProvider).setLastSuccessfulSync(now);
+      state = now;
+    } on SettingsServiceException {
+      // Sync status remains valid for the current session even if its cache fails.
+    }
+  }
+}
+
+final lastSuccessfulSyncProvider =
+    NotifierProvider<LastSuccessfulSync, DateTime?>(LastSuccessfulSync.new);

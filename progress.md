@@ -107,7 +107,8 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Step 17: Modularisasi awal Settings: section title, Help Center, FAQ sheet, dan branding dipindahkan ke widget terpisah tanpa mengubah UI premium.
 - [x] Step 18: Entry page Settings dipisahkan dari komposisi content; `settings_page.dart` kini ringan dan implementasi tetap modular di folder widgets.
 - [x] Step 19: Empty state Dashboard dibuat informatif untuk transaksi, pie chart, dan financial insight dengan visual premium serta CTA.
-- [ ] Tahap berikutnya: validasi UI langsung di device Android dan status sinkronisasi yang lebih detail.
+- [x] Step 20: Status sinkronisasi Settings menampilkan loading, sukses, offline/gagal, retry, dan waktu pembaruan terakhir.
+- [ ] Tahap berikutnya: validasi UI langsung di device Android dan Firebase Authentication.
 
 ---
 

@@ -26,6 +26,7 @@ class SettingsService {
   static const String _userProfileTypeKey = 'user_profile_type';
   static const String _privacyModeKey = 'privacy_mode';
   static const String _budgetCycleDateKey = 'budget_cycle_date';
+  static const String _lastSyncKey = 'last_successful_sync';
 
   double? getBudgetLimit() {
     try {
@@ -145,6 +146,23 @@ class SettingsService {
       await _sharedPreferences.setInt(_budgetCycleDateKey, day);
     } catch (e) {
       throw SettingsServiceException('Gagal menyimpan tanggal siklus anggaran', e);
+    }
+  }
+
+  DateTime? getLastSuccessfulSync() {
+    try {
+      final raw = _sharedPreferences.getString(_lastSyncKey);
+      return raw == null ? null : DateTime.tryParse(raw);
+    } catch (e) {
+      throw SettingsServiceException('Gagal memuat waktu sinkronisasi', e);
+    }
+  }
+
+  Future<void> setLastSuccessfulSync(DateTime value) async {
+    try {
+      await _sharedPreferences.setString(_lastSyncKey, value.toIso8601String());
+    } catch (e) {
+      throw SettingsServiceException('Gagal menyimpan waktu sinkronisasi', e);
     }
   }
 }

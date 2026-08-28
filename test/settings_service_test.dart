@@ -60,5 +60,14 @@ void main() {
 
       expect(service.getUserProfileType(), 'Freelancer');
     });
+
+    test('waktu sinkronisasi terakhir dapat disimpan dan dibaca', () async {
+      final service = await createService({});
+      final syncedAt = DateTime(2026, 8, 28, 10, 30);
+
+      await service.setLastSuccessfulSync(syncedAt);
+
+      expect(service.getLastSuccessfulSync(), syncedAt);
+    });
   });
 }

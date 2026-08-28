@@ -7,6 +7,7 @@ import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../savings/presentation/providers/savings_providers.dart';
 import '../../../transactions/presentation/providers/transaction_export_controller.dart';
+import '../../../transactions/domain/entities/transaction_entity.dart';
 import 'developer_card.dart';
 import 'help_center_entry.dart';
 import 'help_center_sheet.dart';
@@ -57,10 +58,16 @@ class SettingsContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(transactionsStreamProvider, (_, next) {
+      if (next.hasValue) {
+        ref.read(lastSuccessfulSyncProvider.notifier).markNow();
+      }
+    });
+    final syncState = ref.watch(transactionsStreamProvider);
     return ListView(
       padding: const EdgeInsets.only(bottom: 32),
       children: [
-          const _ProfileHeader(),
+          _ProfileHeader(syncState: syncState),
           const SizedBox(height: 16),
            const SettingsSectionTitle(title: 'PREFERENSI TAMPILAN & PRIVASI'),
           const _ThemeSelectionCard(),
@@ -86,7 +93,9 @@ class SettingsContent extends ConsumerWidget {
 // ── 1. Profile Header ────────────────────────────────────────────────────────
 
 class _ProfileHeader extends ConsumerWidget {
-  const _ProfileHeader();
+  const _ProfileHeader({required this.syncState});
+
+  final AsyncValue<List<TransactionEntity>> syncState;
 
   static const _profileTypes = [
     'Mahasiswa',
@@ -357,34 +366,7 @@ class _ProfileHeader extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.cloud_done_rounded,
-                            size: 14,
-                            color: Colors.green.shade800,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Tersinkronisasi',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: Colors.green.shade900,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _SyncStatusBadge(syncState: syncState),
                   ],
                 ),
               ),
@@ -420,6 +402,83 @@ class _ProfileDetailTile extends StatelessWidget {
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.w600,
             ),
+      ),
+    );
+  }
+}
+
+class _SyncStatusBadge extends ConsumerWidget {
+  const _SyncStatusBadge({required this.syncState});
+
+  final AsyncValue<List<TransactionEntity>> syncState;
+
+  String _lastSyncLabel(DateTime? value) {
+    if (value == null) return 'Belum ada sinkronisasi';
+    final elapsed = DateTime.now().difference(value);
+    if (elapsed.inMinutes < 1) return 'Baru saja diperbarui';
+    if (elapsed.inHours < 1) return '${elapsed.inMinutes} menit lalu';
+    if (elapsed.inDays < 1) return '${elapsed.inHours} jam lalu';
+    return '${elapsed.inDays} hari lalu';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).colorScheme;
+    final lastSync = ref.watch(lastSuccessfulSyncProvider);
+    final (label, icon, color, retry) = syncState.when(
+      loading: () => (
+        'Menyiapkan sinkronisasi',
+        Icons.sync_rounded,
+        Colors.orange.shade800,
+        false,
+      ),
+      error: (_, __) => (
+        'Offline / sinkronisasi gagal',
+        Icons.cloud_off_rounded,
+        colors.error,
+        true,
+      ),
+      data: (_) => (
+        'Tersinkronisasi • ${_lastSyncLabel(lastSync)}',
+        Icons.cloud_done_rounded,
+        Colors.green.shade800,
+        false,
+      ),
+    );
+
+    return Material(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: retry
+            ? () => ref.invalidate(transactionsStreamProvider)
+            : null,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+              if (retry) ...[
+                const SizedBox(width: 4),
+                Icon(Icons.refresh_rounded, size: 13, color: color),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
