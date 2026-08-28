@@ -62,10 +62,8 @@ class _GoalCardState extends ConsumerState<GoalCard>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => EditAllocationSheet(
-        transaction: allocation,
-        goal: widget.goal,
-      ),
+      builder: (_) =>
+          EditAllocationSheet(transaction: allocation, goal: widget.goal),
     );
   }
 
@@ -76,16 +74,41 @@ class _GoalCardState extends ConsumerState<GoalCard>
     return cs.primary;
   }
 
+  ({String label, Color color, IconData icon}) _deadlineStatus(
+    SavingsGoalEntity goal,
+    ColorScheme cs,
+  ) {
+    if (goal.isOverdue) {
+      return (
+        label: 'Tenggat terlewat',
+        color: cs.error,
+        icon: Icons.warning_amber_rounded,
+      );
+    }
+    if (goal.isDeadlineNear) {
+      return (
+        label: '${goal.daysUntilDeadline} hari lagi',
+        color: Colors.orange.shade800,
+        icon: Icons.schedule_rounded,
+      );
+    }
+    return (
+      label: 'Tenggat ${formatDateShort(goal.deadline)}',
+      color: cs.onSurfaceVariant,
+      icon: Icons.calendar_today_outlined,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final goal = widget.goal;
     final isCompleted = goal.isCompleted;
-    final allocations =
-        ref.watch(allocationTransactionsProvider(goal.id));
+    final allocations = ref.watch(allocationTransactionsProvider(goal.id));
     final progress = goal.progress;
     final progressColor = _progressColor(progress, cs);
+    final deadlineStatus = _deadlineStatus(goal, cs);
 
     return Card(
       elevation: isCompleted ? 0 : 1,
@@ -159,11 +182,27 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                     ),
                                   )
                                 else
-                                  Text(
-                                    'Tenggat ${formatDateShort(goal.deadline)}',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: cs.onSurfaceVariant,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        deadlineStatus.icon,
+                                        size: 13,
+                                        color: deadlineStatus.color,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        deadlineStatus.label,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: deadlineStatus.color,
+                                              fontWeight:
+                                                  goal.isOverdue ||
+                                                      goal.isDeadlineNear
+                                                  ? FontWeight.w600
+                                                  : null,
+                                            ),
+                                      ),
+                                    ],
                                   ),
                               ],
                             ),
@@ -202,8 +241,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                             iconSize: 18,
                             icon: Icon(
                               Icons.delete_outline_rounded,
-                              color: cs.onSurfaceVariant
-                                  .withValues(alpha: 0.6),
+                              color: cs.onSurfaceVariant.withValues(alpha: 0.6),
                             ),
                             tooltip: 'Hapus target',
                           ),
@@ -220,10 +258,8 @@ class _GoalCardState extends ConsumerState<GoalCard>
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 8,
-                    backgroundColor:
-                        progressColor.withValues(alpha: 0.12),
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(progressColor),
+                    backgroundColor: progressColor.withValues(alpha: 0.12),
+                    valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -320,11 +356,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.history_rounded,
-                      size: 16,
-                      color: progressColor,
-                    ),
+                    Icon(Icons.history_rounded, size: 16, color: progressColor),
                     const SizedBox(width: 8),
                     Text(
                       'Riwayat Alokasi',
@@ -378,8 +410,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                 child: ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  padding:
-                      const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   itemCount: allocations.length,
                   separatorBuilder: (_, __) => Divider(
                     height: 12,
@@ -388,8 +419,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                   itemBuilder: (context, index) {
                     final tx = allocations[index];
                     return InkWell(
-                      onTap: () =>
-                          _showEditAllocationSheet(context, tx),
+                      onTap: () => _showEditAllocationSheet(context, tx),
                       borderRadius: BorderRadius.circular(10),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -414,13 +444,11 @@ class _GoalCardState extends ConsumerState<GoalCard>
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     formatRupiah(tx.amount),
-                                    style: theme.textTheme.bodyMedium
-                                        ?.copyWith(
+                                    style: theme.textTheme.bodyMedium?.copyWith(
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -428,30 +456,27 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                     children: [
                                       Text(
                                         formatDateShort(tx.date),
-                                        style: theme
-                                            .textTheme.bodySmall
+                                        style: theme.textTheme.bodySmall
                                             ?.copyWith(
-                                          color: cs.onSurfaceVariant,
-                                        ),
+                                              color: cs.onSurfaceVariant,
+                                            ),
                                       ),
                                       if (tx.note.isNotEmpty) ...[
                                         Text(
                                           '  •  ',
-                                          style: theme
-                                              .textTheme.bodySmall
+                                          style: theme.textTheme.bodySmall
                                               ?.copyWith(
-                                            color: cs.onSurfaceVariant,
-                                          ),
+                                                color: cs.onSurfaceVariant,
+                                              ),
                                         ),
                                         Flexible(
                                           child: Text(
                                             tx.note,
-                                            style: theme
-                                                .textTheme.bodySmall
+                                            style: theme.textTheme.bodySmall
                                                 ?.copyWith(
-                                              color: cs.onSurfaceVariant,
-                                              fontStyle: FontStyle.italic,
-                                            ),
+                                                  color: cs.onSurfaceVariant,
+                                                  fontStyle: FontStyle.italic,
+                                                ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -466,8 +491,9 @@ class _GoalCardState extends ConsumerState<GoalCard>
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: cs.surfaceContainerHighest
-                                    .withValues(alpha: 0.6),
+                                color: cs.surfaceContainerHighest.withValues(
+                                  alpha: 0.6,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(

@@ -89,7 +89,10 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Tahap 2: feedback `SnackBar` untuk keberhasilan atau kegagalan penyimpanan Settings.
 - [x] Tahap 3: FAQ / Pusat Bantuan dengan UI bottom sheet profesional dan FAQ expandable.
 - [x] Tahap ekspor CSV: transaksi dapat dibagikan melalui system share sheet.
-- [ ] Tahap berikutnya: hapus semua data, sesuai prioritas yang disepakati.
+- [x] Tahap hapus semua data: transaksi dan target dihapus dengan batch aman serta konfirmasi berlapis.
+- [x] Tahap target Aktif/Selesai: tab dan badge status sudah tersedia.
+- [x] Tahap status visual target: progress, target tercapai, tenggat dekat, dan tenggat terlewat.
+- [ ] Tahap berikutnya: penyempurnaan riwayat alokasi atau insight keuangan.
 
 ---
 

@@ -7,20 +7,18 @@ import '../../data/providers/savings_goal_repository_provider.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../../domain/usecases/allocate_to_goal_usecase.dart';
 
-final savingsGoalsStreamProvider =
-    StreamProvider<List<SavingsGoalEntity>>((ref) {
+final savingsGoalsStreamProvider = StreamProvider<List<SavingsGoalEntity>>((
+  ref,
+) {
   final repository = ref.watch(savingsGoalRepositoryProvider);
   return repository.watchGoals();
 });
 
-final allocationTransactionsProvider = Provider.family<
-    List<TransactionEntity>,
-    String>((ref, goalId) {
-  final allTransactions = ref.watch(transactionsStreamProvider).value ?? [];
-  return allTransactions
-      .where((t) => t.goalId == goalId)
-      .toList();
-});
+final allocationTransactionsProvider =
+    Provider.family<List<TransactionEntity>, String>((ref, goalId) {
+      final allTransactions = ref.watch(transactionsStreamProvider).value ?? [];
+      return allTransactions.where((t) => t.goalId == goalId).toList();
+    });
 
 enum SavingsSortOption { newest, oldest, progress }
 
@@ -29,7 +27,7 @@ class SavingsSortController extends Notifier<SavingsSortOption> {
   SavingsSortOption build() {
     final settingsService = ref.watch(settingsServiceProvider);
     final stored = settingsService.getSavingsSortOption();
-    
+
     switch (stored) {
       case 'oldest':
         return SavingsSortOption.oldest;
@@ -49,45 +47,47 @@ class SavingsSortController extends Notifier<SavingsSortOption> {
 
 final savingsSortControllerProvider =
     NotifierProvider<SavingsSortController, SavingsSortOption>(
-  SavingsSortController.new,
-);
+      SavingsSortController.new,
+    );
 
 final sortedSavingsGoalsProvider =
     Provider<AsyncValue<List<SavingsGoalEntity>>>((ref) {
-  final goalsAsync = ref.watch(savingsGoalsStreamProvider);
-  final sortOption = ref.watch(savingsSortControllerProvider);
+      final goalsAsync = ref.watch(savingsGoalsStreamProvider);
+      final sortOption = ref.watch(savingsSortControllerProvider);
 
-  return goalsAsync.whenData((goals) {
-    final sorted = List<SavingsGoalEntity>.from(goals);
-    
-    switch (sortOption) {
-      case SavingsSortOption.newest:
-        sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        break;
-      case SavingsSortOption.oldest:
-        sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-        break;
-      case SavingsSortOption.progress:
-        sorted.sort((a, b) => b.progress.compareTo(a.progress));
-        break;
-    }
-    
-    return sorted;
-  });
+      return goalsAsync.whenData((goals) {
+        final sorted = List<SavingsGoalEntity>.from(goals);
+
+        switch (sortOption) {
+          case SavingsSortOption.newest:
+            sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+            break;
+          case SavingsSortOption.oldest:
+            sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+            break;
+          case SavingsSortOption.progress:
+            sorted.sort((a, b) => b.progress.compareTo(a.progress));
+            break;
+        }
+
+        return sorted;
+      });
+    });
+
+final activeGoalsProvider = Provider<AsyncValue<List<SavingsGoalEntity>>>((
+  ref,
+) {
+  return ref
+      .watch(sortedSavingsGoalsProvider)
+      .whenData((goals) => goals.where((g) => !g.isCompleted).toList());
 });
 
-final activeGoalsProvider =
-    Provider<AsyncValue<List<SavingsGoalEntity>>>((ref) {
-  return ref.watch(sortedSavingsGoalsProvider).whenData(
-        (goals) => goals.where((g) => !g.isCompleted).toList(),
-      );
-});
-
-final completedGoalsProvider =
-    Provider<AsyncValue<List<SavingsGoalEntity>>>((ref) {
-  return ref.watch(sortedSavingsGoalsProvider).whenData(
-        (goals) => goals.where((g) => g.isCompleted).toList(),
-      );
+final completedGoalsProvider = Provider<AsyncValue<List<SavingsGoalEntity>>>((
+  ref,
+) {
+  return ref
+      .watch(sortedSavingsGoalsProvider)
+      .whenData((goals) => goals.where((g) => g.isCompleted).toList());
 });
 
 class SavingsActionsController extends Notifier<AsyncValue<void>> {
@@ -112,6 +112,20 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
       await ref
           .read(savingsGoalRepositoryProvider)
           .deleteGoalWithAllocations(goal.id);
+      state = const AsyncData(null);
+      return true;
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+      return false;
+    }
+  }
+
+  Future<bool> deleteAllData() async {
+    state = const AsyncLoading();
+    try {
+      await ref.read(savingsGoalRepositoryProvider).deleteAllData();
+      ref.invalidate(transactionsStreamProvider);
+      ref.invalidate(savingsGoalsStreamProvider);
       state = const AsyncData(null);
       return true;
     } catch (e) {
@@ -165,5 +179,5 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
 
 final savingsActionsControllerProvider =
     NotifierProvider<SavingsActionsController, AsyncValue<void>>(
-  SavingsActionsController.new,
-);
+      SavingsActionsController.new,
+    );

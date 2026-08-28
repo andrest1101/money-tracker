@@ -5,6 +5,7 @@ import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
+import '../../../savings/presentation/providers/savings_providers.dart';
 import '../../../transactions/presentation/providers/transaction_export_controller.dart';
 
 void _showSettingsSnackBar(
@@ -896,14 +897,14 @@ class _SetCycleDialogState extends ConsumerState<_SetCycleDialog> {
 class _DataManagementCard extends ConsumerWidget {
   const _DataManagementCard();
 
-  void _showWipDialog(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Fitur $feature akan segera hadir!')),
-    );
+  void _showInfoMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void _showDeleteAllDialog(BuildContext context) {
-    showDialog(
+  Future<void> _showDeleteAllDialog(BuildContext context, WidgetRef ref) async {
+    final firstConfirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(
@@ -921,18 +922,31 @@ class _DataManagementCard extends ConsumerWidget {
             child: const Text('Batal'),
           ),
           FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showWipDialog(
-                context,
-                'Hapus Data Masal',
-              ); // Placeholder until implemented
-            },
+            onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Ya, Hapus Semua'),
           ),
         ],
       ),
+    );
+    if (firstConfirm != true || !context.mounted) return;
+
+    final secondConfirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => const _FinalDeleteConfirmationDialog(),
+    );
+    if (secondConfirm != true || !context.mounted) return;
+
+    final success = await ref
+        .read(savingsActionsControllerProvider.notifier)
+        .deleteAllData();
+    if (!context.mounted) return;
+    _showSettingsSnackBar(
+      context,
+      message: success
+          ? 'Semua transaksi dan target berhasil dihapus.'
+          : 'Data gagal dihapus. Coba lagi.',
+      isError: !success,
     );
   }
 
@@ -959,9 +973,9 @@ class _DataManagementCard extends ConsumerWidget {
               onTap: () async {
                 final items = transactions.value ?? const [];
                 if (items.isEmpty) {
-                  _showWipDialog(
+                  _showInfoMessage(
                     context,
-                    'Ekspor ke CSV karena belum ada transaksi',
+                    'Belum ada transaksi untuk diekspor.',
                   );
                   return;
                 }
@@ -994,7 +1008,7 @@ class _DataManagementCard extends ConsumerWidget {
             ),
             const Divider(height: 1, indent: 56),
             ListTile(
-              onTap: () => _showDeleteAllDialog(context),
+              onTap: () => _showDeleteAllDialog(context, ref),
               leading: const Icon(
                 Icons.delete_forever_rounded,
                 color: Colors.red,
@@ -1011,6 +1025,59 @@ class _DataManagementCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FinalDeleteConfirmationDialog extends StatefulWidget {
+  const _FinalDeleteConfirmationDialog();
+
+  @override
+  State<_FinalDeleteConfirmationDialog> createState() =>
+      _FinalDeleteConfirmationDialogState();
+}
+
+class _FinalDeleteConfirmationDialogState
+    extends State<_FinalDeleteConfirmationDialog> {
+  bool _hasConfirmed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(Icons.gpp_maybe_rounded, color: Colors.red, size: 44),
+      title: const Text('Konfirmasi terakhir'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Data transaksi, alokasi, dan target tabungan akan dihapus permanen. Pastikan kamu benar-benar ingin melanjutkan.',
+          ),
+          const SizedBox(height: 12),
+          CheckboxListTile(
+            value: _hasConfirmed,
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text(
+              'Saya mengerti bahwa tindakan ini tidak dapat dibatalkan.',
+            ),
+            onChanged: (value) {
+              setState(() => _hasConfirmed = value ?? false);
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Batal'),
+        ),
+        FilledButton(
+          onPressed: _hasConfirmed ? () => Navigator.pop(context, true) : null,
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text('HAPUS SEMUA'),
+        ),
+      ],
     );
   }
 }

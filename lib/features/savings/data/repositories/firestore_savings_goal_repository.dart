@@ -21,7 +21,7 @@ class SavingsGoalRepositoryException implements Exception {
 
 class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   FirestoreSavingsGoalRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -33,7 +33,10 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   @override
   Stream<List<SavingsGoalEntity>> watchGoals() async* {
     try {
-      yield* _goalsRef.orderBy('createdAt', descending: true).snapshots().map(
+      yield* _goalsRef
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map(
             (snapshot) => snapshot.docs
                 .map((doc) => SavingsGoalModel.fromMap(doc.id, doc.data()))
                 .toList(),
@@ -49,7 +52,10 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
       final model = SavingsGoalModel.fromEntity(goal);
       await _goalsRef.doc(model.id).set(model.toMap());
     } catch (e) {
-      throw SavingsGoalRepositoryException('Gagal menambahkan target tabungan', e);
+      throw SavingsGoalRepositoryException(
+        'Gagal menambahkan target tabungan',
+        e,
+      );
     }
   }
 
@@ -59,7 +65,10 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
       final model = SavingsGoalModel.fromEntity(goal);
       await _goalsRef.doc(model.id).update(model.toMap());
     } catch (e) {
-      throw SavingsGoalRepositoryException('Gagal memperbarui target tabungan', e);
+      throw SavingsGoalRepositoryException(
+        'Gagal memperbarui target tabungan',
+        e,
+      );
     }
   }
 
@@ -68,7 +77,10 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
     try {
       await _goalsRef.doc(id).delete();
     } catch (e) {
-      throw SavingsGoalRepositoryException('Gagal menghapus target tabungan', e);
+      throw SavingsGoalRepositoryException(
+        'Gagal menghapus target tabungan',
+        e,
+      );
     }
   }
 
@@ -101,6 +113,34 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   }
 
   @override
+  Future<void> deleteAllData() async {
+    try {
+      final goals = await _goalsRef.get();
+      final transactions = await _firestore
+          .collection(FirestoreTransactionRepository.collectionName)
+          .get();
+      final references = [
+        ...goals.docs.map((doc) => doc.reference),
+        ...transactions.docs.map((doc) => doc.reference),
+      ];
+
+      // Firestore membatasi satu WriteBatch maksimal 500 operasi.
+      for (var offset = 0; offset < references.length; offset += 450) {
+        final batch = _firestore.batch();
+        final end = offset + 450 < references.length
+            ? offset + 450
+            : references.length;
+        for (final reference in references.sublist(offset, end)) {
+          batch.delete(reference);
+        }
+        await batch.commit();
+      }
+    } catch (e) {
+      throw SavingsGoalRepositoryException('Gagal menghapus seluruh data', e);
+    }
+  }
+
+  @override
   Future<SavingsGoalEntity> getGoalById(String id) async {
     try {
       final doc = await _goalsRef.doc(id).get();
@@ -110,7 +150,10 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
       return SavingsGoalModel.fromMap(doc.id, doc.data()!);
     } catch (e) {
       if (e is SavingsGoalRepositoryException) rethrow;
-      throw SavingsGoalRepositoryException('Gagal mengambil target tabungan', e);
+      throw SavingsGoalRepositoryException(
+        'Gagal mengambil target tabungan',
+        e,
+      );
     }
   }
 
@@ -154,9 +197,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
       final transaction = TransactionModel.fromEntity(updatedTransaction);
 
       final batch = _firestore.batch();
-      batch.update(_goalsRef.doc(goalId), {
-        'currentAmount': newGoalAmount,
-      });
+      batch.update(_goalsRef.doc(goalId), {'currentAmount': newGoalAmount});
       batch.update(
         _firestore
             .collection(FirestoreTransactionRepository.collectionName)
@@ -181,12 +222,10 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   }) async {
     try {
       final batch = _firestore.batch();
-      
+
       // Update goal currentAmount
-      batch.update(_goalsRef.doc(goalId), {
-        'currentAmount': newGoalAmount,
-      });
-      
+      batch.update(_goalsRef.doc(goalId), {'currentAmount': newGoalAmount});
+
       // Delete transaction
       batch.delete(
         _firestore

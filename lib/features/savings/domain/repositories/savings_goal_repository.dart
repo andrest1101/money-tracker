@@ -13,6 +13,9 @@ abstract interface class SavingsGoalRepository {
   /// Hapus goal beserta semua transaksi alokasi-nya dalam satu batch atomik.
   Future<void> deleteGoalWithAllocations(String goalId);
 
+  /// Menghapus seluruh target dan transaksi dalam batch berukuran aman.
+  Future<void> deleteAllData();
+
   Future<SavingsGoalEntity> getGoalById(String id);
 
   Future<void> allocateToGoal({

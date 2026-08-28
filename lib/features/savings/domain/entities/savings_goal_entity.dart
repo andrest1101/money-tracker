@@ -27,6 +27,18 @@ class SavingsGoalEntity {
 
   bool get isCompleted => progress >= 1.0;
 
+  int get daysUntilDeadline {
+    final today = DateTime.now();
+    final deadlineDate = DateTime(deadline.year, deadline.month, deadline.day);
+    final todayDate = DateTime(today.year, today.month, today.day);
+    return deadlineDate.difference(todayDate).inDays;
+  }
+
+  bool get isOverdue => !isCompleted && daysUntilDeadline < 0;
+
+  bool get isDeadlineNear =>
+      !isCompleted && daysUntilDeadline >= 0 && daysUntilDeadline <= 7;
+
   SavingsGoalEntity copyWith({
     String? id,
     String? title,
