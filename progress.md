@@ -6,13 +6,15 @@
 ---
 
 ## 🕐 Timestamp
+
 - **Terakhir update:** 2026-08-28
 - **Branch aktif:** `develop`
-- **Dibuat oleh:** OpenCode
+- **Dibuat oleh:**
 
 ---
 
 ## 📍 Posisi Saat Ini (sinkron dengan task.md:19-33)
+
 - **FASE 1 TUNTAS** (Task 1-6) → merge ke `main` via PR #3 `54724a4`
 - **FASE 2 TUNTAS** (Task 7-9) → `83b13fe`, `81aa315`
 - **FASE 3 TUNTAS** (Task 10-12)
@@ -22,6 +24,7 @@
 - **NEXT:** User melakukan commit manual perubahan hari ini, lalu validasi UI di device Android dan penyempurnaan fitur opsional
 
 ### Git Status Saat Ini
+
 ```
 Branch: develop
 Last commits:
@@ -48,7 +51,7 @@ Catatan: perubahan lokal lain yang sudah ada sebelum sesi ini tetap dijaga dan t
 ## ✅ Apa yang Baru Selesai
 
 1. **Fix Bug UI Android:** Memperbaiki teks nominal yang meluber (`history_page.dart` & `transaction_tile.dart`) dengan `ConstrainedBox` dan `Flexible`. Serta memperbaiki `SegmentedButton` tema yang wrap ke bawah dengan menggantinya menjadi desain `_ThemeChip` kustom.
-2. **Task 13 (Premium Settings UI):** Merombak total halaman Pengaturan agar terlihat seperti aplikasi finansial modern. Menambahkan Avatar/Nama, status sinkronisasi, sakelar Mode Privasi (sensor saldo di beranda), pengaturan Siklus Anggaran, dan tombol *Danger Zone* hapus data (sementara masih placeholder UI).
+2. **Task 13 (Premium Settings UI):** Merombak total halaman Pengaturan agar terlihat seperti aplikasi finansial modern. Menambahkan Avatar/Nama, status sinkronisasi, sakelar Mode Privasi (sensor saldo di beranda), pengaturan Siklus Anggaran, dan tombol _Danger Zone_ hapus data (sementara masih placeholder UI).
 3. **History UI interaktif:** Nominal tidak lagi terpotong pada Android, header tanggal dapat ditekan, dan bottom sheet overview harian menampilkan total pemasukan, pengeluaran, selisih bersih, serta daftar transaksi.
 4. **Pie chart interaktif:** Segmen dan legend dapat dipilih, kategori aktif di-highlight, informasi kategori muncul di tengah chart, dan tersedia bottom sheet detail kategori dengan total, persentase, rata-rata, transaksi terbesar, serta daftar transaksi.
 5. **Status Anggaran interaktif:** Card membaca transaksi aktual dan tanggal siklus anggaran. Overview menampilkan status, progress, sisa/kelebihan, periode, jumlah transaksi, rata-rata harian, proyeksi akhir periode, dan tiga kategori terbesar.
@@ -60,12 +63,13 @@ Catatan: perubahan lokal lain yang sudah ada sebelum sesi ini tetap dijaga dan t
 ## 📋 NEXT TASK YANG TERTUNDA
 
 Karena FASE 1-4 sudah selesai semua secara fundamental, langkah selanjutnya adalah:
+
 1. **User melakukan commit manual perubahan hari ini:** gunakan deskripsi commit di bagian bawah file ini.
 2. **Validasi di device Android:** cek History, pie chart, Status Anggaran, bottom sheet, serta nominal besar pada layar kecil.
 3. **Penyempurnaan Opsional:**
-    - Melengkapi fitur Ekspor CSV.
-    - Melengkapi fitur Hapus Data Massal (Danger Zone).
-    - Halaman FAQ / Pusat Bantuan.
+   - Melengkapi fitur Ekspor CSV.
+   - Melengkapi fitur Hapus Data Massal (Danger Zone).
+   - Halaman FAQ / Pusat Bantuan.
 
 ## 🧭 BACKLOG 11 REKOMENDASI LANJUTAN
 
@@ -96,11 +100,13 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Step 9: riwayat transaksi memiliki filter kategori dinamis.
 - [x] Step 10: riwayat transaksi memiliki filter siklus anggaran aktif lintas bulan.
 - [x] Step 11: Dashboard memiliki insight keuangan berbasis siklus anggaran dan tren periode sebelumnya.
+- [x] Step 12: Filter kategori History dipindahkan ke searchable bottom sheet dengan icon, jumlah transaksi, dan reset kategori.
 - [ ] Tahap berikutnya: validasi UI langsung di device Android.
 
 ---
 
 ## 🔧 Aturan Main (dari AGENTS.md + PRD.md)
+
 1. Clean Architecture: Domain → Data → Presentation. Jangan campur UI dengan business logic.
 2. Riverpod `Notifier`/`AsyncNotifier`/`ConsumerWidget` only. No GetX/Bloc.
 3. Semua Firestore request try-catch, gagal → SnackBar.
@@ -113,6 +119,7 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 ---
 
 ## 📂 Struktur Penting (update terakhir)
+
 ```
 lib/
 ├── core/local_storage/
@@ -158,6 +165,7 @@ lib/
 ---
 
 ## 📝 Catatan Tambahan
+
 - User prefer commit manual, jangan auto `git add/commit`.
 - User ingin UI tidak polos, seperti app profesional (gradient, card elevation, icon, empty state ilustratif).
 - Sorting bug perlu investigasi data dulu sebelum coding.

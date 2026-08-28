@@ -6,11 +6,13 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../savings/data/providers/savings_goal_repository_provider.dart';
 import '../../../dashboard/domain/usecases/calculate_budget_cycle_period_usecase.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../providers/history_providers.dart';
 import '../providers/quick_add_controller.dart';
 import '../widgets/quick_add_transaction_sheet.dart';
 import '../widgets/transaction_tile.dart';
+import '../widgets/category_filter_sheet.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});
@@ -207,6 +209,14 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final category = ref.watch(historyCategoryProvider);
     final cycleOnly = ref.watch(historyCycleProvider);
     final categories = ref.watch(historyCategoriesProvider);
+    final allTransactions = ref.watch(transactionsStreamProvider).value ?? const [];
+    final categoryCounts = <String, int>{};
+    final categoryTypes = <String, TransactionType>{};
+    for (final transaction in allTransactions) {
+      categoryCounts[transaction.category] =
+          (categoryCounts[transaction.category] ?? 0) + 1;
+      categoryTypes.putIfAbsent(transaction.category, () => transaction.type);
+    }
     final cycle = _periodFormatter.execute(
       date: DateTime.now(),
       cycleDay: ref.watch(budgetCycleDateProvider),
@@ -254,31 +264,53 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             ),
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 38,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
               children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final selected = await showModalBottomSheet<String>(
+                        context: context,
+                        isScrollControlled: true,
+                        showDragHandle: true,
+                        builder: (_) => CategoryFilterSheet(
+                          categories: categories,
+                          counts: categoryCounts,
+                          types: categoryTypes,
+                          selectedCategory: category,
+                        ),
+                      );
+                      if (!mounted || selected == null) return;
+                      ref
+                          .read(historyCategoryProvider.notifier)
+                          .setCategory(selected.isEmpty ? null : selected);
+                    },
+                    icon: Icon(
+                      category == null
+                          ? Icons.category_outlined
+                          : Icons.filter_alt_rounded,
+                      size: 18,
+                    ),
+                    label: Text(
+                      category == null ? 'Kategori' : category,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 FilterChip(
                   label: const Text('Siklus aktif'),
                   avatar: const Icon(Icons.autorenew_rounded, size: 16),
                   selected: cycleOnly,
                   onSelected: (_) =>
                       ref.read(historyCycleProvider.notifier).toggle(),
-                ),
-                const SizedBox(width: 8),
-                ...categories.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(item),
-                      selected: category == item,
-                      onSelected: (selected) => ref
-                          .read(historyCategoryProvider.notifier)
-                          .setCategory(selected ? item : null),
-                    ),
-                  ),
                 ),
               ],
             ),
