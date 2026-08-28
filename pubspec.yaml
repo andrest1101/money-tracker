@@ -36,6 +36,7 @@ dependencies:
 
   # Backend / database cloud (Firebase Firestore)
   firebase_core: ^4.14.0
+  firebase_auth: ^6.1.0
   cloud_firestore: ^6.9.0
 
   # Local storage untuk konfigurasi sederhana

@@ -108,7 +108,9 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Step 18: Entry page Settings dipisahkan dari komposisi content; `settings_page.dart` kini ringan dan implementasi tetap modular di folder widgets.
 - [x] Step 19: Empty state Dashboard dibuat informatif untuk transaksi, pie chart, dan financial insight dengan visual premium serta CTA.
 - [x] Step 20: Status sinkronisasi Settings menampilkan loading, sukses, offline/gagal, retry, dan waktu pembaruan terakhir.
-- [ ] Tahap berikutnya: validasi UI langsung di device Android dan Firebase Authentication.
+- [x] Step 21: Firebase Anonymous Authentication dan path user-scoped untuk transaksi serta target sudah diterapkan; implementasi aplikasi selesai sebagian.
+- [x] Recovery Fix: AuthGate tidak lagi memblokir aplikasi ketika Anonymous Auth belum aktif; repository memakai fallback collection lama sementara.
+- [ ] Tahap berikutnya: aktifkan Anonymous Auth di Firebase Console, terapkan security rules, migrasikan data lama, tambahkan account linking, lalu validasi UI/device Android.
 
 ---
 

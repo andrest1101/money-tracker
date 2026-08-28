@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../transactions/data/repositories/firestore_transaction_repository.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
@@ -20,15 +21,33 @@ class SavingsGoalRepositoryException implements Exception {
 }
 
 class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
-  FirestoreSavingsGoalRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirestoreSavingsGoalRepository({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
 
   static const String _collectionName = 'savings_goals';
 
-  CollectionReference<Map<String, dynamic>> get _goalsRef =>
-      _firestore.collection(_collectionName);
+  CollectionReference<Map<String, dynamic>> get _goalsRef {
+    final user = _auth.currentUser;
+    if (user == null) return _firestore.collection(_collectionName);
+    return _firestore.collection('users').doc(user.uid).collection(_collectionName);
+  }
+
+  CollectionReference<Map<String, dynamic>> get _transactionsRef {
+    final user = _auth.currentUser;
+    if (user == null) {
+      return _firestore.collection(FirestoreTransactionRepository.collectionName);
+    }
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection(FirestoreTransactionRepository.collectionName);
+  }
 
   @override
   Stream<List<SavingsGoalEntity>> watchGoals() async* {
@@ -87,8 +106,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   @override
   Future<void> deleteGoalWithAllocations(String goalId) async {
     try {
-      final allocationDocs = await _firestore
-          .collection(FirestoreTransactionRepository.collectionName)
+      final allocationDocs = await _transactionsRef
           .where('goalId', isEqualTo: goalId)
           .get();
 
@@ -118,8 +136,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   Future<void> deleteAllData() async {
     try {
       final goals = await _goalsRef.get();
-      final transactions = await _firestore
-          .collection(FirestoreTransactionRepository.collectionName)
+      final transactions = await _transactionsRef
           .get();
       final references = [
         ...goals.docs.map((doc) => doc.reference),
@@ -168,9 +185,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
     try {
       final transaction = TransactionModel.fromEntity(allocationTransaction);
       final goalReference = _goalsRef.doc(goal.id);
-      final transactionReference = _firestore
-          .collection(FirestoreTransactionRepository.collectionName)
-          .doc(transaction.id);
+      final transactionReference = _transactionsRef.doc(transaction.id);
 
       await _firestore.runTransaction((firestoreTransaction) async {
         final goalSnapshot = await firestoreTransaction.get(goalReference);
@@ -217,9 +232,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
     try {
       final transaction = TransactionModel.fromEntity(updatedTransaction);
       final goalReference = _goalsRef.doc(goalId);
-      final transactionReference = _firestore
-          .collection(FirestoreTransactionRepository.collectionName)
-          .doc(transaction.id);
+      final transactionReference = _transactionsRef.doc(transaction.id);
 
       await _firestore.runTransaction((firestoreTransaction) async {
         final goalSnapshot = await firestoreTransaction.get(goalReference);
@@ -283,9 +296,7 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   }) async {
     try {
       final goalReference = _goalsRef.doc(goalId);
-      final transactionReference = _firestore
-          .collection(FirestoreTransactionRepository.collectionName)
-          .doc(transactionId);
+      final transactionReference = _transactionsRef.doc(transactionId);
 
       await _firestore.runTransaction((firestoreTransaction) async {
         final goalSnapshot = await firestoreTransaction.get(goalReference);

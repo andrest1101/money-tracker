@@ -13,7 +13,7 @@ atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
 | 4 | Modularisasi halaman Settings | Selesai | Entry page dan komposisi content Settings sudah dipisah; section reusable sebelumnya juga berada di file widget terdedikasi. |
 | 5 | Empty state Dashboard yang lebih informatif | Selesai | Hero onboarding, empty chart, dan empty insight sudah memiliki copy, visual, serta CTA/informasi yang jelas. |
 | 6 | Status sinkronisasi yang lebih detail | Selesai sebagian | Loading, sukses, gagal, retry, dan waktu pembaruan terakhir sudah tersedia; offline queue belum ada. |
-| 7 | Firebase Authentication dan isolasi data user | Belum selesai | Data masih memakai collection global dan belum memiliki uid. |
+| 7 | Firebase Authentication dan isolasi data user | Selesai sebagian | Anonymous Auth dan path `users/{uid}` sudah aktif; migrasi data lama, login permanen, dan security rules masih perlu diselesaikan. |
 
 ## Fitur yang Sudah Selesai Sebelumnya
 
@@ -35,11 +35,7 @@ atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
 
 ## Step Berikutnya
 
-Prioritas aktif berikutnya adalah **Prioritas 5: empty state Dashboard yang lebih informatif**.
-
-Prioritas aktif berikutnya adalah **Prioritas 6 lanjutan: status sinkronisasi dengan waktu pembaruan terakhir**.
-
-Prioritas aktif berikutnya adalah **Prioritas 7: Firebase Authentication dan isolasi data user**.
+Prioritas aktif berikutnya adalah **validasi deployment Firebase, migrasi data lama, dan security rules**.
 
 ## Step 20
 
@@ -47,6 +43,21 @@ Prioritas aktif berikutnya adalah **Prioritas 7: Firebase Authentication dan iso
 - Menampilkan waktu sinkronisasi terakhir seperti `Baru saja diperbarui` atau `5 menit lalu`.
 - Waktu sinkronisasi terakhir disimpan di `SharedPreferences`.
 - Status gagal menyediakan aksi retry.
+
+## Step 21
+
+- Menambahkan Firebase Anonymous Authentication.
+- Menambahkan `authStateChangesProvider` dan `currentUserProvider` berbasis Riverpod.
+- Menambahkan `AuthGate` sebelum aplikasi utama dijalankan.
+- Memindahkan transaksi dan target ke path user-scoped:
+  `users/{uid}/transactions` dan `users/{uid}/savings_goals`.
+- Mengamankan tambah, edit, hapus alokasi, reset data, dan hapus target agar memakai user yang sedang terautentikasi.
+- Status: implementasi kode selesai sebagian; startup memiliki fallback kompatibilitas sementara.
+- Wajib: aktifkan Anonymous Auth di Firebase Console.
+- Wajib: terapkan Firestore Security Rules berbasis `request.auth.uid`.
+- Wajib: migrasikan data lama dari collection global jika ingin mempertahankannya.
+- Rekomendasi: tambahkan account linking agar akun anonymous tidak hilang setelah uninstall.
+- Fallback: jika Anonymous Auth belum aktif, aplikasi tetap dibuka dan memakai collection global lama agar data existing tidak hilang; mode ini tidak aman untuk multi-user.
 
 ## Step 19
 

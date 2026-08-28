@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/repositories/transaction_repository.dart';
@@ -17,15 +18,22 @@ class TransactionRepositoryException implements Exception {
 }
 
 class FirestoreTransactionRepository implements TransactionRepository {
-  FirestoreTransactionRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirestoreTransactionRepository({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
 
   static const String collectionName = 'transactions';
 
-  CollectionReference<Map<String, dynamic>> get _transactionsRef =>
-      _firestore.collection(collectionName);
+  CollectionReference<Map<String, dynamic>> get _transactionsRef {
+    final user = _auth.currentUser;
+    if (user == null) return _firestore.collection(collectionName);
+    return _firestore.collection('users').doc(user.uid).collection(collectionName);
+  }
 
   @override
   Stream<List<TransactionEntity>> watchTransactions() async* {

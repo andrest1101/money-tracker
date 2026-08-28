@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/firebase/auth_providers.dart';
 import 'core/local_storage/settings_providers.dart';
 import 'core/navigation/app_shell.dart';
 import 'firebase_options.dart';
@@ -15,12 +16,26 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      ],
-      child: const MoneyTrackerApp(),
+      overrides: [sharedPreferencesProvider.overrideWithValue(sharedPreferences)],
+      child: const _AuthGate(),
     ),
   );
+}
+
+class _AuthGate extends ConsumerWidget {
+  const _AuthGate();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(anonymousAuthProvider);
+    return auth.when(
+      loading: () => const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      ),
+      error: (error, _) => MaterialApp(home: const MoneyTrackerApp()),
+      data: (_) => const MoneyTrackerApp(),
+    );
+  }
 }
 
 class MoneyTrackerApp extends ConsumerWidget {
