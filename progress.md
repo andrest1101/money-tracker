@@ -63,9 +63,25 @@ Karena FASE 1-4 sudah selesai semua secara fundamental, langkah selanjutnya adal
 1. **User melakukan commit manual perubahan hari ini:** gunakan deskripsi commit di bagian bawah file ini.
 2. **Validasi di device Android:** cek History, pie chart, Status Anggaran, bottom sheet, serta nominal besar pada layar kecil.
 3. **Penyempurnaan Opsional:**
-   - Melengkapi fitur Ekspor CSV.
-   - Melengkapi fitur Hapus Data Massal (Danger Zone).
-   - Halaman FAQ / Pusat Bantuan.
+    - Melengkapi fitur Ekspor CSV.
+    - Melengkapi fitur Hapus Data Massal (Danger Zone).
+    - Halaman FAQ / Pusat Bantuan.
+
+## 🧭 BACKLOG 11 REKOMENDASI LANJUTAN
+
+Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan user:
+
+1. Validasi Android dan perbaikan layout responsif, terutama overflow pada layar kecil.
+2. Perbaikan error handling Settings dengan feedback `SnackBar` saat penyimpanan gagal.
+3. Melengkapi FAQ / Pusat Bantuan dan menghapus placeholder `TODO`.
+4. Ekspor transaksi ke CSV melalui system share sheet.
+5. Hapus semua data dengan dialog konfirmasi berlapis dan proses batch yang aman.
+6. Memisahkan target tabungan menjadi tab Aktif dan Selesai.
+7. Menambahkan status visual target, termasuk target selesai dan deadline yang semakin dekat.
+8. Menyempurnakan riwayat alokasi pada setiap target tabungan.
+9. Menambahkan filter riwayat transaksi berdasarkan kategori.
+10. Menambahkan filter riwayat berdasarkan siklus anggaran aktif.
+11. Menambahkan insight keuangan mingguan atau bulanan.
 
 ---
 

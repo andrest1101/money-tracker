@@ -146,17 +146,19 @@ class _ProfileHeader extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Halo, $userName',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(width: 4),
+                     Row(
+                       children: [
+                         Expanded(
+                           child: Text(
+                             'Halo, $userName',
+                             style: theme.textTheme.titleLarge?.copyWith(
+                               fontWeight: FontWeight.bold,
+                             ),
+                             maxLines: 1,
+                             overflow: TextOverflow.ellipsis,
+                           ),
+                         ),
+                         const SizedBox(width: 4),
                         IconButton(
                           icon: const Icon(Icons.edit_rounded, size: 18),
                           onPressed: () => _showEditNameDialog(context, ref, userName),
