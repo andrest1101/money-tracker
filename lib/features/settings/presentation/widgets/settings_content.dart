@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
+import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
@@ -12,6 +13,7 @@ import 'developer_card.dart';
 import 'help_center_entry.dart';
 import 'help_center_sheet.dart';
 import 'settings_section_title.dart';
+import 'account_security_sheet.dart';
 
 void _showSettingsSnackBar(
   BuildContext context, {
@@ -67,22 +69,22 @@ class SettingsContent extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: 32),
       children: [
-          _ProfileHeader(syncState: syncState),
-          const SizedBox(height: 16),
-           const SettingsSectionTitle(title: 'PREFERENSI TAMPILAN & PRIVASI'),
-          const _ThemeSelectionCard(),
-          const _PrivacyCard(),
-          const SizedBox(height: 24),
-           const SettingsSectionTitle(title: 'PENGELOLAAN KEUANGAN'),
-          const _FinancialSettingsCard(),
-          const SizedBox(height: 24),
-           const SettingsSectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
-          const _DataManagementCard(),
-          const SizedBox(height: 24),
-           const SettingsSectionTitle(title: 'BANTUAN'),
-           HelpCenterEntry(onTap: () => _showHelpCenter(context)),
-           const SizedBox(height: 32),
-           const DeveloperCard(),
+        _ProfileHeader(syncState: syncState),
+        const SizedBox(height: 16),
+        const SettingsSectionTitle(title: 'PREFERENSI TAMPILAN & PRIVASI'),
+        const _ThemeSelectionCard(),
+        const _PrivacyCard(),
+        const SizedBox(height: 24),
+        const SettingsSectionTitle(title: 'PENGELOLAAN KEUANGAN'),
+        const _FinancialSettingsCard(),
+        const SizedBox(height: 24),
+        const SettingsSectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
+        const _DataManagementCard(),
+        const SizedBox(height: 24),
+        const SettingsSectionTitle(title: 'BANTUAN'),
+        HelpCenterEntry(onTap: () => _showHelpCenter(context)),
+        const SizedBox(height: 32),
+        const DeveloperCard(),
       ],
     );
   }
@@ -132,15 +134,15 @@ class _ProfileHeader extends ConsumerWidget {
               Text(
                 userName,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
                 'Informasi ini tersimpan di perangkatmu dan membantu menyesuaikan pengalaman MoneyTracker.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 20),
               _ProfileDetailTile(
@@ -231,10 +233,8 @@ class _ProfileHeader extends ConsumerWidget {
                   ),
                   items: _profileTypes
                       .map(
-                        (type) => DropdownMenuItem(
-                          value: type,
-                          child: Text(type),
-                        ),
+                        (type) =>
+                            DropdownMenuItem(value: type, child: Text(type)),
                       )
                       .toList(),
                   onChanged: (value) {
@@ -288,6 +288,8 @@ class _ProfileHeader extends ConsumerWidget {
     final privacyMode = ref.watch(privacyModeProvider);
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final authUser = ref.watch(currentUserProvider);
+    final isGuest = authUser?.isAnonymous ?? true;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -310,66 +312,102 @@ class _ProfileHeader extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: cs.primary,
-                child: Text(
-                  userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    color: cs.onPrimary,
-                    fontWeight: FontWeight.bold,
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: cs.primary,
+                  child: Text(
+                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: cs.onPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Halo, $userName',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Halo, $userName',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        IconButton(
-                          icon: const Icon(Icons.edit_rounded, size: 18),
-                          onPressed: () => _showProfileDetails(
-                            context,
-                            ref,
-                            userName: userName,
-                            profileType: profileType,
-                            budgetLimit: budgetLimit,
-                            budgetCycle: budgetCycle,
-                            privacyMode: privacyMode,
+                          const SizedBox(width: 4),
+                          IconButton(
+                            icon: const Icon(Icons.edit_rounded, size: 18),
+                            onPressed: () => _showProfileDetails(
+                              context,
+                              ref,
+                              userName: userName,
+                              profileType: profileType,
+                              budgetLimit: budgetLimit,
+                              budgetCycle: budgetCycle,
+                              privacyMode: privacyMode,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            color: cs.primary,
                           ),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          color: cs.primary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '$profileType  •  Ketuk untuk melihat detail',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    _SyncStatusBadge(syncState: syncState),
-                  ],
+                      const SizedBox(height: 6),
+                      Text(
+                        '$profileType  •  Ketuk untuk melihat detail',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      _SyncStatusBadge(syncState: syncState),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: isGuest
+                            ? () => showAccountSecuritySheet(context)
+                            : null,
+                        borderRadius: BorderRadius.circular(30),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isGuest
+                                  ? Icons.person_outline_rounded
+                                  : Icons.verified_user_rounded,
+                              size: 16,
+                              color: isGuest
+                                  ? cs.tertiary
+                                  : Colors.green.shade700,
+                            ),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                isGuest
+                                    ? 'Akun guest • Amankan sekarang'
+                                    : 'Akun terhubung',
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: isGuest
+                                      ? cs.tertiary
+                                      : Colors.green.shade700,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               ],
             ),
           ),
@@ -399,9 +437,9 @@ class _ProfileDetailTile extends StatelessWidget {
       title: Text(label, style: Theme.of(context).textTheme.labelMedium),
       subtitle: Text(
         value,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -450,9 +488,7 @@ class _SyncStatusBadge extends ConsumerWidget {
       color: color.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: retry
-            ? () => ref.invalidate(transactionsStreamProvider)
-            : null,
+        onTap: retry ? () => ref.invalidate(transactionsStreamProvider) : null,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -467,9 +503,9 @@ class _SyncStatusBadge extends ConsumerWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               if (retry) ...[

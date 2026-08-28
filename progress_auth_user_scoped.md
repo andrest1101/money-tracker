@@ -15,13 +15,16 @@
 - Repository transaksi dan target menolak operasi ketika sesi user belum tersedia; tidak ada fallback runtime ke collection global.
 - `firestore.rules` ditambahkan dan `firebase.json` dikonfigurasi untuk deploy rules tersebut.
 - Root collection legacy `transactions` dan `savings_goals` ditutup dari client.
+- Guest dapat menghubungkan akun Google atau email/password melalui UI Settings dengan `linkWithCredential`; UID guest tetap dipertahankan.
+- Password tidak disimpan di Firestore atau database aplikasi; pengelolaan kredensial dilakukan Firebase Authentication.
+- Google Sign-In membutuhkan provider Google aktif serta SHA-1/SHA-256 aplikasi Android terdaftar di Firebase Console.
 
 ### Belum Selesai
 
 - Aktifkan Anonymous provider di Firebase Console.
 - Deploy Firebase Security Rules yang memverifikasi `request.auth.uid`.
 - Migrasikan data lama dari collection global `transactions` dan `savings_goals` jika data lama perlu dipertahankan.
-- Tambahkan login permanen atau account linking agar anonymous user tidak hilang ketika aplikasi dihapus.
+- Tambahkan alur sign-in kembali untuk user yang sudah memiliki akun permanen setelah reinstall.
 - Validasi langsung di device Android.
 
 ### Perubahan Keamanan

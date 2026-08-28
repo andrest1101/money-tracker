@@ -111,7 +111,8 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Step 21: Firebase Anonymous Authentication dan path user-scoped untuk transaksi serta target sudah diterapkan.
 - [x] Security hardening: AuthGate menampilkan error + retry saat Anonymous Auth gagal; repository tidak lagi memakai fallback collection global.
 - [x] Security rules: `firestore.rules` hanya mengizinkan user membaca/menulis `users/{uid}/...` miliknya sendiri dan menutup root collection lama.
-- [ ] Tahap berikutnya: aktifkan Anonymous Auth di Firebase Console, deploy rules, migrasikan data lama, tambahkan account linking, lalu validasi UI/device Android.
+- [x] Account security UI: guest dapat mengamankan akun dengan Google atau email/password melalui account linking tanpa memindahkan UID/data.
+- [ ] Tahap berikutnya: konfigurasi provider Google, validasi account linking di Android, lalu tambahkan sign-in kembali untuk akun permanen.
 
 ---
 
