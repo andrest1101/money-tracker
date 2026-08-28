@@ -329,6 +329,41 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 ),
               ),
             ),
+          if (filter != null || category != null || cycleOnly)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.filter_alt_rounded,
+                    size: 15,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Filter aktif${filter != null ? ' • ${filter == TransactionType.income ? 'Pemasukan' : 'Pengeluaran'}' : ''}${category != null ? ' • $category' : ''}${cycleOnly ? ' • Siklus' : ''}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      ref.read(historyFilterProvider.notifier).setType(null);
+                      ref.read(historyCategoryProvider.notifier).setCategory(null);
+                      if (cycleOnly) {
+                        ref.read(historyCycleProvider.notifier).toggle();
+                      }
+                    },
+                    child: const Text('Reset'),
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 8),
           SizedBox(
             height: 40,

@@ -5,9 +5,11 @@ import '../../../dashboard/domain/usecases/calculate_budget_cycle_period_usecase
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/usecases/group_transactions_by_date_usecase.dart';
+import '../../domain/usecases/filter_transactions_usecase.dart';
 
 const _groupByDate = GroupTransactionsByDateUseCase();
 const _calculatePeriod = CalculateBudgetCyclePeriodUseCase();
+const _filterTransactions = FilterTransactionsUseCase();
 
 class _HistoryFilterNotifier extends Notifier<TransactionType?> {
   @override
@@ -90,16 +92,14 @@ final filteredGroupedTransactionsProvider =
       final result = <String, List<TransactionEntity>>{};
 
       for (final entry in grouped.entries) {
-        final filtered = entry.value.where((t) {
-          final matchType = filter == null || t.type == filter;
-          final matchCategory = category == null || t.category == category;
-          final matchCycle = !cycleOnly || cycle.contains(t.date);
-          final matchQuery =
-              query.isEmpty ||
-              t.category.toLowerCase().contains(query) ||
-              t.note.toLowerCase().contains(query);
-          return matchType && matchCategory && matchCycle && matchQuery;
-        }).toList();
+        final filtered = _filterTransactions.execute(
+          transactions: entry.value,
+          type: filter,
+          category: category,
+          query: query,
+          cycleStart: cycleOnly ? cycle.start : null,
+          cycleEnd: cycleOnly ? cycle.end : null,
+        );
 
         if (filtered.isNotEmpty) {
           result[entry.key] = filtered;
