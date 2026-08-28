@@ -1,23 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/local_storage/settings_providers.dart';
 import '../../../transactions/data/providers/transaction_repository_provider.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../domain/entities/category_expense_entity.dart';
+import '../../domain/entities/budget_overview_entity.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
 import '../../domain/usecases/calculate_category_expenses_usecase.dart';
+import '../../domain/usecases/calculate_budget_overview_usecase.dart';
 import '../../domain/usecases/calculate_monthly_summary_usecase.dart';
 
 const _calculateMonthlySummary = CalculateMonthlySummaryUseCase();
 const _calculateCategoryExpenses = CalculateCategoryExpensesUseCase();
+const _calculateBudgetOverview = CalculateBudgetOverviewUseCase();
 
-final transactionsStreamProvider =
-    StreamProvider<List<TransactionEntity>>((ref) {
+final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((
+  ref,
+) {
   final repository = ref.watch(transactionRepositoryProvider);
   return repository.watchTransactions();
 });
 
-final monthlySummaryProvider =
-    Provider<AsyncValue<MonthlySummaryEntity>>((ref) {
+final monthlySummaryProvider = Provider<AsyncValue<MonthlySummaryEntity>>((
+  ref,
+) {
   final asyncTransactions = ref.watch(transactionsStreamProvider);
 
   return asyncTransactions.whenData(
@@ -30,12 +36,32 @@ final monthlySummaryProvider =
 
 final categoryExpensesProvider =
     Provider<AsyncValue<List<CategoryExpenseEntity>>>((ref) {
+      final asyncTransactions = ref.watch(transactionsStreamProvider);
+
+      return asyncTransactions.whenData(
+        (transactions) => _calculateCategoryExpenses.execute(
+          transactions: transactions,
+          month: DateTime.now(),
+        ),
+      );
+    });
+
+final budgetOverviewProvider = Provider<AsyncValue<BudgetOverviewEntity>>((
+  ref,
+) {
   final asyncTransactions = ref.watch(transactionsStreamProvider);
+  final budgetLimit = ref.watch(budgetLimitProvider);
+  final cycleDay = ref.watch(budgetCycleDateProvider);
+
+  if (budgetLimit == null || budgetLimit <= 0) {
+    return const AsyncValue.loading();
+  }
 
   return asyncTransactions.whenData(
-    (transactions) => _calculateCategoryExpenses.execute(
+    (transactions) => _calculateBudgetOverview.execute(
       transactions: transactions,
-      month: DateTime.now(),
+      budgetLimit: budgetLimit,
+      cycleDay: cycleDay,
     ),
   );
 });
@@ -51,11 +77,7 @@ const _defaultExpenseCategories = [
   'Lainnya',
 ];
 
-const _defaultIncomeCategories = [
-  'Uang Kiriman',
-  'Beasiswa',
-  'Gaji Part-time',
-];
+const _defaultIncomeCategories = ['Uang Kiriman', 'Beasiswa', 'Gaji Part-time'];
 
 final expenseCategoriesProvider = Provider<List<String>>((ref) {
   return _mergeCategories(

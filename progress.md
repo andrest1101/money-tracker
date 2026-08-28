@@ -6,22 +6,24 @@
 ---
 
 ## 🕐 Timestamp
-- **Terakhir update:** 2026-08-27
-- **Branch aktif:** `feature/fase2-anggaran-tabungan`
-- **Dibuat oleh:** Muse Spark (muse-spark-1.2-contributor-free) sebelum ganti model
+- **Terakhir update:** 2026-08-28
+- **Branch aktif:** `develop`
+- **Dibuat oleh:** OpenCode
 
 ---
 
 ## 📍 Posisi Saat Ini (sinkron dengan task.md:19-33)
 - **FASE 1 TUNTAS** (Task 1-6) → merge ke `main` via PR #3 `54724a4`
 - **FASE 2 TUNTAS** (Task 7-9) → `83b13fe`, `81aa315`
-- **FASE 3 TUNTAS** (Task 10-12) → Task 12 baru selesai di working directory, **BELUM DI-COMMIT**
-- **Kesehatan kode saat Task 11 enhancement:** `flutter analyze` bersih, 32/32 test passed
-- **NEXT:** Task 13 Settings Page → FASE 4 TUNTAS → PR `feature/fase2-anggaran-tabungan` → `main`
+- **FASE 3 TUNTAS** (Task 10-12)
+- **FASE 4 TUNTAS** (Task 13 Settings Page & Premium UI)
+- **Enhancement UI selesai hari ini:** History interaktif + overview harian, pie chart kategori interaktif + detail kategori, dan Status Anggaran interaktif + overview siklus anggaran
+- **Kesehatan kode terakhir:** `flutter analyze` bersih, 34/34 test passed
+- **NEXT:** User melakukan commit manual perubahan hari ini, lalu validasi UI di device Android dan penyempurnaan fitur opsional
 
 ### Git Status Saat Ini
 ```
-Branch: feature/fase2-anggaran-tabungan
+Branch: develop
 Last commits:
   28812ff feat: add edit allocation to zero with auto deleted and savings sorting
   99206bb feat: add transactionedit w  (Task 11 dual edit)
@@ -31,13 +33,14 @@ Last commits:
   81aa315 feat: add savings goals page...
   83b13fe feat: add settings persistence...
 
-Uncommitted (Task 12, 6 files, +186 -18):
-  M lib/features/savings/data/repositories/firestore_savings_goal_repository.dart  (+ deleteAllocation WriteBatch)
-  M lib/features/savings/domain/repositories/savings_goal_repository.dart (+ deleteAllocation interface)
-  M lib/features/transactions/presentation/pages/history_page.dart (+ _confirmDelete async + goal fetch)
-  M lib/features/transactions/presentation/providers/quick_add_controller.dart (+ deleteTransaction)
-  M lib/features/transactions/presentation/widgets/transaction_tile.dart (+ Dismissible)
-  M task.md (tandai Task 12 selesai)
+Uncommitted saat handoff:
+  M lib/features/dashboard/presentation/pages/dashboard_page.dart
+  M lib/features/dashboard/presentation/providers/dashboard_providers.dart
+  ?? lib/features/dashboard/domain/entities/budget_overview_entity.dart
+  ?? lib/features/dashboard/domain/usecases/calculate_budget_overview_usecase.dart
+  ?? test/calculate_budget_overview_usecase_test.dart
+
+Catatan: perubahan lokal lain yang sudah ada sebelum sesi ini tetap dijaga dan tidak dihapus.
 ```
 
 ---
@@ -46,14 +49,19 @@ Uncommitted (Task 12, 6 files, +186 -18):
 
 1. **Fix Bug UI Android:** Memperbaiki teks nominal yang meluber (`history_page.dart` & `transaction_tile.dart`) dengan `ConstrainedBox` dan `Flexible`. Serta memperbaiki `SegmentedButton` tema yang wrap ke bawah dengan menggantinya menjadi desain `_ThemeChip` kustom.
 2. **Task 13 (Premium Settings UI):** Merombak total halaman Pengaturan agar terlihat seperti aplikasi finansial modern. Menambahkan Avatar/Nama, status sinkronisasi, sakelar Mode Privasi (sensor saldo di beranda), pengaturan Siklus Anggaran, dan tombol *Danger Zone* hapus data (sementara masih placeholder UI).
+3. **History UI interaktif:** Nominal tidak lagi terpotong pada Android, header tanggal dapat ditekan, dan bottom sheet overview harian menampilkan total pemasukan, pengeluaran, selisih bersih, serta daftar transaksi.
+4. **Pie chart interaktif:** Segmen dan legend dapat dipilih, kategori aktif di-highlight, informasi kategori muncul di tengah chart, dan tersedia bottom sheet detail kategori dengan total, persentase, rata-rata, transaksi terbesar, serta daftar transaksi.
+5. **Status Anggaran interaktif:** Card membaca transaksi aktual dan tanggal siklus anggaran. Overview menampilkan status, progress, sisa/kelebihan, periode, jumlah transaksi, rata-rata harian, proyeksi akhir periode, dan tiga kategori terbesar.
+6. **Domain budget overview:** Ditambahkan `BudgetOverviewEntity` dan `CalculateBudgetOverviewUseCase`, termasuk dukungan siklus yang melewati pergantian bulan.
+7. **Testing:** Ditambahkan `calculate_budget_overview_usecase_test.dart`; total terakhir 34 test lulus.
 
 ---
 
 ## 📋 NEXT TASK YANG TERTUNDA
 
 Karena FASE 1-4 sudah selesai semua secara fundamental, langkah selanjutnya adalah:
-1. **User melakukan commit manual:** `git add .` dan `git commit -m "feat: redesign settings page with professional layout and privacy mode"`
-2. **Pull Request:** Merge branch ini (`feature/fase2-anggaran-tabungan`) ke `main`.
+1. **User melakukan commit manual perubahan hari ini:** gunakan deskripsi commit di bagian bawah file ini.
+2. **Validasi di device Android:** cek History, pie chart, Status Anggaran, bottom sheet, serta nominal besar pada layar kecil.
 3. **Penyempurnaan Opsional:**
    - Melengkapi fitur Ekspor CSV.
    - Melengkapi fitur Hapus Data Massal (Danger Zone).
@@ -102,16 +110,12 @@ lib/
 
 ## 🚀 Cara Resume di Model Baru
 
-1. Baca `progress.md` ini + `task.md` + `AGENTS.md` + `PRD.md`
-2. Cek `git status --short` dan `git log --oneline -10` (sudah ada di atas, tapi verifikasi lagi)
-3. Jika Task 12 belum di-commit, commit dulu dengan message:
-   ```
-   feat: add delete transaction with dismissible swipe and allocation handling
-   ... (lihat detail di chat history atau task.md log)
-   ```
-4. Lanjut ke **Fix Sorting Bug**: cek Firestore data `createdAt` untuk goal `kabel` dan `laptop Tuf`, lalu perbaiki `savings_goal_model.dart` fallback atau `savings_providers.dart` sorting.
-5. Lanjut ke **Tab Aktif/Selesai**: implementasi sesuai rencana di atas, UI professional (jangan polos).
-6. Baru lanjut **Task 13 Settings Page**.
+1. Baca `progress.md` ini + `task.md` + `AGENTS.md` + `PRD.md`.
+2. Cek `git status --short --branch` dan `git log --oneline -10`.
+3. Jangan menghapus perubahan lokal. User perlu commit manual perubahan fitur hari ini.
+4. Jalankan `flutter analyze` dan `flutter test` sebelum commit bila ada perubahan lanjutan.
+5. Validasi manual di device Android untuk memastikan layout responsif, terutama nominal panjang dan interaksi chart/card.
+6. Fitur opsional berikutnya: ekspor CSV, hapus data massal, FAQ, atau navigasi History dengan filter kategori/siklus.
 
 ---
 
@@ -128,3 +132,17 @@ lib/
 - Sorting bug perlu investigasi data dulu sebelum coding.
 - Fitur arsip: user setuju rekomendasi Tab Aktif/Selesai, bukan auto-delete. Card selesai tetap bisa dilihat tapi terpisah.
 
+- **Sesi 2026-08-28:** user memilih privacy mode tidak menyembunyikan nominal pada History; privacy mode tetap untuk Dashboard.
+- **Sesi 2026-08-28:** user meminta commit manual; AI tidak melakukan `git add`, `git commit`, atau push.
+
+## 🧾 Commit Manual Sesi 2026-08-28
+
+```text
+feat: add interactive budget overview
+
+- Add budget overview entity and cycle-aware calculations
+- Show budget status, remaining balance, and spending projection
+- Add interactive budget detail bottom sheet
+- Display top spending categories for active budget cycle
+- Add unit tests for budget overview calculations
+```

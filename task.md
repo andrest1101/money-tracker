@@ -16,13 +16,13 @@
 
 ---
 
-## 📍 POSISI SAAT INI (update terakhir: 2026-08-27)
+## 📍 POSISI SAAT INI (update terakhir: 2026-08-28)
 
-- Branch aktif: `feature/fase2-anggaran-tabungan`
+- Branch aktif: `develop` (dibuat dari `feature/fase2-anggaran-tabungan`)
 - **FASE 1 TUNTAS** — semua Task 1–6 ter-merge ke `main` via PR #3 + commit `54724a4`
 - Bonus terselamatkan: fix minSdk 23 untuk Firestore (`feeac7e`)
 - Pre-Task 7 ter-merge: `a3f265c` (bugfix overflow legenda + formatter titik ribuan)
-- Kode sehat: `flutter analyze` bersih, **32/32 test passed**
+- Kode sehat terakhir: `flutter analyze` bersih, **34/34 test passed**
 - **Task 7 SELESAI** — SettingsService persisten + tema tersambung (dibuat ulang, lihat log insiden)
 - **Task 8 SELESAI** — Overspending Alert 3 tingkat; Task 7+8 ter-push sebagai commit gabungan `83b13fe`
 - **Task 9 SELESAI — FASE 2 TUNTAS! 🎉** Halaman Target + alokasi dana atomik (WriteBatch) + form target baru
@@ -31,7 +31,8 @@
 - **Enhancement Task 11** — Edit alokasi ke 0 (auto-delete with confirmation) + Sorting Target Tabungan (newest/oldest/progress) + field `createdAt`
 - **Task 12 SELESAI — FASE 3 TUNTAS! 🎉** Hapus Transaksi: Dismissible swipe + button + dialog konfirmasi + handle delete alokasi atomik
 - **Task 13 SELESAI — FASE 4 TUNTAS! 🎉** Halaman Pengaturan (Tema, Batas Anggaran) + **Redesign Premium UI** (Profil, Privacy Mode, Siklus Anggaran, Ekspor/Hapus Data).
-- **NEXT: Lakukan PR dari `feature/fase2-anggaran-tabungan` ke `main`**
+- **Enhancement UI selesai:** History interaktif, pie chart kategori interaktif, dan overview Status Anggaran berbasis siklus
+- **NEXT: User commit manual perubahan enhancement di branch `develop`, lalu validasi di device Android**
 
 ---
 
@@ -120,7 +121,21 @@
   - Keuangan: Dialog Atur Batas Anggaran (dengan ribuan formatter) & Siklus Anggaran (Tanggal gajian 1-28).
   - Manajemen Data: Placeholder untuk Ekspor CSV dan Hapus Semua Data (lengkap dengan dialog konfirmasi *Danger Zone*).
   - Info Dev: Versi aplikasi & kredit pembuat (Andre).
-  **FASE 4 TUNTAS 🎉**
+   **FASE 4 TUNTAS 🎉**
+
+### ENHANCEMENT — Interactive Finance Insights
+
+- [x] **History Card & Daily Overview**
+  Nominal pada ringkasan tanggal dan transaction tile dibuat adaptif agar tidak menjadi `...` pada Android. Header tanggal sekarang interaktif dan membuka bottom sheet overview berisi total pemasukan, pengeluaran, selisih bersih, jumlah transaksi, dan daftar transaksi. Privacy mode Dashboard tidak diterapkan ke History sesuai keputusan user.
+
+- [x] **Interactive Category Expense Chart**
+  Segmen pie chart dan legend dapat dipilih. Segmen aktif membesar, segmen lain diredupkan, dan bagian tengah chart menampilkan kategori, nominal, serta persentase. Bottom sheet detail kategori menampilkan total, persentase terhadap total pengeluaran, jumlah transaksi, rata-rata, transaksi terbesar, dan daftar transaksi.
+
+- [x] **Interactive Budget Overview**
+  File baru: `dashboard/domain/entities/budget_overview_entity.dart` dan `dashboard/domain/usecases/calculate_budget_overview_usecase.dart`. Card Status Anggaran sekarang menampilkan status, progress, sisa/kelebihan, dan periode aktif; tap membuka overview dengan statistik transaksi, rata-rata harian, proyeksi akhir periode, dan tiga kategori pengeluaran terbesar. Perhitungan mengikuti `budgetCycleDateProvider`, termasuk periode lintas bulan.
+
+- [x] **Budget Overview Tests**
+  File: `test/calculate_budget_overview_usecase_test.dart`. Menguji siklus aktif, transaksi di luar periode, sisa anggaran, status terlampaui, kategori terbesar, dan proyeksi. Total suite terakhir: 34 test passed.
 
 ---
 
