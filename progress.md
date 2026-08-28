@@ -112,7 +112,10 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Security hardening: AuthGate menampilkan error + retry saat Anonymous Auth gagal; repository tidak lagi memakai fallback collection global.
 - [x] Security rules: `firestore.rules` hanya mengizinkan user membaca/menulis `users/{uid}/...` miliknya sendiri dan menutup root collection lama.
 - [x] Account security UI: guest dapat mengamankan akun dengan Google atau email/password melalui account linking tanpa memindahkan UID/data.
-- [ ] Tahap berikutnya: konfigurasi provider Google, validasi account linking di Android, lalu tambahkan sign-in kembali untuk akun permanen.
+- [x] Auth landing page: user baru dapat memilih Google, email/password, email link, atau Guest sejak pertama membuka aplikasi.
+- [x] Email authentication: login, daftar, reset password, dan verifikasi email link tersedia melalui bottom sheet responsif.
+- [x] Build compatibility: Android Kotlin/NDK disesuaikan untuk Firebase Auth dan dependency Firebase web dikunci kompatibel dengan Flutter 3.32/Dart 3.8; APK dan Web berhasil di-build.
+- [ ] Tahap berikutnya: konfigurasi provider Google dan Email/Password di Firebase Console, validasi deep link di Android, lalu tambahkan sign-in kembali untuk akun permanen.
 
 ---
 

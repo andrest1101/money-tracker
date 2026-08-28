@@ -20,19 +20,6 @@ final currentUserProvider = Provider<User?>((ref) {
   }
 });
 
-final anonymousAuthProvider = FutureProvider<User>((ref) async {
-  final auth = ref.watch(firebaseAuthProvider);
-  final currentUser = auth.currentUser;
-  if (currentUser != null) return currentUser;
-
-  final credential = await auth.signInAnonymously();
-  final user = credential.user;
-  if (user == null) {
-    throw StateError('Firebase Authentication tidak mengembalikan user');
-  }
-  return user;
-});
-
 final authControllerProvider =
     NotifierProvider<AuthController, AsyncValue<void>>(AuthController.new);
 
@@ -42,19 +29,140 @@ class AuthController extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncData(null);
 
+  Future<void> continueAsGuest() async {
+    state = const AsyncLoading();
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        final credential = await _auth.signInAnonymously();
+        if (credential.user == null) {
+          throw StateError('Firebase tidak mengembalikan akun guest.');
+        }
+      }
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError('Mode guest gagal dimulai. Coba lagi.', stackTrace);
+    }
+  }
+
+  Future<void> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncLoading();
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError(
+        'Login gagal. Periksa koneksi lalu coba lagi.',
+        stackTrace,
+      );
+    }
+  }
+
+  Future<void> registerWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncLoading();
+    try {
+      await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError('Pendaftaran gagal. Coba lagi.', stackTrace);
+    }
+  }
+
+  Future<void> sendPasswordReset(String email) async {
+    state = const AsyncLoading();
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError('Email reset password gagal dikirim.', stackTrace);
+    }
+  }
+
+  Future<void> sendEmailLink(String email) async {
+    state = const AsyncLoading();
+    try {
+      await _auth.sendSignInLinkToEmail(
+        email: email.trim(),
+        actionCodeSettings: ActionCodeSettings(
+          url: 'https://money-tracker-e22c0.firebaseapp.com/finishSignIn',
+          handleCodeInApp: true,
+          androidPackageName: 'com.example.money_tracker',
+          androidInstallApp: true,
+          androidMinimumVersion: '23',
+        ),
+      );
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError('Link login gagal dikirim. Coba lagi.', stackTrace);
+    }
+  }
+
+  Future<void> completeEmailLink({
+    required String email,
+    required String link,
+  }) async {
+    state = const AsyncLoading();
+    try {
+      if (!_auth.isSignInWithEmailLink(link)) {
+        throw FirebaseAuthException(
+          code: 'invalid-action-code',
+          message: 'Link login tidak valid atau sudah kedaluwarsa.',
+        );
+      }
+      await _auth.signInWithEmailLink(
+        email: email.trim(),
+        emailLink: link.trim(),
+      );
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError('Link login tidak dapat digunakan.', stackTrace);
+    }
+  }
+
+  Future<void> signOut() async {
+    state = const AsyncLoading();
+    try {
+      await _auth.signOut();
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError('Tidak dapat keluar dari akun.', stackTrace);
+    }
+  }
+
   Future<void> linkWithGoogle() async {
     state = const AsyncLoading();
     try {
-      final googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
+      final credential = await _googleCredential();
+      if (credential == null) {
         state = const AsyncData(null);
         return;
       }
-      final googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
       await _linkCredential(credential);
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
@@ -65,6 +173,36 @@ class AuthController extends Notifier<AsyncValue<void>> {
         stackTrace,
       );
     }
+  }
+
+  Future<void> signInWithGoogle() async {
+    state = const AsyncLoading();
+    try {
+      final credential = await _googleCredential();
+      if (credential == null) {
+        state = const AsyncData(null);
+        return;
+      }
+      await _auth.signInWithCredential(credential);
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError(
+        'Login Google gagal. Periksa koneksi lalu coba lagi.',
+        stackTrace,
+      );
+    }
+  }
+
+  Future<AuthCredential?> _googleCredential() async {
+    final googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) return null;
+    final googleAuth = await googleUser.authentication;
+    return GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
   }
 
   Future<void> linkWithEmail({
@@ -109,6 +247,12 @@ class AuthController extends Notifier<AsyncValue<void>> {
         'Email tersebut sudah terdaftar. Gunakan email lain.',
       'weak-password' => 'Password terlalu mudah. Gunakan minimal 6 karakter.',
       'invalid-email' => 'Format email belum benar.',
+      'user-not-found' ||
+      'wrong-password' ||
+      'invalid-credential' => 'Email atau password tidak sesuai.',
+      'user-disabled' => 'Akun ini dinonaktifkan.',
+      'expired-action-code' ||
+      'invalid-action-code' => 'Link login tidak valid atau sudah kedaluwarsa.',
       'account-exists-with-different-credential' =>
         'Email sudah terhubung dengan metode login lain.',
       'network-request-failed' => 'Koneksi bermasalah. Coba lagi.',

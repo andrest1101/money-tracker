@@ -18,6 +18,10 @@
 - Guest dapat menghubungkan akun Google atau email/password melalui UI Settings dengan `linkWithCredential`; UID guest tetap dipertahankan.
 - Password tidak disimpan di Firestore atau database aplikasi; pengelolaan kredensial dilakukan Firebase Authentication.
 - Google Sign-In membutuhkan provider Google aktif serta SHA-1/SHA-256 aplikasi Android terdaftar di Firebase Console.
+- Auth landing page sekarang menjadi pintu masuk user baru dengan pilihan Google, email/password, email link, atau Guest.
+- Email link memakai `sendSignInLinkToEmail` dan verifikasi `signInWithEmailLink`; fallback tempel link tersedia sebelum deep-link platform dikonfigurasi.
+- Android build memakai Kotlin plugin `2.3.0`, NDK `27.0.12077973`, dan Kotlin compilerOptions DSL agar kompatibel dengan plugin Firebase terbaru yang masih didukung project.
+- FlutterFire dipatok pada versi yang kompatibel dengan Flutter 3.32/Dart 3.8; `flutter build apk --debug` dan `flutter build web` berhasil.
 
 ### Belum Selesai
 
@@ -26,6 +30,7 @@
 - Migrasikan data lama dari collection global `transactions` dan `savings_goals` jika data lama perlu dipertahankan.
 - Tambahkan alur sign-in kembali untuk user yang sudah memiliki akun permanen setelah reinstall.
 - Validasi langsung di device Android.
+- Aktifkan provider Google dan Email/Password serta izinkan domain action link di Firebase Console.
 
 ### Perubahan Keamanan
 
