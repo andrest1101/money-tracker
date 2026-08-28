@@ -4,7 +4,186 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
-// import 'package:url_launcher/url_launcher.dart'; // Akan digunakan nanti jika perlu buka web
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
+import '../../../transactions/presentation/providers/transaction_export_controller.dart';
+
+void _showSettingsSnackBar(
+  BuildContext context, {
+  required String message,
+  bool isError = false,
+}) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isError
+            ? Theme.of(context).colorScheme.error
+            : Theme.of(context).colorScheme.inverseSurface,
+        content: Row(
+          children: [
+            Icon(
+              isError
+                  ? Icons.error_outline_rounded
+                  : Icons.check_circle_outline,
+              color: isError
+                  ? Theme.of(context).colorScheme.onError
+                  : Theme.of(context).colorScheme.onInverseSurface,
+            ),
+            const SizedBox(width: 10),
+            Expanded(child: Text(message)),
+          ],
+        ),
+      ),
+    );
+}
+
+void _showHelpCenter(BuildContext context) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => const _HelpCenterSheet(),
+  );
+}
+
+class _HelpCenterSheet extends StatelessWidget {
+  const _HelpCenterSheet();
+
+  static const _faqs = [
+    (
+      'Bagaimana cara mencatat transaksi?',
+      'Tekan tombol Catat di Beranda, pilih pemasukan atau pengeluaran, lalu isi nominal dan kategorinya. Setelah disimpan, saldo dan riwayat akan diperbarui otomatis.',
+      Icons.add_circle_outline_rounded,
+    ),
+    (
+      'Apa itu siklus anggaran?',
+      'Siklus anggaran menentukan kapan periode anggaran dimulai. Contohnya, siklus tanggal 25 berarti periode berjalan dari tanggal 25 sampai tanggal 24 bulan berikutnya.',
+      Icons.calendar_month_outlined,
+    ),
+    (
+      'Bagaimana cara memakai target tabungan?',
+      'Buat target di menu Target, lalu pilih Alokasikan Dana. Alokasi dicatat sebagai transaksi khusus dan saldo target akan bertambah secara atomik.',
+      Icons.savings_outlined,
+    ),
+    (
+      'Mengapa saldo bisa berwarna merah?',
+      'Saldo berwarna merah berarti total pengeluaran pada periode berjalan lebih besar daripada pemasukan. Ini membantu kamu mengenali kebocoran dana lebih cepat.',
+      Icons.account_balance_wallet_outlined,
+    ),
+    (
+      'Apa fungsi Mode Privasi?',
+      'Mode Privasi menyamarkan nominal pada kartu saldo di Beranda. Data transaksi tetap aman dan tidak dihapus, sehingga kamu bisa membuka nominal kembali kapan saja.',
+      Icons.visibility_off_outlined,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return SafeArea(
+      child: FractionallySizedBox(
+        heightFactor: 0.88,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [colors.primaryContainer, colors.secondaryContainer],
+                ),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundColor: colors.primary,
+                    child: Icon(
+                      Icons.support_agent_rounded,
+                      color: colors.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pusat Bantuan',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Jawaban singkat untuk membantu mengatur keuanganmu.',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+            Text(
+              'Pertanyaan umum',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              margin: EdgeInsets.zero,
+              elevation: 0,
+              clipBehavior: Clip.antiAlias,
+              color: colors.surfaceContainerHighest.withValues(alpha: 0.35),
+              child: Column(
+                children: [
+                  for (var i = 0; i < _faqs.length; i++) ...[
+                    ExpansionTile(
+                      leading: Icon(_faqs[i].$3, color: colors.primary),
+                      title: Text(
+                        _faqs[i].$1,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _faqs[i].$2,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (i < _faqs.length - 1)
+                      const Divider(height: 1, indent: 72),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: Text(
+                'Masih membutuhkan bantuan? Hubungi Andre.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -13,19 +192,11 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pengaturan', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Pengaturan',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded),
-            onPressed: () {
-              // TODO: Tampilkan FAQ
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Pusat Bantuan segera hadir')),
-              );
-            },
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
@@ -41,6 +212,9 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: 24),
           const _SectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
           const _DataManagementCard(),
+          const SizedBox(height: 24),
+          const _SectionTitle(title: 'BANTUAN'),
+          const _HelpCenterEntry(),
           const SizedBox(height: 32),
           const _DeveloperCard(),
         ],
@@ -62,10 +236,10 @@ class _SectionTitle extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
@@ -76,11 +250,15 @@ class _SectionTitle extends StatelessWidget {
 class _ProfileHeader extends ConsumerWidget {
   const _ProfileHeader();
 
-  void _showEditNameDialog(BuildContext context, WidgetRef ref, String currentName) {
+  void _showEditNameDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String currentName,
+  ) {
     final controller = TextEditingController(text: currentName);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Ubah Nama Panggilan'),
         content: TextField(
           controller: controller,
@@ -93,16 +271,33 @@ class _ProfileHeader extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Batal'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               final name = controller.text.trim();
               if (name.isNotEmpty) {
-                ref.read(userNameProvider.notifier).setUserName(name);
+                final saved = await ref
+                    .read(userNameProvider.notifier)
+                    .setUserName(name);
+                if (!context.mounted) return;
+                if (!saved) {
+                  _showSettingsSnackBar(
+                    context,
+                    message: 'Nama pengguna gagal disimpan.',
+                    isError: true,
+                  );
+                  return;
+                }
+                Navigator.pop(dialogContext);
+                _showSettingsSnackBar(
+                  context,
+                  message: 'Nama pengguna diperbarui.',
+                );
+                return;
               }
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
             child: const Text('Simpan'),
           ),
@@ -146,22 +341,23 @@ class _ProfileHeader extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Row(
-                       children: [
-                         Expanded(
-                           child: Text(
-                             'Halo, $userName',
-                             style: theme.textTheme.titleLarge?.copyWith(
-                               fontWeight: FontWeight.bold,
-                             ),
-                             maxLines: 1,
-                             overflow: TextOverflow.ellipsis,
-                           ),
-                         ),
-                         const SizedBox(width: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Halo, $userName',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
                         IconButton(
                           icon: const Icon(Icons.edit_rounded, size: 18),
-                          onPressed: () => _showEditNameDialog(context, ref, userName),
+                          onPressed: () =>
+                              _showEditNameDialog(context, ref, userName),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           color: cs.primary,
@@ -170,7 +366,10 @@ class _ProfileHeader extends ConsumerWidget {
                     ),
                     const SizedBox(height: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.green.shade100,
                         borderRadius: BorderRadius.circular(12),
@@ -178,7 +377,11 @@ class _ProfileHeader extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.cloud_done_rounded, size: 14, color: Colors.green.shade800),
+                          Icon(
+                            Icons.cloud_done_rounded,
+                            size: 14,
+                            color: Colors.green.shade800,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             'Tersinkronisasi',
@@ -243,27 +446,21 @@ class _ThemeSelectionCard extends ConsumerWidget {
                     icon: Icons.brightness_auto_rounded,
                     label: 'Sistem',
                     selected: currentTheme == ThemeMode.system,
-                    onTap: () => ref
-                        .read(appThemeModeProvider.notifier)
-                        .setThemeMode(ThemeMode.system),
+                    onTap: () => _saveTheme(context, ref, ThemeMode.system),
                   ),
                   const SizedBox(width: 8),
                   _ThemeChip(
                     icon: Icons.light_mode_rounded,
                     label: 'Terang',
                     selected: currentTheme == ThemeMode.light,
-                    onTap: () => ref
-                        .read(appThemeModeProvider.notifier)
-                        .setThemeMode(ThemeMode.light),
+                    onTap: () => _saveTheme(context, ref, ThemeMode.light),
                   ),
                   const SizedBox(width: 8),
                   _ThemeChip(
                     icon: Icons.dark_mode_rounded,
                     label: 'Gelap',
                     selected: currentTheme == ThemeMode.dark,
-                    onTap: () => ref
-                        .read(appThemeModeProvider.notifier)
-                        .setThemeMode(ThemeMode.dark),
+                    onTap: () => _saveTheme(context, ref, ThemeMode.dark),
                   ),
                 ],
               ),
@@ -271,6 +468,22 @@ class _ThemeSelectionCard extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _saveTheme(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode mode,
+  ) async {
+    final saved = await ref
+        .read(appThemeModeProvider.notifier)
+        .setThemeMode(mode);
+    if (!context.mounted) return;
+    _showSettingsSnackBar(
+      context,
+      message: saved ? 'Tema aplikasi diperbarui.' : 'Tema gagal disimpan.',
+      isError: !saved,
     );
   }
 }
@@ -354,24 +567,43 @@ class _PrivacyCard extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: SwitchListTile(
           value: isPrivacyMode,
-          onChanged: (value) => ref.read(privacyModeProvider.notifier).toggle(),
+          onChanged: (value) async {
+            final saved = await ref.read(privacyModeProvider.notifier).toggle();
+            if (!context.mounted) return;
+            _showSettingsSnackBar(
+              context,
+              message: saved
+                  ? 'Mode privasi ${value ? 'diaktifkan' : 'dinonaktifkan'}. '
+                        'Perubahan diterapkan di Beranda.'
+                  : 'Mode privasi gagal disimpan.',
+              isError: !saved,
+            );
+          },
           title: Text(
             'Mode Privasi',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           subtitle: const Text('Sembunyikan nominal saldo di Beranda'),
           secondary: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isPrivacyMode ? cs.primary.withValues(alpha: 0.1) : cs.onSurfaceVariant.withValues(alpha: 0.1),
+              color: isPrivacyMode
+                  ? cs.primary.withValues(alpha: 0.1)
+                  : cs.onSurfaceVariant.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isPrivacyMode ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+              isPrivacyMode
+                  ? Icons.visibility_off_rounded
+                  : Icons.visibility_rounded,
               color: isPrivacyMode ? cs.primary : cs.onSurfaceVariant,
             ),
           ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
     );
@@ -383,14 +615,22 @@ class _PrivacyCard extends ConsumerWidget {
 class _FinancialSettingsCard extends ConsumerWidget {
   const _FinancialSettingsCard();
 
-  void _showSetBudgetDialog(BuildContext context, WidgetRef ref, double? currentLimit) {
+  void _showSetBudgetDialog(
+    BuildContext context,
+    WidgetRef ref,
+    double? currentLimit,
+  ) {
     showDialog<void>(
       context: context,
       builder: (ctx) => _SetBudgetDialog(currentLimit: currentLimit),
     );
   }
 
-  void _showSetCycleDialog(BuildContext context, WidgetRef ref, int currentDay) {
+  void _showSetCycleDialog(
+    BuildContext context,
+    WidgetRef ref,
+    int currentDay,
+  ) {
     showDialog<void>(
       context: context,
       builder: (ctx) => _SetCycleDialog(currentDay: currentDay),
@@ -403,7 +643,7 @@ class _FinancialSettingsCard extends ConsumerWidget {
     final currentCycle = ref.watch(budgetCycleDateProvider);
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    
+
     final isSet = currentLimit != null && currentLimit > 0;
 
     return Padding(
@@ -423,16 +663,24 @@ class _FinancialSettingsCard extends ConsumerWidget {
                   color: cs.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.account_balance_wallet_outlined, color: cs.primary),
+                child: Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: cs.primary,
+                ),
               ),
               title: Text(
                 'Batas Anggaran Bulanan',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               subtitle: isSet
                   ? Text(
                       formatRupiah(currentLimit),
-                      style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: cs.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     )
                   : const Text('Belum diatur'),
               trailing: const Icon(Icons.chevron_right_rounded),
@@ -446,11 +694,16 @@ class _FinancialSettingsCard extends ConsumerWidget {
                   color: Colors.orange.shade100,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.calendar_month_outlined, color: Colors.orange.shade800),
+                child: Icon(
+                  Icons.calendar_month_outlined,
+                  color: Colors.orange.shade800,
+                ),
               ),
               title: Text(
                 'Siklus Anggaran',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               subtitle: Text('Dimulai tanggal $currentCycle setiap bulan'),
               trailing: const Icon(Icons.chevron_right_rounded),
@@ -478,7 +731,9 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
     super.initState();
     _controller = TextEditingController();
     if (widget.currentLimit != null && widget.currentLimit! > 0) {
-      _controller.text = formatRupiah(widget.currentLimit!).replaceFirst('Rp ', '');
+      _controller.text = formatRupiah(
+        widget.currentLimit!,
+      ).replaceFirst('Rp ', '');
     }
   }
 
@@ -488,13 +743,25 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final raw = _controller.text.trim().replaceAll('.', '');
     final limit = double.tryParse(raw);
-    
+
     if (limit != null && limit >= 0) {
-      ref.read(budgetLimitProvider.notifier).setBudgetLimit(limit == 0 ? null : limit);
+      final saved = await ref
+          .read(budgetLimitProvider.notifier)
+          .setBudgetLimit(limit == 0 ? null : limit);
+      if (!mounted) return;
+      if (!saved) {
+        _showSettingsSnackBar(
+          context,
+          message: 'Batas anggaran gagal disimpan.',
+          isError: true,
+        );
+        return;
+      }
       Navigator.of(context).pop();
+      _showSettingsSnackBar(context, message: 'Batas anggaran diperbarui.');
     }
   }
 
@@ -506,7 +773,9 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Atur batas pengeluaran bulanan agar aplikasi dapat memberikan peringatan sebelum kamu boros.'),
+          const Text(
+            'Atur batas pengeluaran bulanan agar aplikasi dapat memberikan peringatan sebelum kamu boros.',
+          ),
           const SizedBox(height: 16),
           TextField(
             controller: _controller,
@@ -516,7 +785,9 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
             decoration: InputDecoration(
               labelText: 'Batas Nominal',
               prefixText: 'Rp ',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               helperText: 'Isi 0 untuk mematikan peringatan',
             ),
             onSubmitted: (_) => _save(),
@@ -524,7 +795,10 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Batal')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Batal'),
+        ),
         FilledButton(onPressed: _save, child: const Text('Simpan')),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -557,16 +831,26 @@ class _SetCycleDialogState extends ConsumerState<_SetCycleDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Kapan biasanya kamu menerima uang bulanan/gajian? Anggaran akan di-reset pada tanggal ini.'),
+          const Text(
+            'Kapan biasanya kamu menerima uang bulanan/gajian? Anggaran akan di-reset pada tanggal ini.',
+          ),
           const SizedBox(height: 16),
           DropdownButtonFormField<int>(
             value: _selectedDay,
             decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
             items: List.generate(28, (index) => index + 1)
-                .map((day) => DropdownMenuItem(value: day, child: Text('Tanggal $day')))
+                .map(
+                  (day) =>
+                      DropdownMenuItem(value: day, child: Text('Tanggal $day')),
+                )
                 .toList(),
             onChanged: (value) {
               if (value != null) setState(() => _selectedDay = value);
@@ -575,11 +859,29 @@ class _SetCycleDialogState extends ConsumerState<_SetCycleDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Batal')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Batal'),
+        ),
         FilledButton(
-          onPressed: () {
-            ref.read(budgetCycleDateProvider.notifier).setDate(_selectedDay);
+          onPressed: () async {
+            final saved = await ref
+                .read(budgetCycleDateProvider.notifier)
+                .setDate(_selectedDay);
+            if (!mounted) return;
+            if (!saved) {
+              _showSettingsSnackBar(
+                context,
+                message: 'Siklus anggaran gagal disimpan.',
+                isError: true,
+              );
+              return;
+            }
             Navigator.of(context).pop();
+            _showSettingsSnackBar(
+              context,
+              message: 'Siklus anggaran diperbarui.',
+            );
           },
           child: const Text('Simpan'),
         ),
@@ -591,7 +893,7 @@ class _SetCycleDialogState extends ConsumerState<_SetCycleDialog> {
 
 // ── 4. Data Management & Danger Zone ─────────────────────────────────────────
 
-class _DataManagementCard extends StatelessWidget {
+class _DataManagementCard extends ConsumerWidget {
   const _DataManagementCard();
 
   void _showWipDialog(BuildContext context, String feature) {
@@ -604,7 +906,11 @@ class _DataManagementCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.warning_amber_rounded, size: 48, color: Colors.red),
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          size: 48,
+          color: Colors.red,
+        ),
         title: const Text('Hapus Semua Data?'),
         content: const Text(
           'Tindakan ini akan menghapus SELURUH transaksi dan target tabungan secara permanen dari server. Tindakan ini tidak dapat dibatalkan.',
@@ -617,7 +923,10 @@ class _DataManagementCard extends StatelessWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
-              _showWipDialog(context, 'Hapus Data Masal'); // Placeholder until implemented
+              _showWipDialog(
+                context,
+                'Hapus Data Masal',
+              ); // Placeholder until implemented
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Ya, Hapus Semua'),
@@ -628,9 +937,13 @@ class _DataManagementCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final transactions = ref.watch(transactionsStreamProvider);
+    final isExporting = ref
+        .watch(transactionExportControllerProvider)
+        .isLoading;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -642,19 +955,128 @@ class _DataManagementCard extends StatelessWidget {
         child: Column(
           children: [
             ListTile(
-              onTap: () => _showWipDialog(context, 'Ekspor ke CSV'),
+              enabled: !isExporting,
+              onTap: () async {
+                final items = transactions.value ?? const [];
+                if (items.isEmpty) {
+                  _showWipDialog(
+                    context,
+                    'Ekspor ke CSV karena belum ada transaksi',
+                  );
+                  return;
+                }
+                final shared = await ref
+                    .read(transactionExportControllerProvider.notifier)
+                    .export(items);
+                if (!context.mounted) return;
+                _showSettingsSnackBar(
+                  context,
+                  message: shared
+                      ? 'CSV transaksi siap dibagikan.'
+                      : 'Ekspor CSV gagal. Coba lagi.',
+                  isError: !shared,
+                );
+              },
               leading: Icon(Icons.download_rounded, color: cs.primary),
               title: const Text('Ekspor Data ke CSV'),
-              subtitle: const Text('Simpan riwayat transaksi sebagai spreadsheet'),
+              subtitle: Text(
+                isExporting
+                    ? 'Menyiapkan file...'
+                    : 'Bagikan riwayat transaksi sebagai spreadsheet',
+              ),
+              trailing: isExporting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.chevron_right_rounded),
             ),
             const Divider(height: 1, indent: 56),
             ListTile(
               onTap: () => _showDeleteAllDialog(context),
-              leading: const Icon(Icons.delete_forever_rounded, color: Colors.red),
-              title: const Text('Hapus Seluruh Data', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600)),
+              leading: const Icon(
+                Icons.delete_forever_rounded,
+                color: Colors.red,
+              ),
+              title: const Text(
+                'Hapus Seluruh Data',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               subtitle: const Text('Reset akun dan mulai dari nol'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HelpCenterEntry extends StatelessWidget {
+  const _HelpCenterEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: InkWell(
+          onTap: () => _showHelpCenter(context),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colors.primaryContainer.withValues(alpha: 0.75),
+                  colors.surfaceContainerHighest.withValues(alpha: 0.45),
+                ],
+              ),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                  child: const Icon(Icons.support_agent_rounded),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pusat Bantuan',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Temukan jawaban dari pertanyaan umum',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: colors.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -675,7 +1097,11 @@ class _DeveloperCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          Icon(Icons.code_rounded, color: cs.primary.withValues(alpha: 0.5), size: 32),
+          Icon(
+            Icons.code_rounded,
+            color: cs.primary.withValues(alpha: 0.5),
+            size: 32,
+          ),
           const SizedBox(height: 12),
           Text(
             'MoneyTracker v1.0.0',
@@ -687,7 +1113,9 @@ class _DeveloperCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Dibuat dengan ❤️ oleh Andre',
-            style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
           ),
         ],
       ),

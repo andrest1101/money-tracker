@@ -83,6 +83,14 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 10. Menambahkan filter riwayat berdasarkan siklus anggaran aktif.
 11. Menambahkan insight keuangan mingguan atau bulanan.
 
+### Status Backlog
+
+- [x] Tahap 1: validasi layout Android dan perbaikan overflow header profil Settings.
+- [x] Tahap 2: feedback `SnackBar` untuk keberhasilan atau kegagalan penyimpanan Settings.
+- [x] Tahap 3: FAQ / Pusat Bantuan dengan UI bottom sheet profesional dan FAQ expandable.
+- [x] Tahap ekspor CSV: transaksi dapat dibagikan melalui system share sheet.
+- [ ] Tahap berikutnya: hapus semua data, sesuai prioritas yang disepakati.
+
 ---
 
 ## 🔧 Aturan Main (dari AGENTS.md + PRD.md)
@@ -150,6 +158,7 @@ lib/
 
 - **Sesi 2026-08-28:** user memilih privacy mode tidak menyembunyikan nominal pada History; privacy mode tetap untuk Dashboard.
 - **Sesi 2026-08-28:** user meminta commit manual; AI tidak melakukan `git add`, `git commit`, atau push.
+- **Sesi lanjutan:** tahap 2 dan 3 selesai. Penyimpanan Settings sekarang menampilkan feedback floating `SnackBar`; FAQ placeholder diganti Pusat Bantuan interaktif. `flutter analyze` bersih dan 34/34 test lulus.
 
 ## 🧾 Commit Manual Sesi 2026-08-28
 
