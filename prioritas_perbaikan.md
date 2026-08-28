@@ -10,7 +10,7 @@ atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
 | 1 | Firestore Transaction untuk operasi alokasi | Selesai | Tambah, edit, dan hapus alokasi kini membaca data terbaru di dalam `runTransaction`. |
 | 2 | Hapus target dengan banyak riwayat alokasi | Selesai | Transaksi alokasi dihapus dalam chunk 450 dokumen, lalu target dihapus pada batch terpisah. |
 | 3 | Test lengkap filter History dan ringkasan | Selesai | Step 14 dibuat dengan use case filter dan test kombinasi dasar. |
-| 4 | Modularisasi halaman Settings | Selesai sebagian | Section title, Help Center, FAQ sheet, dan branding sudah dipisah; komponen profil, keuangan, dan data management masih perlu dipisah pada tahap lanjutan. |
+| 4 | Modularisasi halaman Settings | Selesai | Entry page dan komposisi content Settings sudah dipisah; section reusable sebelumnya juga berada di file widget terdedikasi. |
 | 5 | Empty state Dashboard yang lebih informatif | Belum selesai | Perlu CTA dan penjelasan khusus untuk pengguna baru. |
 | 6 | Status sinkronisasi yang lebih detail | Selesai sebagian | Loading, sukses, gagal, dan retry sudah tersedia; last synced/offline queue belum ada. |
 | 7 | Firebase Authentication dan isolasi data user | Belum selesai | Data masih memakai collection global dan belum memiliki uid. |
@@ -35,7 +35,7 @@ atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
 
 ## Step Berikutnya
 
-Prioritas aktif berikutnya adalah **Prioritas 4 lanjutan: memisahkan profil, keuangan, dan data management Settings**.
+Prioritas aktif berikutnya adalah **Prioritas 5: empty state Dashboard yang lebih informatif**.
 
 ## Step 17
 
@@ -44,6 +44,13 @@ Prioritas aktif berikutnya adalah **Prioritas 4 lanjutan: memisahkan profil, keu
 - Memindahkan `HelpCenterEntry` ke `widgets/help_center_entry.dart`.
 - Memindahkan `HelpCenterSheet` beserta FAQ ke `widgets/help_center_sheet.dart`.
 - Halaman utama Settings sekarang hanya mengorkestrasi section dan mempertahankan UI premium yang sama.
+
+## Step 18
+
+- Memindahkan entry point Settings ke `pages/settings_page.dart` yang ringan.
+- Memindahkan komposisi seluruh content Settings ke `widgets/settings_content.dart`.
+- Mempertahankan provider, dialog, feedback, dan visual premium yang sudah ada.
+- Menghapus implementasi Settings duplikat dari file page.
 
 ## Verifikasi Terakhir
 

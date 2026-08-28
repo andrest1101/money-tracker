@@ -34,6 +34,13 @@
 - **Enhancement UI selesai:** History interaktif, pie chart kategori interaktif, dan overview Status Anggaran berbasis siklus
 - **NEXT: User commit manual perubahan enhancement di branch `develop`, lalu validasi di device Android**
 
+### Step 18 — Modularisasi Settings
+
+- [x] Entry page Settings dipisahkan dari komposisi content.
+- [x] Section title, Help Center, FAQ sheet, dan developer branding memakai widget terpisah.
+- [x] Provider, dialog, feedback, dan tampilan premium tetap dipertahankan.
+- [ ] Pemecahan lanjutan komponen kompleks Settings menjadi file khusus jika ada kebutuhan perubahan fitur per section.
+
 ---
 
 ## 🎯 Aturan Main (ringkasan dari PRD & AGENTS.md)

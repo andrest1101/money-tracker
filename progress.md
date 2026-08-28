@@ -105,7 +105,8 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Step 15: Operasi tambah, edit, dan hapus alokasi memakai Firestore Transaction untuk mencegah race condition.
 - [x] Step 16: Penghapusan target dengan banyak riwayat alokasi memakai chunked batch 450 dokumen dan batch terpisah untuk target.
 - [x] Step 17: Modularisasi awal Settings: section title, Help Center, FAQ sheet, dan branding dipindahkan ke widget terpisah tanpa mengubah UI premium.
-- [ ] Tahap berikutnya: validasi UI langsung di device Android dan modularisasi Settings.
+- [x] Step 18: Entry page Settings dipisahkan dari komposisi content; `settings_page.dart` kini ringan dan implementasi tetap modular di folder widgets.
+- [ ] Tahap berikutnya: validasi UI langsung di device Android dan empty state Dashboard.
 
 ---
 
