@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -114,7 +116,9 @@ class AuthController extends Notifier<AsyncValue<void>> {
       await _auth.sendSignInLinkToEmail(
         email: email.trim(),
         actionCodeSettings: ActionCodeSettings(
-          url: 'https://money-tracker-e22c0.firebaseapp.com/finishSignIn',
+          url: Uri.https('money-tracker-e22c0.web.app', '/finishSignIn', {
+            'email': email.trim(),
+          }).toString(),
           handleCodeInApp: true,
           androidPackageName: 'com.example.money_tracker',
           androidInstallApp: true,
@@ -169,6 +173,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
     state = const AsyncLoading();
     try {
       await _auth.signOut();
+      if (!kIsWeb) await GoogleSignIn().signOut();
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
       state = AsyncError(_messageFor(error), stackTrace);
@@ -180,18 +185,31 @@ class AuthController extends Notifier<AsyncValue<void>> {
   Future<void> linkWithGoogle() async {
     state = const AsyncLoading();
     try {
-      final credential = await _googleCredential();
-      if (credential == null) {
-        state = const AsyncData(null);
-        return;
+      if (kIsWeb) {
+        final user = _auth.currentUser;
+        if (user == null || !user.isAnonymous) {
+          throw FirebaseAuthException(
+            code: 'already-linked',
+            message: 'Akun sudah diamankan.',
+          );
+        }
+        await user.linkWithPopup(GoogleAuthProvider());
+      } else {
+        final credential = await _googleCredential();
+        if (credential == null) {
+          state = const AsyncData(null);
+          return;
+        }
+        await _linkCredential(credential);
       }
-      await _linkCredential(credential);
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
       state = AsyncError(_messageFor(error), stackTrace);
+    } on PlatformException catch (error, stackTrace) {
+      state = AsyncError(_googlePlatformMessage(error), stackTrace);
     } catch (error, stackTrace) {
       state = AsyncError(
-        'Login Google gagal. Periksa koneksi lalu coba lagi.',
+        'Login Google gagal (${error.runtimeType}). Periksa konfigurasi Google Sign-In lalu coba lagi.',
         stackTrace,
       );
     }
@@ -200,18 +218,24 @@ class AuthController extends Notifier<AsyncValue<void>> {
   Future<void> signInWithGoogle() async {
     state = const AsyncLoading();
     try {
-      final credential = await _googleCredential();
-      if (credential == null) {
-        state = const AsyncData(null);
-        return;
+      if (kIsWeb) {
+        await _auth.signInWithPopup(GoogleAuthProvider());
+      } else {
+        final credential = await _googleCredential();
+        if (credential == null) {
+          state = const AsyncData(null);
+          return;
+        }
+        await _auth.signInWithCredential(credential);
       }
-      await _auth.signInWithCredential(credential);
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
       state = AsyncError(_messageFor(error), stackTrace);
+    } on PlatformException catch (error, stackTrace) {
+      state = AsyncError(_googlePlatformMessage(error), stackTrace);
     } catch (error, stackTrace) {
       state = AsyncError(
-        'Login Google gagal. Periksa koneksi lalu coba lagi.',
+        'Login Google gagal (${error.runtimeType}). Periksa provider Google, SHA-1/SHA-256, lalu coba lagi.',
         stackTrace,
       );
     }
@@ -225,6 +249,20 @@ class AuthController extends Notifier<AsyncValue<void>> {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
+  }
+
+  String _googlePlatformMessage(PlatformException error) {
+    final code = error.code;
+    if (code == '10' || code == 'sign_in_failed') {
+      return 'Google Sign-In gagal (kode $code). Periksa SHA-1/SHA-256, package name, dan OAuth client Android di Firebase Console.';
+    }
+    if (code == '12501' || code == 'sign_in_canceled') {
+      return 'Login Google dibatalkan.';
+    }
+    if (code == '7' || code == 'network_error') {
+      return 'Google Sign-In tidak menemukan koneksi internet.';
+    }
+    return 'Google Sign-In gagal (kode $code). ${error.message ?? 'Periksa konfigurasi Firebase.'}';
   }
 
   Future<void> linkWithEmail({

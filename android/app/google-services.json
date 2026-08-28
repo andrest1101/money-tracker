@@ -12,7 +12,20 @@
           "package_name": "com.example.money_tracker"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "671219337997-23tlj63vve1nktt2se8etnv0unkici9a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.money_tracker",
+            "certificate_hash": "a0738b4d528ff1a73edce30753974eb2862b24cb"
+          }
+        },
+        {
+          "client_id": "671219337997-5gldjc0ilbc4n0f7m7tmtclbrq8n9fea.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCyDoQbIeIphxftmo9RSXh5FAeSOud6QhU"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "671219337997-5gldjc0ilbc4n0f7m7tmtclbrq8n9fea.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "671219337997-1ej77r4io7phgtatcdsp4b00ecpmand0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.moneyTracker"
+              }
+            }
+          ]
         }
       }
     }

@@ -17,7 +17,12 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     final link = Uri.base.toString();
     if (link.contains('oobCode=') && link.contains('mode=signIn')) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _showEmailAuth(initialLink: link);
+        if (mounted) {
+          _showEmailAuth(
+            initialLink: link,
+            initialEmail: Uri.base.queryParameters['email'],
+          );
+        }
       });
     }
   }
@@ -30,12 +35,16 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     await ref.read(authControllerProvider.notifier).continueAsGuest();
   }
 
-  Future<void> _showEmailAuth({String? initialLink}) async {
+  Future<void> _showEmailAuth({
+    String? initialLink,
+    String? initialEmail,
+  }) async {
     final message = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => EmailAuthSheet(initialLink: initialLink),
+      builder: (_) =>
+          EmailAuthSheet(initialLink: initialLink, initialEmail: initialEmail),
     );
     if (!mounted || message == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -230,9 +239,10 @@ class _BenefitRow extends StatelessWidget {
 enum _EmailMode { login, register, link }
 
 class EmailAuthSheet extends ConsumerStatefulWidget {
-  const EmailAuthSheet({super.key, this.initialLink});
+  const EmailAuthSheet({super.key, this.initialLink, this.initialEmail});
 
   final String? initialLink;
+  final String? initialEmail;
 
   @override
   ConsumerState<EmailAuthSheet> createState() => _EmailAuthSheetState();
@@ -256,7 +266,8 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
       _mode = _EmailMode.link;
       _linkSent = true;
       _link.text = widget.initialLink!;
-      final savedEmail = ref.read(pendingEmailLinkEmailProvider);
+      final savedEmail =
+          widget.initialEmail ?? ref.read(pendingEmailLinkEmailProvider);
       if (savedEmail != null) _email.text = savedEmail;
     }
   }

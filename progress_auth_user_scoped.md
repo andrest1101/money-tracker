@@ -25,6 +25,8 @@
 - Feedback auth tidak lagi menutup sheet secara membingungkan; pengiriman email link menampilkan status sukses dan instruksi Inbox/Spam.
 - Settings menyediakan logout/ganti akun; guest mendapat konfirmasi khusus karena sesi guest tidak memiliki recovery credential.
 - Firebase Hosting dikonfigurasi untuk melayani `build/web`, sehingga action link tidak lagi menuju route Hosting yang kosong.
+- Email link menyertakan email pada `continueUrl` sehingga email tujuan dapat diisi otomatis saat link dibuka pada browser/device lain.
+- Google Sign-In web memakai Firebase popup, Android memakai native credential, dan error native sekarang menampilkan kode konfigurasi yang actionable.
 
 ### Belum Selesai
 
@@ -35,6 +37,7 @@
 - Validasi langsung di device Android.
 - Aktifkan provider Google dan Email/Password serta izinkan domain action link di Firebase Console.
 - Deploy Hosting setelah `flutter build web`, lalu uji action link dari Gmail di Chrome dan Android.
+- Google Android masih memerlukan OAuth client dan SHA-1/SHA-256; `android/app/google-services.json` saat ini belum memiliki `oauth_client`.
 
 ### Perubahan Keamanan
 
@@ -48,5 +51,41 @@
 - Jalankan `flutter pub get`.
 - Jalankan `flutter analyze`.
 - Jalankan `flutter test`.
+
+Perubahan belum di-commit oleh AI. User melakukan commit manual sesuai workflow proyek.
+
+---
+
+## HANDOFF SESI TERBARU
+
+- Email/password login dan register sudah diuji.
+- Email link, reset password, dan logout/ganti akun sudah diuji.
+- Google Android sudah berhasil setelah konfigurasi OAuth/SHA diperbarui.
+- Google Web memakai Firebase popup dan perlu diuji manual.
+- Google iOS belum divalidasi dan membutuhkan Mac/Xcode.
+- Bug berikutnya: register menerima email palsu yang formatnya valid.
+
+### Rencana Email Verification
+
+- Kirim verification email setelah register.
+- Tahan akses Dashboard untuk akun email yang belum verified.
+- Guest tetap dapat masuk tanpa verifikasi.
+- Tambahkan halaman verifikasi profesional.
+- Tambahkan tombol `Saya sudah verifikasi` dengan `user.reload()`.
+- Tambahkan resend verification dengan cooldown.
+- Tambahkan aksi ganti email/kembali login.
+
+### Rencana Platform
+
+- Uji Google Web di Chrome/Edge.
+- Siapkan Google iOS melalui `GoogleService-Info.plist`, bundle ID yang konsisten, dan `REVERSED_CLIENT_ID` pada `Info.plist`.
+- Validasi iOS membutuhkan Mac/Xcode.
+
+### Verifikasi Terakhir
+
+- `flutter analyze`: bersih dari error.
+- `flutter test`: 52/52 lulus.
+- `flutter build web`: berhasil.
+- `flutter build apk --debug`: berhasil.
 
 Perubahan belum di-commit oleh AI. User melakukan commit manual sesuai workflow proyek.

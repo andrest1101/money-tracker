@@ -116,6 +116,8 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Email authentication: login, daftar, reset password, dan verifikasi email link tersedia melalui bottom sheet responsif.
 - [x] Auth feedback/session controls: status sukses kirim link, login, dan daftar tetap terlihat; Settings memiliki kartu akun dengan logout/ganti akun dan peringatan khusus guest.
 - [x] Email-link hosting handler: action link diarahkan ke Firebase Hosting Flutter Web, mendeteksi link Firebase pada URL, dan menyelesaikan login tanpa memindahkan UID guest.
+- [x] Email-link UX: email tujuan dibawa pada `continueUrl` dan form verifikasi otomatis mengisinya saat link dibuka.
+- [ ] Google Sign-In: kode sudah memakai popup Firebase untuk web dan native flow Android, tetapi OAuth client Android belum tersedia di `google-services.json`; perlu konfigurasi SHA/OAuth di Firebase Console.
 - [x] Build compatibility: Android Kotlin/NDK disesuaikan untuk Firebase Auth dan dependency Firebase web dikunci kompatibel dengan Flutter 3.32/Dart 3.8; APK dan Web berhasil di-build.
 - [ ] Tahap berikutnya: konfigurasi provider Google dan Email/Password di Firebase Console, validasi deep link di Android, lalu tambahkan sign-in kembali untuk akun permanen.
 
@@ -201,4 +203,64 @@ feat: add interactive budget overview
 - Add interactive budget detail bottom sheet
 - Display top spending categories for active budget cycle
 - Add unit tests for budget overview calculations
+```
+
+---
+
+## HANDOFF SESI TERBARU - AUTHENTICATION
+
+### Status Testing
+
+- Login email/password: berhasil.
+- Daftar email/password: berhasil, tetapi email palsu yang formatnya valid masih diterima karena email verification belum diwajibkan.
+- Email link: berhasil dikirim dan diverifikasi; biasanya masuk Spam karena memakai sender/domain Firebase gratis.
+- Reset password: berhasil.
+- Logout/ganti akun di Settings: berhasil.
+- Google Sign-In Android: berhasil setelah OAuth client dan SHA dikonfigurasi.
+- Google Sign-In Web: kode menggunakan Firebase popup dan perlu validasi manual di Chrome/Edge.
+- Google Sign-In iOS: belum divalidasi; membutuhkan Mac/Xcode, `GoogleService-Info.plist`, dan URL scheme.
+
+### Bug Berikutnya
+
+Firebase hanya memvalidasi format email saat register. Email seperti `abc123@gmail.com` dapat diterima walaupun inbox belum tentu ada. Solusi berikutnya adalah email verification wajib sebelum akses Dashboard.
+
+- Guest tetap boleh langsung masuk tanpa verifikasi.
+- Akun email/password harus memverifikasi email.
+- Setelah register, kirim email verification.
+- Buat halaman verifikasi email profesional.
+- Tambahkan cek status dengan `user.reload()` dan `emailVerified`.
+- Tambahkan resend verification dengan cooldown.
+- Tambahkan aksi ganti email dan kembali ke login.
+
+### Rencana Besok
+
+1. Tambahkan `sendEmailVerification()` pada auth controller.
+2. Tambahkan state email verification pending.
+3. Cegah akun email yang belum verified masuk Dashboard.
+4. Buat halaman verifikasi dengan instruksi Inbox/Spam.
+5. Uji email valid, typo, email palsu, dan resend.
+6. Validasi Google Web di Chrome dan Edge.
+7. Siapkan konfigurasi Google iOS.
+8. Jalankan analyzer, test, build Web, dan build Android.
+9. Update seluruh progress Markdown.
+
+### File Rencana
+
+```text
+lib/core/firebase/auth_providers.dart
+lib/features/auth/presentation/pages/auth_landing_page.dart
+lib/features/auth/presentation/pages/email_verification_page.dart
+lib/features/auth/presentation/widgets/auth_success_state.dart
+progress.md
+progress_auth_user_scoped.md
+```
+
+### Prompt Resume
+
+```text
+Baca progress.md, progress_auth_user_scoped.md, AGENTS.md, dan PRD.md.
+Lanjutkan dari HANDOFF SESI TERBARU - AUTHENTICATION.
+Tambahkan email verification wajib setelah register, halaman verifikasi profesional,
+resend dengan cooldown, proteksi Dashboard untuk akun belum verified, uji Google Web,
+siapkan konfigurasi Google iOS, lalu jalankan analyzer, test, dan build.
 ```
