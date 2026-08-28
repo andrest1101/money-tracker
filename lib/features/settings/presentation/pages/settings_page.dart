@@ -251,65 +251,195 @@ class _SectionTitle extends StatelessWidget {
 class _ProfileHeader extends ConsumerWidget {
   const _ProfileHeader();
 
-  void _showEditNameDialog(
+  static const _profileTypes = [
+    'Mahasiswa',
+    'Karyawan',
+    'Freelancer',
+    'Wirausaha',
+    'Lainnya',
+  ];
+
+  void _showProfileDetails(
     BuildContext context,
-    WidgetRef ref,
-    String currentName,
-  ) {
-    final controller = TextEditingController(text: currentName);
-    showDialog(
+    WidgetRef ref, {
+    required String userName,
+    required String profileType,
+    required double? budgetLimit,
+    required int budgetCycle,
+    required bool privacyMode,
+  }) {
+    showModalBottomSheet<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Ubah Nama Panggilan'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: 'Misal: Andre',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Profil keuangan',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                userName,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Informasi ini tersimpan di perangkatmu dan membantu menyesuaikan pengalaman MoneyTracker.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 20),
+              _ProfileDetailTile(
+                icon: Icons.badge_outlined,
+                label: 'Profil pengguna',
+                value: profileType,
+              ),
+              _ProfileDetailTile(
+                icon: Icons.calendar_month_outlined,
+                label: 'Siklus anggaran',
+                value: 'Dimulai tanggal $budgetCycle setiap bulan',
+              ),
+              _ProfileDetailTile(
+                icon: Icons.account_balance_wallet_outlined,
+                label: 'Batas anggaran',
+                value: budgetLimit == null
+                    ? 'Belum diatur'
+                    : formatRupiah(budgetLimit),
+              ),
+              _ProfileDetailTile(
+                icon: privacyMode
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                label: 'Mode privasi',
+                value: privacyMode ? 'Aktif di Beranda' : 'Tidak aktif',
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showEditProfileDialog(
+                    context,
+                    ref,
+                    userName: userName,
+                    profileType: profileType,
+                  );
+                },
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit profil'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+              ),
+            ],
           ),
-          textCapitalization: TextCapitalization.words,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Batal'),
+      ),
+    );
+  }
+
+  void _showEditProfileDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    required String userName,
+    required String profileType,
+  }) {
+    final nameController = TextEditingController(text: userName);
+    var selectedType = profileType;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Edit profil'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  maxLength: 60,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: 'Nama lengkap atau panggilan',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedType,
+                  decoration: InputDecoration(
+                    labelText: 'Kamu seorang',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  items: _profileTypes
+                      .map(
+                        (type) => DropdownMenuItem(
+                          value: type,
+                          child: Text(type),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) setState(() => selectedType = value);
+                  },
+                ),
+              ],
+            ),
           ),
-          FilledButton(
-            onPressed: () async {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                final saved = await ref
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty) return;
+                final nameSaved = await ref
                     .read(userNameProvider.notifier)
                     .setUserName(name);
+                final typeSaved = await ref
+                    .read(userProfileTypeProvider.notifier)
+                    .setProfileType(selectedType);
                 if (!context.mounted) return;
-                if (!saved) {
+                if (!nameSaved || !typeSaved) {
                   _showSettingsSnackBar(
                     context,
-                    message: 'Nama pengguna gagal disimpan.',
+                    message: 'Profil gagal disimpan.',
                     isError: true,
                   );
                   return;
                 }
                 Navigator.pop(dialogContext);
-                _showSettingsSnackBar(
-                  context,
-                  message: 'Nama pengguna diperbarui.',
-                );
-                return;
-              }
-              Navigator.pop(dialogContext);
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
+                _showSettingsSnackBar(context, message: 'Profil diperbarui.');
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        ),
       ),
-    );
+    ).whenComplete(nameController.dispose);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName = ref.watch(userNameProvider);
+    final profileType = ref.watch(userProfileTypeProvider);
+    final budgetLimit = ref.watch(budgetLimitProvider);
+    final budgetCycle = ref.watch(budgetCycleDateProvider);
+    final privacyMode = ref.watch(privacyModeProvider);
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
@@ -319,21 +449,29 @@ class _ProfileHeader extends ConsumerWidget {
         elevation: 0,
         color: cs.primaryContainer.withValues(alpha: 0.4),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () => _showEditNameDialog(context, ref, userName),
-                child: CircleAvatar(
-                  radius: 32,
-                  backgroundColor: cs.primary,
-                  child: Text(
-                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: cs.onPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
+        child: InkWell(
+          onTap: () => _showProfileDetails(
+            context,
+            ref,
+            userName: userName,
+            profileType: profileType,
+            budgetLimit: budgetLimit,
+            budgetCycle: budgetCycle,
+            privacyMode: privacyMode,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: cs.primary,
+                child: Text(
+                  userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: cs.onPrimary,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -350,15 +488,22 @@ class _ProfileHeader extends ConsumerWidget {
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 4),
                         IconButton(
                           icon: const Icon(Icons.edit_rounded, size: 18),
-                          onPressed: () =>
-                              _showEditNameDialog(context, ref, userName),
+                          onPressed: () => _showProfileDetails(
+                            context,
+                            ref,
+                            userName: userName,
+                            profileType: profileType,
+                            budgetLimit: budgetLimit,
+                            budgetCycle: budgetCycle,
+                            privacyMode: privacyMode,
+                          ),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           color: cs.primary,
@@ -366,6 +511,15 @@ class _ProfileHeader extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 6),
+                    Text(
+                      '$profileType  •  Ketuk untuk melihat detail',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -397,9 +551,38 @@ class _ProfileHeader extends ConsumerWidget {
                   ],
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ProfileDetailTile extends StatelessWidget {
+  const _ProfileDetailTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: colors.primary),
+      title: Text(label, style: Theme.of(context).textTheme.labelMedium),
+      subtitle: Text(
+        value,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }

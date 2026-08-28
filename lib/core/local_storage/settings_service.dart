@@ -23,6 +23,7 @@ class SettingsService {
   static const String _themeModeKey = 'theme_mode';
   static const String _savingsSortKey = 'savings_sort_option';
   static const String _userNameKey = 'user_name';
+  static const String _userProfileTypeKey = 'user_profile_type';
   static const String _privacyModeKey = 'privacy_mode';
   static const String _budgetCycleDateKey = 'budget_cycle_date';
 
@@ -96,6 +97,22 @@ class SettingsService {
       await _sharedPreferences.setString(_userNameKey, name);
     } catch (e) {
       throw SettingsServiceException('Gagal menyimpan nama pengguna', e);
+    }
+  }
+
+  String getUserProfileType() {
+    try {
+      return _sharedPreferences.getString(_userProfileTypeKey) ?? 'Mahasiswa';
+    } catch (e) {
+      throw SettingsServiceException('Gagal memuat tipe pengguna', e);
+    }
+  }
+
+  Future<void> setUserProfileType(String profileType) async {
+    try {
+      await _sharedPreferences.setString(_userProfileTypeKey, profileType);
+    } catch (e) {
+      throw SettingsServiceException('Gagal menyimpan tipe pengguna', e);
     }
   }
 
