@@ -70,6 +70,7 @@ class SettingsContent extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 32),
       children: [
         _ProfileHeader(syncState: syncState),
+        const _AccountSessionCard(),
         const SizedBox(height: 16),
         const SettingsSectionTitle(title: 'PREFERENSI TAMPILAN & PRIVASI'),
         const _ThemeSelectionCard(),
@@ -86,6 +87,85 @@ class SettingsContent extends ConsumerWidget {
         const SizedBox(height: 32),
         const DeveloperCard(),
       ],
+    );
+  }
+}
+
+class _AccountSessionCard extends ConsumerWidget {
+  const _AccountSessionCard();
+
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    final user = ref.read(currentUserProvider);
+    final isGuest = user?.isAnonymous ?? true;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: Icon(
+          isGuest ? Icons.warning_amber_rounded : Icons.logout_rounded,
+          color: isGuest ? Colors.orange.shade700 : null,
+        ),
+        title: Text(isGuest ? 'Keluar dari akun guest?' : 'Keluar dari akun?'),
+        content: Text(
+          isGuest
+              ? 'Akun guest belum memiliki akses pemulihan. Jika keluar, data guest ini bisa tidak dapat dibuka kembali.'
+              : 'Kamu bisa masuk kembali menggunakan metode login yang sama atau akun lain.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await ref.read(authControllerProvider.notifier).signOut();
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final isGuest = user?.isAnonymous ?? true;
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Card(
+        elevation: 0,
+        color: colors.surfaceContainerHighest.withValues(alpha: .38),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: isGuest
+                ? colors.tertiaryContainer
+                : colors.primaryContainer,
+            child: Icon(
+              isGuest
+                  ? Icons.person_outline_rounded
+                  : Icons.verified_user_rounded,
+              color: isGuest
+                  ? colors.onTertiaryContainer
+                  : colors.onPrimaryContainer,
+            ),
+          ),
+          title: Text(
+            isGuest ? 'Akun guest' : 'Akun terhubung',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          subtitle: Text(
+            isGuest
+                ? 'Data hanya terikat pada device ini'
+                : user?.email ?? 'Akun Firebase',
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: TextButton(
+            onPressed: () => _signOut(context, ref),
+            child: Text(isGuest ? 'Ganti' : 'Keluar'),
+          ),
+        ),
+      ),
     );
   }
 }

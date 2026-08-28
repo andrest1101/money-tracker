@@ -11,6 +11,17 @@ class AuthLandingPage extends ConsumerStatefulWidget {
 }
 
 class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
+  @override
+  void initState() {
+    super.initState();
+    final link = Uri.base.toString();
+    if (link.contains('oobCode=') && link.contains('mode=signIn')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showEmailAuth(initialLink: link);
+      });
+    }
+  }
+
   Future<void> _google() async {
     await ref.read(authControllerProvider.notifier).signInWithGoogle();
   }
@@ -19,12 +30,16 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     await ref.read(authControllerProvider.notifier).continueAsGuest();
   }
 
-  void _showEmailAuth() {
-    showModalBottomSheet<void>(
+  Future<void> _showEmailAuth({String? initialLink}) async {
+    final message = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => const EmailAuthSheet(),
+      builder: (_) => EmailAuthSheet(initialLink: initialLink),
+    );
+    if (!mounted || message == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(behavior: SnackBarBehavior.floating, content: Text(message)),
     );
   }
 
@@ -215,7 +230,9 @@ class _BenefitRow extends StatelessWidget {
 enum _EmailMode { login, register, link }
 
 class EmailAuthSheet extends ConsumerStatefulWidget {
-  const EmailAuthSheet({super.key});
+  const EmailAuthSheet({super.key, this.initialLink});
+
+  final String? initialLink;
 
   @override
   ConsumerState<EmailAuthSheet> createState() => _EmailAuthSheetState();
@@ -230,6 +247,19 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
   _EmailMode _mode = _EmailMode.login;
   bool _obscure = true;
   bool _linkSent = false;
+  String? _successMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialLink != null) {
+      _mode = _EmailMode.link;
+      _linkSent = true;
+      _link.text = widget.initialLink!;
+      final savedEmail = ref.read(pendingEmailLinkEmailProvider);
+      if (savedEmail != null) _email.text = savedEmail;
+    }
+  }
 
   @override
   void dispose() {
@@ -256,19 +286,25 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
     } else if (!_linkSent) {
       await controller.sendEmailLink(_email.text);
       if (mounted && !ref.read(authControllerProvider).hasError) {
-        setState(() => _linkSent = true);
+        setState(() {
+          _linkSent = true;
+          _successMessage =
+              'Link login berhasil dikirim. Periksa Inbox atau Spam Gmail.';
+        });
+        return;
       }
     } else {
       await controller.completeEmailLink(email: _email.text, link: _link.text);
     }
     if (!mounted) return;
-    if (ref.read(authControllerProvider).hasValue && _mode != _EmailMode.link) {
-      Navigator.pop(context);
-    }
     if (ref.read(authControllerProvider).hasValue &&
-        _mode == _EmailMode.link &&
-        _linkSent) {
-      Navigator.pop(context);
+        (_mode != _EmailMode.link || _linkSent)) {
+      final message = _mode == _EmailMode.register
+          ? 'Akun berhasil dibuat. Selamat datang di MoneyTracker.'
+          : _mode == _EmailMode.login
+          ? 'Login berhasil. Selamat datang kembali.'
+          : 'Link login berhasil diverifikasi.';
+      Navigator.pop(context, message);
     }
   }
 
@@ -432,6 +468,32 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                 ),
               ),
             const SizedBox(height: 6),
+            if (_successMessage != null)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.mark_email_read_rounded, color: colors.primary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _successMessage!,
+                        style: TextStyle(
+                          color: colors.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -462,6 +524,16 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                 child: Text(
                   authState.error.toString(),
                   style: TextStyle(color: colors.error),
+                ),
+              ),
+            if (_linkSent)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  'Setelah menekan link di Gmail, halaman ini akan menyelesaikan login. Jika belum, tempel link lengkap di atas.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
               ),
             const SizedBox(height: 12),

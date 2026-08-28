@@ -2,6 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../local_storage/settings_providers.dart';
+
+const _pendingEmailLinkEmailKey = 'pending_email_link_email';
+
+final pendingEmailLinkEmailProvider = Provider<String?>((ref) {
+  return ref
+      .watch(sharedPreferencesProvider)
+      .getString(_pendingEmailLinkEmailKey);
+});
+
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
@@ -111,6 +121,9 @@ class AuthController extends Notifier<AsyncValue<void>> {
           androidMinimumVersion: '23',
         ),
       );
+      await ref
+          .read(sharedPreferencesProvider)
+          .setString(_pendingEmailLinkEmailKey, email.trim());
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
       state = AsyncError(_messageFor(error), stackTrace);
@@ -131,10 +144,19 @@ class AuthController extends Notifier<AsyncValue<void>> {
           message: 'Link login tidak valid atau sudah kedaluwarsa.',
         );
       }
-      await _auth.signInWithEmailLink(
+      final credential = EmailAuthProvider.credentialWithLink(
         email: email.trim(),
         emailLink: link.trim(),
       );
+      final currentUser = _auth.currentUser;
+      if (currentUser?.isAnonymous ?? false) {
+        await currentUser!.linkWithCredential(credential);
+      } else {
+        await _auth.signInWithCredential(credential);
+      }
+      await ref
+          .read(sharedPreferencesProvider)
+          .remove(_pendingEmailLinkEmailKey);
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
       state = AsyncError(_messageFor(error), stackTrace);

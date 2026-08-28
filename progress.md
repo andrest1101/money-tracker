@@ -114,6 +114,8 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 - [x] Account security UI: guest dapat mengamankan akun dengan Google atau email/password melalui account linking tanpa memindahkan UID/data.
 - [x] Auth landing page: user baru dapat memilih Google, email/password, email link, atau Guest sejak pertama membuka aplikasi.
 - [x] Email authentication: login, daftar, reset password, dan verifikasi email link tersedia melalui bottom sheet responsif.
+- [x] Auth feedback/session controls: status sukses kirim link, login, dan daftar tetap terlihat; Settings memiliki kartu akun dengan logout/ganti akun dan peringatan khusus guest.
+- [x] Email-link hosting handler: action link diarahkan ke Firebase Hosting Flutter Web, mendeteksi link Firebase pada URL, dan menyelesaikan login tanpa memindahkan UID guest.
 - [x] Build compatibility: Android Kotlin/NDK disesuaikan untuk Firebase Auth dan dependency Firebase web dikunci kompatibel dengan Flutter 3.32/Dart 3.8; APK dan Web berhasil di-build.
 - [ ] Tahap berikutnya: konfigurasi provider Google dan Email/Password di Firebase Console, validasi deep link di Android, lalu tambahkan sign-in kembali untuk akun permanen.
 

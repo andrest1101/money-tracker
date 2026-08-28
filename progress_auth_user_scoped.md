@@ -22,6 +22,9 @@
 - Email link memakai `sendSignInLinkToEmail` dan verifikasi `signInWithEmailLink`; fallback tempel link tersedia sebelum deep-link platform dikonfigurasi.
 - Android build memakai Kotlin plugin `2.3.0`, NDK `27.0.12077973`, dan Kotlin compilerOptions DSL agar kompatibel dengan plugin Firebase terbaru yang masih didukung project.
 - FlutterFire dipatok pada versi yang kompatibel dengan Flutter 3.32/Dart 3.8; `flutter build apk --debug` dan `flutter build web` berhasil.
+- Feedback auth tidak lagi menutup sheet secara membingungkan; pengiriman email link menampilkan status sukses dan instruksi Inbox/Spam.
+- Settings menyediakan logout/ganti akun; guest mendapat konfirmasi khusus karena sesi guest tidak memiliki recovery credential.
+- Firebase Hosting dikonfigurasi untuk melayani `build/web`, sehingga action link tidak lagi menuju route Hosting yang kosong.
 
 ### Belum Selesai
 
@@ -31,6 +34,7 @@
 - Tambahkan alur sign-in kembali untuk user yang sudah memiliki akun permanen setelah reinstall.
 - Validasi langsung di device Android.
 - Aktifkan provider Google dan Email/Password serta izinkan domain action link di Firebase Console.
+- Deploy Hosting setelah `flutter build web`, lalu uji action link dari Gmail di Chrome dan Android.
 
 ### Perubahan Keamanan
 
