@@ -81,5 +81,34 @@ void main() {
 
       expect(newCurrent, 5000000);
     });
+
+    test('edit alokasi mengembalikan nominal lama ke saldo yang tersedia', () {
+      final newCurrent = useCase.executeEdit(
+        goal: goal,
+        oldAmount: 100000,
+        newAmount: 405000,
+        availableBalance: 305000,
+      );
+
+      expect(newCurrent, 1305000);
+    });
+
+    test('edit alokasi melebihi saldo tersedia ditolak', () {
+      expect(
+        () => useCase.executeEdit(
+          goal: goal,
+          oldAmount: 100000,
+          newAmount: 410000,
+          availableBalance: 305000,
+        ),
+        throwsA(
+          isA<InvalidAllocationException>().having(
+            (error) => error.message,
+            'message',
+            'Saldo utama tidak cukup untuk nominal alokasi baru',
+          ),
+        ),
+      );
+    });
   });
 }

@@ -1383,7 +1383,7 @@ class _DeveloperCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Dibuat dengan ❤️ oleh Andre',
+            'Product by Andre Robert',
             style: theme.textTheme.bodySmall?.copyWith(
               color: cs.onSurfaceVariant,
             ),

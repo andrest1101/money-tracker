@@ -140,9 +140,13 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
         );
       }
     } else {
+      final error = ref.read(quickAddControllerProvider).error;
       messenger.showSnackBar(
         SnackBar(
-          content: const Text('Gagal memperbarui alokasi. Coba lagi ya.'),
+          content: Text(
+            error?.toString().replaceFirst('InvalidAllocationException: ', '') ??
+                'Gagal memperbarui alokasi. Coba lagi ya.',
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
