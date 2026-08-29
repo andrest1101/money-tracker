@@ -439,18 +439,4 @@ firebase deploy --only hosting,firestore:rules
 
 - **Author:** Andre Robert
 - **Product:** MoneyTracker
-- Untuk kontribusi, buat branch fitur, tambahkan test yang sesuai, lalu ajukan
-  pull request dengan deskripsi perubahan yang jelas.
 
-## 📄 Lisensi
-
-- Tambahkan file `LICENSE` dan ubah badge di bagian atas README setelah jenis
-  lisensi project diputuskan.
-
-## 🙏 Apresiasi
-
-- Terima kasih kepada komunitas Flutter dan Firebase.
-- Terima kasih kepada setiap pengguna yang membantu menguji flow autentikasi,
-  deep link, dan responsivitas aplikasi.
-- MoneyTracker dikembangkan secara bertahap dengan fokus pada pengalaman
-  pengguna yang sederhana, aman, dan bermanfaat.
