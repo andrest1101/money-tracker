@@ -27,10 +27,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.money_tracker"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         // Cloud Firestore 6.x requires Android 6.0 (API level 23) or higher.
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
@@ -40,8 +37,7 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Replace the debug signing key before publishing to an app store.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
