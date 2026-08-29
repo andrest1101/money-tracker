@@ -541,7 +541,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                  'Setelah menekan link di Gmail, halaman ini akan menyelesaikan login. Jika belum, tempel link lengkap di atas.',
+                   'Di Android, menekan link akan membuka aplikasi otomatis. Jika browser tetap terbuka, salin link lengkap dan tempel di sini.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
