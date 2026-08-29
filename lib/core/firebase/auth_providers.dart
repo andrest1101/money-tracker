@@ -364,6 +364,8 @@ class AuthController extends Notifier<AsyncValue<void>> {
       'account-exists-with-different-credential' =>
         'Email sudah terhubung dengan metode login lain.',
       'network-request-failed' => 'Koneksi bermasalah. Coba lagi.',
+      'too-many-requests' =>
+        'Terlalu banyak percobaan dari perangkat ini. Tunggu beberapa saat sebelum mencoba lagi.',
       'popup-closed-by-user' || 'canceled' => 'Login dibatalkan.',
       'already-linked' => 'Akun ini sudah diamankan.',
       _ => error.message ?? 'Autentikasi gagal. Coba lagi.',

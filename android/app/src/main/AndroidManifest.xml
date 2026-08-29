@@ -32,6 +32,10 @@
                     android:scheme="https"
                     android:host="money-tracker-e22c0.web.app"
                     android:pathPrefix="/finishSignIn" />
+                <data
+                    android:scheme="https"
+                    android:host="money-tracker-e22c0.web.app"
+                    android:pathPrefix="/__/auth/action" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

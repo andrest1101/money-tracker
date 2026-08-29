@@ -61,26 +61,40 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
   }
 
   Future<void> _handleUri(Uri uri) async {
-    final link = uri.toString();
-    if (!link.contains('oobCode=') ||
-        !link.contains('mode=signIn') ||
-        link == _lastHandledLink ||
-        !mounted) {
+    final link = _emailSignInLink(uri);
+    if (link == null) return;
+    if (link == _lastHandledLink || !mounted) {
       return;
     }
     _lastHandledLink = link;
     setState(() => _handlingLink = true);
     try {
-      final email = uri.queryParameters['email'] ??
+      final email =
+          uri.queryParameters['email'] ??
+          Uri.tryParse(link)?.queryParameters['email'] ??
           ref.read(pendingEmailLinkEmailProvider);
       if (email == null || email.trim().isEmpty) return;
-      await ref.read(authControllerProvider.notifier).completeEmailLink(
-            email: email,
-            link: link,
-          );
+      await ref
+          .read(authControllerProvider.notifier)
+          .completeEmailLink(email: email, link: link);
     } finally {
       if (mounted) setState(() => _handlingLink = false);
     }
+  }
+
+  String? _emailSignInLink(Uri uri) {
+    Uri candidate = uri;
+    final continueUrl = uri.queryParameters['continueUrl'];
+    if (continueUrl != null) {
+      final nested = Uri.tryParse(Uri.decodeComponent(continueUrl));
+      if (nested != null && nested.queryParameters.containsKey('oobCode')) {
+        candidate = nested;
+      }
+    }
+    final hasSignInCode =
+        candidate.queryParameters.containsKey('oobCode') &&
+        candidate.queryParameters['mode'] == 'signIn';
+    return hasSignInCode ? candidate.toString() : null;
   }
 
   @override
@@ -94,9 +108,7 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
     if (_handlingLink) {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
     return widget.child;

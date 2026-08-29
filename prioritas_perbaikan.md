@@ -92,3 +92,112 @@ Prioritas aktif berikutnya adalah **validasi deployment Firebase, migrasi data l
 
 - Perubahan belum di-commit oleh AI.
 - User melakukan commit manual setelah verifikasi device.
+
+## Backlog Sistem dan UI
+
+Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementasi.
+
+### P0.1 Firebase Email Link dan Android App Links
+
+- Status: `Berjalan`
+- Tujuan: link Gmail membuka aplikasi Android dan login otomatis tanpa paste.
+- Cakupan: intent-filter `/finishSignIn` dan `/__/auth/action`, parsing
+  `continueUrl`, initial link, runtime link, dan validasi fingerprint APK.
+- Kriteria selesai: APK debug dan release dapat membuka aplikasi, menyelesaikan
+  login, serta tetap memiliki fallback paste link.
+
+### P0.2 Kendali Resend Email Link
+
+- Status: `Berjalan`
+- Tujuan: mengurangi risiko Firebase `too-many-requests`.
+- Cakupan: cooldown 60 detik, tombol resend, dan pesan rate limit yang jelas.
+- Kriteria selesai: tidak ada request berulang sebelum cooldown berakhir dan
+  pengguna memahami kapan dapat mencoba kembali.
+
+### P0.3 Validasi Data dan Error State
+
+- Status: `Belum dimulai`
+- Audit semua provider Firestore, loading/error/empty state, retry action, dan
+  logging development yang tidak membocorkan data sensitif.
+
+### P1.1 Sistem Theme dan Visual Identity
+
+- Status: `Belum dimulai`
+- Bangun color scheme emerald/teal, typography hierarchy, radius, elevation,
+  spacing, serta style global Card, input, button, chip, snackbar, dialog, dan
+  bottom sheet untuk light dan dark mode.
+
+### P1.2 Shared Page Background dan Layout Container
+
+- Status: `Belum dimulai`
+- Buat wrapper reusable untuk gradient/background, safe area, padding responsif,
+  keyboard inset, dan max-width desktop. Terapkan ke semua halaman utama.
+
+### P1.3 Navigation dan Feedback Pattern
+
+- Status: `Belum dimulai`
+- Poles NavigationBar, transisi, snackbar sukses/error/retry, dialog konfirmasi,
+  dan bottom sheet agar konsisten.
+
+### P1.4 Redesign Dashboard
+
+- Status: `Belum dimulai`
+- Tambahkan header personal, balance hero card, income/expense tiles, budget
+  progress visual, insight accent color, chart card, skeleton, dan empty state.
+- Selesai jika saldo, arus uang, dan status budget mudah dipahami sekali lihat.
+
+### P1.5 Redesign Savings
+
+- Status: `Belum dimulai`
+- Poles goal card, progress bar, deadline chip, tab aktif/selesai, empty state,
+  serta bottom sheet tambah dan alokasi target.
+
+### P1.6 Redesign History
+
+- Status: `Belum dimulai`
+- Poles search, filter aktif, transaction tile, daily summary, empty/loading
+  state, swipe action, dan dialog hapus.
+
+### P1.7 Redesign Settings
+
+- Status: `Belum dimulai`
+- Kelompokkan profile, tampilan, budget, privacy, sinkronisasi, bantuan, dan
+  manajemen data; pisahkan danger zone secara visual.
+
+### P1.8 Polish Authentication UI
+
+- Status: `Belum dimulai`
+- Perjelas hierarchy Google, password, email link, guest, loading, success,
+  error, rate limit, resend, fallback paste, dan layout responsif.
+
+### P2.1 Accessibility dan Responsiveness
+
+- Status: `Belum dimulai`
+- Uji tap target, text scaling, semantics, focus state, kontras, overflow, serta
+  Android kecil/besar, Windows, dan Web.
+
+### P2.2 Motion dan Micro-interaction
+
+- Status: `Belum dimulai`
+- Tambahkan animasi singkat untuk saldo, progress, list/filter, bottom sheet, dan
+  feedback transaksi tanpa menghambat aksi pengguna.
+
+### P2.3 Test dan Release Checklist
+
+- Status: `Belum dimulai`
+- Tambahkan widget/golden test bila perlu, jalankan analyze/test, dan ulangi
+  validasi Email Link pada debug serta release APK setelah deployment.
+
+## Urutan Eksekusi Berikutnya
+
+1. Selesaikan P0.1 dan P0.2, lalu validasi manual Email Link di Android.
+2. Kerjakan P0.3 untuk menutup celah error dan state kosong.
+3. Kerjakan P1.1, P1.2, dan P1.3 sebagai fondasi UI bersama.
+4. Kerjakan P1.4 Dashboard terlebih dahulu.
+5. Lanjutkan P1.5 Savings, P1.6 History, dan P1.7 Settings.
+6. Tutup dengan P1.8 Authentication, P2.1, P2.2, dan P2.3.
+
+## Log Perubahan Status
+
+- 2026-08-29: Memperluas intent-filter App Links, menambahkan parsing link
+  terbungkus, cooldown resend 60 detik, dan pesan rate limit Firebase.

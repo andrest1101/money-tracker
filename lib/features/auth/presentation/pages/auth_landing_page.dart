@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -257,6 +259,8 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
   _EmailMode _mode = _EmailMode.login;
   bool _obscure = true;
   bool _linkSent = false;
+  int _resendSeconds = 0;
+  Timer? _resendTimer;
   String? _successMessage;
 
   @override
@@ -274,6 +278,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
@@ -302,6 +307,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
           _successMessage =
               'Link login berhasil dikirim. Periksa Inbox atau Spam Gmail.';
         });
+        _startResendCooldown();
         return;
       }
     } else {
@@ -317,6 +323,34 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
           : 'Link login berhasil diverifikasi.';
       Navigator.pop(context, message);
     }
+  }
+
+  void _startResendCooldown() {
+    _resendTimer?.cancel();
+    setState(() => _resendSeconds = 60);
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_resendSeconds <= 1) {
+        timer.cancel();
+        setState(() => _resendSeconds = 0);
+      } else {
+        setState(() => _resendSeconds--);
+      }
+    });
+  }
+
+  Future<void> _resendLink() async {
+    if (_resendSeconds > 0 || _email.text.trim().isEmpty) return;
+    await ref.read(authControllerProvider.notifier).sendEmailLink(_email.text);
+    if (!mounted || ref.read(authControllerProvider).hasError) return;
+    setState(() {
+      _successMessage =
+          'Link login baru berhasil dikirim. Periksa Inbox atau Spam Gmail.';
+    });
+    _startResendCooldown();
   }
 
   Future<void> _resetPassword() async {
@@ -541,9 +575,23 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                   'Di Android, menekan link akan membuka aplikasi otomatis. Jika browser tetap terbuka, salin link lengkap dan tempel di sini.',
+                  'Di Android, menekan link akan membuka aplikasi otomatis. Jika browser tetap terbuka, salin link lengkap dan tempel di sini.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            if (_linkSent && _mode == _EmailMode.link)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: authState.isLoading || _resendSeconds > 0
+                      ? null
+                      : _resendLink,
+                  child: Text(
+                    _resendSeconds > 0
+                        ? 'Kirim ulang dalam ${_resendSeconds} detik'
+                        : 'Kirim ulang link',
                   ),
                 ),
               ),
