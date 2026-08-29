@@ -86,7 +86,7 @@
   Koleksi Firestore: `savings_goals`, stream diurutkan per `deadline` (terdekat dulu).
 
 - [x] **Task 3 — App shell**
-  Rewrite `main.dart`: `ProviderScope`, `MoneyTrackerApp` (ConsumerWidget) tema M3 hijau + darkTheme. Baru: `lib/core/navigation/app_shell.dart` — NavigationBar 4 tab (Beranda/Target/Riwayat/Pengaturan) + IndexedStack, isi tab masih placeholder. Test diperbarui: smoke test nav bar + pindah tab. Branch: `feature/fase1-dashboard`.
+  Rewrite `main.dart`: `ProviderScope`, `MoneyTrackerApp` (ConsumerWidget) tema M3 hijau + darkTheme. Baru: `lib/core/navigation/app_shell.dart` — NavigationBar 4 tab (Beranda/Target/Riwayat/Pengaturan) + IndexedStack. Test diperbarui: smoke test nav bar + pindah tab. Branch: `feature/fase1-dashboard`.
 
 - [x] **Task 4 — Dashboard bagian 1: Card Saldo + Status Anggaran**
   Use case kalkulasi saldo (income − expense bulan berjalan) dari stream transaksi. UI: Card Saldo Utama + status anggaran (bar tersembunyi sampai batas diatur di Task 7). File: `dashboard/domain/entities/monthly_summary_entity.dart`, `dashboard/domain/usecases/calculate_monthly_summary_usecase.dart`, `dashboard/presentation/providers/dashboard_providers.dart`, `dashboard/presentation/pages/dashboard_page.dart`, plus helper `core/utils/rupiah_formatter.dart`.
@@ -126,7 +126,7 @@
   - Profil Pengguna: Avatar inisial, nama yang bisa diubah, status sinkronisasi cloud.
   - Privasi & Tampilan: Tema (Sistem/Terang/Gelap) menggunakan `_ThemeChip` yang responsif, dan Toggle **Mode Privasi** (Sembunyikan Saldo) yang terhubung ke Dashboard.
   - Keuangan: Dialog Atur Batas Anggaran (dengan ribuan formatter) & Siklus Anggaran (Tanggal gajian 1-28).
-  - Manajemen Data: Placeholder untuk Ekspor CSV dan Hapus Semua Data (lengkap dengan dialog konfirmasi *Danger Zone*).
+   - Manajemen Data: Ekspor CSV dan Hapus Semua Data (lengkap dengan dialog konfirmasi *Danger Zone*).
   - Info Dev: Versi aplikasi & kredit pembuat (Andre).
    **FASE 4 TUNTAS 🎉**
 

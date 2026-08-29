@@ -22,7 +22,7 @@
 - **Enhancement UI selesai hari ini:** History interaktif + overview harian, pie chart kategori interaktif + detail kategori, dan Status Anggaran interaktif + overview siklus anggaran
 - **Kesehatan kode terakhir:** `flutter analyze` bersih, 52/52 test passed
 - **Perubahan terbaru:** Email verification wajib untuk akun email/password dan kompatibilitas build Windows sudah diperbaiki.
-- **NEXT:** User melakukan commit manual perubahan hari ini, deploy `firestore.rules`, lalu validasi auth dan UI di device Android/Windows.
+- **NEXT:** User melakukan commit manual perubahan hari ini, deploy `firestore.rules`/Hosting, lalu validasi auth dan UI di device Android/Windows.
 
 ### Git Status Saat Ini
 
@@ -52,7 +52,7 @@ Catatan: perubahan lokal lain yang sudah ada sebelum sesi ini tetap dijaga dan t
 ## ✅ Apa yang Baru Selesai
 
 1. **Fix Bug UI Android:** Memperbaiki teks nominal yang meluber (`history_page.dart` & `transaction_tile.dart`) dengan `ConstrainedBox` dan `Flexible`. Serta memperbaiki `SegmentedButton` tema yang wrap ke bawah dengan menggantinya menjadi desain `_ThemeChip` kustom.
-2. **Task 13 (Premium Settings UI):** Merombak total halaman Pengaturan agar terlihat seperti aplikasi finansial modern. Menambahkan Avatar/Nama, status sinkronisasi, sakelar Mode Privasi (sensor saldo di beranda), pengaturan Siklus Anggaran, dan tombol _Danger Zone_ hapus data (sementara masih placeholder UI).
+2. **Task 13 (Premium Settings UI):** Merombak total halaman Pengaturan agar terlihat seperti aplikasi finansial modern. Menambahkan Avatar/Nama, status sinkronisasi, sakelar Mode Privasi (sensor saldo di beranda), pengaturan Siklus Anggaran, dan tombol _Danger Zone_ hapus data.
 3. **History UI interaktif:** Nominal tidak lagi terpotong pada Android, header tanggal dapat ditekan, dan bottom sheet overview harian menampilkan total pemasukan, pengeluaran, selisih bersih, serta daftar transaksi.
 4. **Pie chart interaktif:** Segmen dan legend dapat dipilih, kategori aktif di-highlight, informasi kategori muncul di tengah chart, dan tersedia bottom sheet detail kategori dengan total, persentase, rata-rata, transaksi terbesar, serta daftar transaksi.
 5. **Status Anggaran interaktif:** Card membaca transaksi aktual dan tanggal siklus anggaran. Overview menampilkan status, progress, sisa/kelebihan, periode, jumlah transaksi, rata-rata harian, proyeksi akhir periode, dan tiga kategori terbesar.
@@ -68,8 +68,8 @@ Karena FASE 1-4 sudah selesai semua secara fundamental, langkah selanjutnya adal
 1. **User melakukan commit manual perubahan hari ini:** gunakan deskripsi commit di bagian bawah file ini.
 2. **Validasi di device Android:** cek History, pie chart, Status Anggaran, bottom sheet, serta nominal besar pada layar kecil.
 3. **Penyempurnaan Opsional:**
-   - Melengkapi fitur Ekspor CSV.
-   - Melengkapi fitur Hapus Data Massal (Danger Zone).
+   - Melengkapi fitur Ekspor CSV. (sudah selesai)
+   - Melengkapi fitur Hapus Data Massal (Danger Zone). (sudah selesai)
    - Halaman FAQ / Pusat Bantuan.
 
 ## 🧭 BACKLOG 11 REKOMENDASI LANJUTAN
@@ -78,7 +78,7 @@ Pengerjaan dilakukan satu langkah pada satu waktu, setelah mendapat persetujuan 
 
 1. Validasi Android dan perbaikan layout responsif, terutama overflow pada layar kecil.
 2. Perbaikan error handling Settings dengan feedback `SnackBar` saat penyimpanan gagal.
-3. Melengkapi FAQ / Pusat Bantuan dan menghapus placeholder `TODO`.
+3. Melengkapi FAQ / Pusat Bantuan dan menghapus placeholder fitur.
 4. Ekspor transaksi ke CSV melalui system share sheet.
 5. Hapus semua data dengan dialog konfirmasi berlapis dan proses batch yang aman.
 6. Memisahkan target tabungan menjadi tab Aktif dan Selesai.

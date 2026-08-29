@@ -36,7 +36,7 @@
 - Tambahkan alur sign-in kembali untuk user yang sudah memiliki akun permanen setelah reinstall.
 - Validasi langsung di device Android.
 - Aktifkan provider Google dan Email/Password serta izinkan domain action link di Firebase Console.
-- Deploy Hosting setelah `flutter build web`, lalu uji action link dari Gmail di Chrome dan Android.
+- Deploy Hosting setelah `flutter build web`, lalu uji action link dari Gmail di Chrome dan Android. Android App Links sudah disiapkan melalui intent-filter dan `web/.well-known/assetlinks.json`; release SHA-256 tetap perlu ditambahkan.
 - Google Android masih memerlukan OAuth client dan SHA-1/SHA-256; `android/app/google-services.json` saat ini belum memiliki `oauth_client`.
 
 ### Perubahan Keamanan
