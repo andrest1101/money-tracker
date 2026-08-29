@@ -19,7 +19,9 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
 });
 
 final authStateChangesProvider = StreamProvider<User?>((ref) {
-  return ref.watch(firebaseAuthProvider).authStateChanges();
+  // userChanges also emits after User.reload(), allowing AuthGate to react
+  // immediately when the user verifies the email.
+  return ref.watch(firebaseAuthProvider).userChanges();
 });
 
 final currentUserProvider = Provider<User?>((ref) {
@@ -86,15 +88,60 @@ class AuthController extends Notifier<AsyncValue<void>> {
   }) async {
     state = const AsyncLoading();
     try {
-      await _auth.createUserWithEmailAndPassword(
+      final credential = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
+      await credential.user?.sendEmailVerification();
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
       state = AsyncError(_messageFor(error), stackTrace);
     } catch (error, stackTrace) {
       state = AsyncError('Pendaftaran gagal. Coba lagi.', stackTrace);
+    }
+  }
+
+  Future<void> sendEmailVerification() async {
+    state = const AsyncLoading();
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'no-current-user',
+          message: 'Sesi pengguna belum siap.',
+        );
+      }
+      if (user.emailVerified) {
+        state = const AsyncData(null);
+        return;
+      }
+      await user.sendEmailVerification();
+      state = const AsyncData(null);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+    } catch (error, stackTrace) {
+      state = AsyncError(
+        'Email verifikasi gagal dikirim. Coba lagi.',
+        stackTrace,
+      );
+    }
+  }
+
+  Future<bool> reloadCurrentUser() async {
+    state = const AsyncLoading();
+    try {
+      await _auth.currentUser?.reload();
+      state = const AsyncData(null);
+      return _auth.currentUser?.emailVerified ?? false;
+    } on FirebaseAuthException catch (error, stackTrace) {
+      state = AsyncError(_messageFor(error), stackTrace);
+      return false;
+    } catch (error, stackTrace) {
+      state = AsyncError(
+        'Status email gagal diperbarui. Coba lagi.',
+        stackTrace,
+      );
+      return false;
     }
   }
 
@@ -276,6 +323,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
         password: password,
       );
       await _linkCredential(credential);
+      await _auth.currentUser?.sendEmailVerification();
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
       state = AsyncError(_messageFor(error), stackTrace);

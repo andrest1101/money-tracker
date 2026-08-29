@@ -32,7 +32,7 @@
 - **Task 12 SELESAI — FASE 3 TUNTAS! 🎉** Hapus Transaksi: Dismissible swipe + button + dialog konfirmasi + handle delete alokasi atomik
 - **Task 13 SELESAI — FASE 4 TUNTAS! 🎉** Halaman Pengaturan (Tema, Batas Anggaran) + **Redesign Premium UI** (Profil, Privacy Mode, Siklus Anggaran, Ekspor/Hapus Data).
 - **Enhancement UI selesai:** History interaktif, pie chart kategori interaktif, dan overview Status Anggaran berbasis siklus
-- **NEXT: User commit manual perubahan enhancement di branch `develop`, lalu validasi di device Android**
+- **NEXT: User commit manual perubahan terbaru di branch `develop`, deploy rules/hosting, lalu validasi auth dan UI di Windows/Android**
 
 ### Step 18 — Modularisasi Settings
 

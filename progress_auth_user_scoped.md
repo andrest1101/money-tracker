@@ -63,17 +63,24 @@ Perubahan belum di-commit oleh AI. User melakukan commit manual sesuai workflow 
 - Google Android sudah berhasil setelah konfigurasi OAuth/SHA diperbarui.
 - Google Web memakai Firebase popup dan perlu diuji manual.
 - Google iOS belum divalidasi dan membutuhkan Mac/Xcode.
-- Bug berikutnya: register menerima email palsu yang formatnya valid.
+- Email verification sudah diwajibkan untuk akun email/password.
+- Register langsung mengirim email verifikasi setelah akun dibuat.
+- AuthGate menahan akun email/password yang belum `emailVerified` dari Dashboard.
+- `email_verification_page.dart` menyediakan pengecekan ulang status, kirim ulang
+  dengan cooldown 60 detik, dan aksi ganti akun.
+- Linking akun guest ke email/password juga mengirim email verifikasi.
+- Email dianggap valid setelah user membuka link verifikasi Firebase; validasi
+  format saja memang tidak dapat memastikan inbox benar-benar ada.
 
-### Rencana Email Verification
+### Status Email Verification
 
-- Kirim verification email setelah register.
-- Tahan akses Dashboard untuk akun email yang belum verified.
+- Verification email dikirim otomatis setelah register email/password.
+- Dashboard ditahan untuk akun email/password yang belum verified.
 - Guest tetap dapat masuk tanpa verifikasi.
-- Tambahkan halaman verifikasi profesional.
-- Tambahkan tombol `Saya sudah verifikasi` dengan `user.reload()`.
-- Tambahkan resend verification dengan cooldown.
-- Tambahkan aksi ganti email/kembali login.
+- Halaman verifikasi profesional sudah tersedia.
+- Tombol `Saya sudah verifikasi` menjalankan `user.reload()`.
+- Resend verification memakai cooldown 60 detik.
+- Aksi ganti akun tersedia melalui logout.
 
 ### Rencana Platform
 
@@ -87,5 +94,18 @@ Perubahan belum di-commit oleh AI. User melakukan commit manual sesuai workflow 
 - `flutter test`: 52/52 lulus.
 - `flutter build web`: berhasil.
 - `flutter build apk --debug`: berhasil.
+- `flutter build windows --debug`: berhasil setelah policy CMake Firebase dan
+  direktori install Windows diperbaiki.
+
+### Sisa Validasi Manual
+
+- Uji email valid, typo, email palsu, dan resend pada Firebase Console aktif.
+- Validasi Google Web di Chrome/Edge.
+- Validasi deep link email pada Android.
+- Siapkan konfigurasi Google iOS melalui Mac/Xcode.
+- Deploy Hosting dan Firestore rules setelah konfigurasi Console siap.
+
+Perubahan kode dan dokumentasi belum di-commit oleh AI. User melakukan commit
+manual sesuai workflow proyek.
 
 Perubahan belum di-commit oleh AI. User melakukan commit manual sesuai workflow proyek.
