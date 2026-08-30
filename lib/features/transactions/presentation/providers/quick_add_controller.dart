@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../savings/data/providers/savings_goal_repository_provider.dart';
+import '../../../savings/domain/usecases/allocate_to_goal_usecase.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../data/providers/transaction_repository_provider.dart';
 import '../../domain/entities/transaction_entity.dart';
 
@@ -81,10 +83,6 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
     final oldAmount = oldTransaction.amount;
     final newAmount = transaction.amount;
 
-    // Hitung newGoalAmount dari selisih: kurangi kontribusi lama, tambah kontribusi baru
-    // Gunakan aritmatika eksplisit tanpa floating point accumulation
-    final newGoalAmount = goal.currentAmount - oldAmount + newAmount;
-
     // If newAmount is 0, delete transaction and restore goal amount
     if (newAmount == 0) {
       final restoredAmount = goal.currentAmount - oldAmount;
@@ -101,13 +99,21 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
       return;
     }
 
-    if (newGoalAmount < 0) {
-      throw Exception('Nominal edit membuat target tabungan negatif');
-    }
-
-    if (newGoalAmount > goal.targetAmount) {
-      throw Exception('Nominal edit melebihi target tabungan (${goal.targetAmount.round()})');
-    }
+    final summary = ref.read(monthlySummaryProvider).value;
+    final now = DateTime.now();
+    final oldAllocationIsInCurrentMonth =
+        oldTransaction.date.year == now.year &&
+        oldTransaction.date.month == now.month;
+    final monthlyBalance = summary?.balance ?? 0;
+    final availableBalance = oldAllocationIsInCurrentMonth
+        ? monthlyBalance + oldAmount
+        : monthlyBalance;
+    final newGoalAmount = const AllocateToGoalUseCase().executeEdit(
+      goal: goal,
+      oldAmount: oldAmount,
+      newAmount: newAmount,
+      availableBalance: availableBalance,
+    );
 
     // Pastikan transaksi alokasi tetap bertipe expense dengan goalId yang sama
     final correctedTransaction = TransactionEntity(

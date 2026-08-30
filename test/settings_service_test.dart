@@ -50,5 +50,24 @@ void main() {
 
       expect(service.getThemeMode(), ThemeMode.system);
     });
+
+    test('tipe pengguna memiliki default dan dapat disimpan', () async {
+      final service = await createService({});
+
+      expect(service.getUserProfileType(), 'Mahasiswa');
+
+      await service.setUserProfileType('Freelancer');
+
+      expect(service.getUserProfileType(), 'Freelancer');
+    });
+
+    test('waktu sinkronisasi terakhir dapat disimpan dan dibaca', () async {
+      final service = await createService({});
+      final syncedAt = DateTime(2026, 8, 28, 10, 30);
+
+      await service.setLastSuccessfulSync(syncedAt);
+
+      expect(service.getLastSuccessfulSync(), syncedAt);
+    });
   });
 }

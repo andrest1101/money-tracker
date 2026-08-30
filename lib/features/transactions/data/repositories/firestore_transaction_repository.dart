@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/repositories/transaction_repository.dart';
@@ -17,20 +18,37 @@ class TransactionRepositoryException implements Exception {
 }
 
 class FirestoreTransactionRepository implements TransactionRepository {
-  FirestoreTransactionRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirestoreTransactionRepository({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
 
   static const String collectionName = 'transactions';
 
-  CollectionReference<Map<String, dynamic>> get _transactionsRef =>
-      _firestore.collection(collectionName);
+  CollectionReference<Map<String, dynamic>> get _transactionsRef {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const TransactionRepositoryException(
+        'Sesi pengguna belum siap. Silakan coba lagi.',
+      );
+    }
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection(collectionName);
+  }
 
   @override
   Stream<List<TransactionEntity>> watchTransactions() async* {
     try {
-      yield* _transactionsRef.orderBy('date', descending: true).snapshots().map(
+      yield* _transactionsRef
+          .orderBy('date', descending: true)
+          .snapshots()
+          .map(
             (snapshot) => snapshot.docs
                 .map((doc) => TransactionModel.fromMap(doc.id, doc.data()))
                 .toList(),

@@ -49,3 +49,91 @@ class AppThemeMode extends Notifier<ThemeMode> {
 
 final appThemeModeProvider =
     NotifierProvider<AppThemeMode, ThemeMode>(AppThemeMode.new);
+
+class UserName extends Notifier<String> {
+  @override
+  String build() => ref.watch(settingsServiceProvider).getUserName();
+
+  Future<bool> setUserName(String name) async {
+    try {
+      await ref.read(settingsServiceProvider).setUserName(name);
+      state = name;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final userNameProvider = NotifierProvider<UserName, String>(UserName.new);
+
+class UserProfileType extends Notifier<String> {
+  @override
+  String build() => ref.watch(settingsServiceProvider).getUserProfileType();
+
+  Future<bool> setProfileType(String profileType) async {
+    try {
+      await ref.read(settingsServiceProvider).setUserProfileType(profileType);
+      state = profileType;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final userProfileTypeProvider =
+    NotifierProvider<UserProfileType, String>(UserProfileType.new);
+
+class PrivacyMode extends Notifier<bool> {
+  @override
+  bool build() => ref.watch(settingsServiceProvider).getPrivacyMode();
+
+  Future<bool> toggle() async {
+    try {
+      final newValue = !state;
+      await ref.read(settingsServiceProvider).setPrivacyMode(newValue);
+      state = newValue;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final privacyModeProvider = NotifierProvider<PrivacyMode, bool>(PrivacyMode.new);
+
+class BudgetCycleDate extends Notifier<int> {
+  @override
+  int build() => ref.watch(settingsServiceProvider).getBudgetCycleDate();
+
+  Future<bool> setDate(int day) async {
+    try {
+      await ref.read(settingsServiceProvider).setBudgetCycleDate(day);
+      state = day;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final budgetCycleDateProvider = NotifierProvider<BudgetCycleDate, int>(BudgetCycleDate.new);
+
+class LastSuccessfulSync extends Notifier<DateTime?> {
+  @override
+  DateTime? build() => ref.watch(settingsServiceProvider).getLastSuccessfulSync();
+
+  Future<void> markNow() async {
+    final now = DateTime.now();
+    try {
+      await ref.read(settingsServiceProvider).setLastSuccessfulSync(now);
+      state = now;
+    } on SettingsServiceException {
+      // Sync status remains valid for the current session even if its cache fails.
+    }
+  }
+}
+
+final lastSuccessfulSyncProvider =
+    NotifierProvider<LastSuccessfulSync, DateTime?>(LastSuccessfulSync.new);

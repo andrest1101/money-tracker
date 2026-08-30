@@ -2,6 +2,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(money_tracker LANGUAGES CXX)
 
+# Firebase's bundled C++ SDK still declares compatibility with CMake versions
+# older than 3.5. Recent CMake releases require this policy to be explicit.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
 set(BINARY_NAME "money_tracker")
@@ -65,9 +69,10 @@ include(flutter/generated_plugins.cmake)
 set(BUILD_BUNDLE_DIR "$<TARGET_FILE_DIR:${BINARY_NAME}>")
 # Make the "install" step default, as it's required to run.
 set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
-endif()
+# Visual Studio can pre-populate CMAKE_INSTALL_PREFIX with its global default
+# (usually C:/Program Files), which makes `flutter run -d windows` fail without
+# administrator privileges. Always install into Flutter's runner output folder.
+set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
 
 set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
 set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}")

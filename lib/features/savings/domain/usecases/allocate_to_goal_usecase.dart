@@ -31,4 +31,35 @@ class AllocateToGoalUseCase {
     }
     return goal.currentAmount + amount;
   }
+
+  double executeEdit({
+    required SavingsGoalEntity goal,
+    required double oldAmount,
+    required double newAmount,
+    required double availableBalance,
+  }) {
+    if (newAmount < 0) {
+      throw const InvalidAllocationException(
+        'Nominal alokasi tidak boleh negatif',
+      );
+    }
+
+    final availableForEdit = availableBalance + oldAmount;
+    if (newAmount > availableForEdit) {
+      throw const InvalidAllocationException(
+        'Saldo utama tidak cukup untuk nominal alokasi baru',
+      );
+    }
+
+    final newGoalAmount = goal.currentAmount - oldAmount + newAmount;
+    if (newGoalAmount < 0) {
+      throw const InvalidAllocationException('Nominal edit membuat target tabungan negatif');
+    }
+    if (newGoalAmount > goal.targetAmount) {
+      throw InvalidAllocationException(
+        'Nominal melebihi sisa target (${(goal.targetAmount - goal.currentAmount + oldAmount).round()})',
+      );
+    }
+    return newGoalAmount;
+  }
 }

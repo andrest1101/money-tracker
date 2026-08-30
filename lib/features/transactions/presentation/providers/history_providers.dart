@@ -1,10 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
+import '../../../dashboard/domain/usecases/calculate_budget_cycle_period_usecase.dart';
+import '../../../../core/local_storage/settings_providers.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/usecases/group_transactions_by_date_usecase.dart';
+import '../../domain/usecases/filter_transactions_usecase.dart';
 
 const _groupByDate = GroupTransactionsByDateUseCase();
+const _calculatePeriod = CalculateBudgetCyclePeriodUseCase();
+const _filterTransactions = FilterTransactionsUseCase();
 
 class _HistoryFilterNotifier extends Notifier<TransactionType?> {
   @override
@@ -15,8 +20,8 @@ class _HistoryFilterNotifier extends Notifier<TransactionType?> {
 
 final historyFilterProvider =
     NotifierProvider<_HistoryFilterNotifier, TransactionType?>(
-  _HistoryFilterNotifier.new,
-);
+      _HistoryFilterNotifier.new,
+    );
 
 class _HistorySearchNotifier extends Notifier<String> {
   @override
@@ -27,60 +32,101 @@ class _HistorySearchNotifier extends Notifier<String> {
 
 final historySearchQueryProvider =
     NotifierProvider<_HistorySearchNotifier, String>(
-  _HistorySearchNotifier.new,
+      _HistorySearchNotifier.new,
+    );
+
+class _HistoryCategoryNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void setCategory(String? category) => state = category;
+}
+
+final historyCategoryProvider =
+    NotifierProvider<_HistoryCategoryNotifier, String?>(
+      _HistoryCategoryNotifier.new,
+    );
+
+class _HistoryCycleNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void toggle() => state = !state;
+}
+
+final historyCycleProvider = NotifierProvider<_HistoryCycleNotifier, bool>(
+  _HistoryCycleNotifier.new,
 );
+
+final historyCategoriesProvider = Provider<List<String>>((ref) {
+  final transactions = ref.watch(transactionsStreamProvider).value ?? const [];
+  final counts = <String, int>{};
+  for (final transaction in transactions) {
+    counts[transaction.category] = (counts[transaction.category] ?? 0) + 1;
+  }
+  return counts.keys.toList()..sort((a, b) => counts[b]!.compareTo(counts[a]!));
+});
 
 final groupedTransactionsProvider =
     Provider<Map<String, List<TransactionEntity>>>((ref) {
-  final transactions = ref.watch(transactionsStreamProvider).value ?? const [];
-  return _groupByDate.execute(transactions: transactions);
-});
+      final transactions =
+          ref.watch(transactionsStreamProvider).value ?? const [];
+      return _groupByDate.execute(transactions: transactions);
+    });
 
 final filteredGroupedTransactionsProvider =
     Provider<Map<String, List<TransactionEntity>>>((ref) {
-  final grouped = ref.watch(groupedTransactionsProvider);
-  final filter = ref.watch(historyFilterProvider);
-  final query = ref.watch(historySearchQueryProvider).toLowerCase().trim();
+      final grouped = ref.watch(groupedTransactionsProvider);
+      final filter = ref.watch(historyFilterProvider);
+      final category = ref.watch(historyCategoryProvider);
+      final cycleOnly = ref.watch(historyCycleProvider);
+      final cycleDay = ref.watch(budgetCycleDateProvider);
+      final cycle = _calculatePeriod.execute(
+        date: DateTime.now(),
+        cycleDay: cycleDay,
+      );
+      final query = ref.watch(historySearchQueryProvider).toLowerCase().trim();
 
-  if (filter == null && query.isEmpty) return grouped;
+      if (filter == null && category == null && !cycleOnly && query.isEmpty) {
+        return grouped;
+      }
 
-  final result = <String, List<TransactionEntity>>{};
+      final result = <String, List<TransactionEntity>>{};
 
-  for (final entry in grouped.entries) {
-    final filtered = entry.value.where((t) {
-      final matchType = filter == null || t.type == filter;
-      final matchQuery = query.isEmpty ||
-          t.category.toLowerCase().contains(query) ||
-          t.note.toLowerCase().contains(query);
-      return matchType && matchQuery;
-    }).toList();
+      for (final entry in grouped.entries) {
+        final filtered = _filterTransactions.execute(
+          transactions: entry.value,
+          type: filter,
+          category: category,
+          query: query,
+          cycleStart: cycleOnly ? cycle.start : null,
+          cycleEnd: cycleOnly ? cycle.end : null,
+        );
 
-    if (filtered.isNotEmpty) {
-      result[entry.key] = filtered;
-    }
-  }
+        if (filtered.isNotEmpty) {
+          result[entry.key] = filtered;
+        }
+      }
 
-  return result;
-});
+      return result;
+    });
 
 final dailySummaryProvider =
     Provider<Map<String, ({double income, double expense})>>((ref) {
-  final grouped = ref.watch(groupedTransactionsProvider);
+      final grouped = ref.watch(filteredGroupedTransactionsProvider);
 
-  final summary = <String, ({double income, double expense})>{};
+      final summary = <String, ({double income, double expense})>{};
 
-  for (final entry in grouped.entries) {
-    var income = 0.0;
-    var expense = 0.0;
-    for (final t in entry.value) {
-      if (t.isExpense) {
-        expense += t.amount;
-      } else {
-        income += t.amount;
+      for (final entry in grouped.entries) {
+        var income = 0.0;
+        var expense = 0.0;
+        for (final t in entry.value) {
+          if (t.isExpense) {
+            expense += t.amount;
+          } else {
+            income += t.amount;
+          }
+        }
+        summary[entry.key] = (income: income, expense: expense);
       }
-    }
-    summary[entry.key] = (income: income, expense: expense);
-  }
 
-  return summary;
-});
+      return summary;
+    });

@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Every document belongs to the authenticated user who owns its path.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    // Legacy root collections are intentionally closed. Data must be migrated
+    // to users/{uid}/... before this app is used in production.
+    match /transactions/{transactionId} {
+      allow read, write: if false;
+    }
+
+    match /savings_goals/{goalId} {
+      allow read, write: if false;
+    }
+  }
+}
