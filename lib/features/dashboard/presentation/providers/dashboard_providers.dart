@@ -28,25 +28,41 @@ final monthlySummaryProvider = Provider<AsyncValue<MonthlySummaryEntity>>((
   ref,
 ) {
   final asyncTransactions = ref.watch(transactionsStreamProvider);
+  final cycleDay = ref.watch(budgetCycleDateProvider);
 
-  return asyncTransactions.whenData(
-    (transactions) => _calculateMonthlySummary.execute(
+  return asyncTransactions.whenData((transactions) {
+    final cycleStart = _cycleStartFor(DateTime.now(), cycleDay);
+    return _calculateMonthlySummary.execute(
       transactions: transactions,
-      month: DateTime.now(),
-    ),
-  );
+      month: cycleStart,
+    );
+  });
 });
+
+/// Returns the start date of the active budget cycle so that monthly summary
+/// always matches the budget cycle window, not the calendar month.
+DateTime _cycleStartFor(DateTime now, int cycleDay) {
+  final day = cycleDay.clamp(1, 28);
+  if (now.day >= day) {
+    return DateTime(now.year, now.month, day);
+  } else {
+    final prevMonth = DateTime(now.year, now.month - 1);
+    return DateTime(prevMonth.year, prevMonth.month, day);
+  }
+}
 
 final categoryExpensesProvider =
     Provider<AsyncValue<List<CategoryExpenseEntity>>>((ref) {
       final asyncTransactions = ref.watch(transactionsStreamProvider);
+      final cycleDay = ref.watch(budgetCycleDateProvider);
 
-      return asyncTransactions.whenData(
-        (transactions) => _calculateCategoryExpenses.execute(
+      return asyncTransactions.whenData((transactions) {
+        final cycleStart = _cycleStartFor(DateTime.now(), cycleDay);
+        return _calculateCategoryExpenses.execute(
           transactions: transactions,
-          month: DateTime.now(),
-        ),
-      );
+          month: cycleStart,
+        );
+      });
     });
 
 final budgetOverviewProvider = Provider<AsyncValue<BudgetOverviewEntity>>((

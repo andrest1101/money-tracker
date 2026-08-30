@@ -39,7 +39,7 @@ void main() {
   testWidgets('quick add sheet memvalidasi nominal kosong', (tester) async {
     await tester.pumpWidget(await buildApp());
 
-    await tester.tap(find.byIcon(Icons.add));
+    await tester.tap(find.byIcon(Icons.add_rounded));
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('Simpan'));

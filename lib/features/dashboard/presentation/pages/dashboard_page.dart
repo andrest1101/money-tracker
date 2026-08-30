@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
-import '../../domain/entities/monthly_summary_entity.dart';
 import '../../domain/entities/budget_overview_entity.dart';
+import '../../domain/entities/monthly_summary_entity.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/category_expense_pie_card.dart';
-import '../widgets/financial_insight_card.dart';
 import '../widgets/dashboard_empty_state.dart';
+import '../widgets/financial_insight_card.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -19,139 +20,249 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(monthlySummaryProvider);
     final transactionsAsync = ref.watch(transactionsStreamProvider);
+    final userName = ref.watch(userNameProvider);
+
+    void openAddSheet() => showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const QuickAddTransactionSheet(),
+    );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('MoneyTracker')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showModalBottomSheet<void>(
-          context: context,
-          isScrollControlled: true,
-          builder: (_) => const QuickAddTransactionSheet(),
-        ),
-        icon: const Icon(Icons.add),
-        label: const Text('Catat'),
-      ),
       body: summaryAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => _DashboardErrorView(
-          onRetry: () {
-            ref.invalidate(transactionsStreamProvider);
-          },
+        loading: () => _DashboardSkeleton(userName: userName),
+        error: (_, __) => _DashboardErrorView(
+          onRetry: () => ref.invalidate(transactionsStreamProvider),
         ),
-        data: (summary) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (transactionsAsync.value?.isEmpty ?? false)
-              DashboardEmptyState(
-                userName: ref.watch(userNameProvider),
-                onAdd: () => showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (_) => const QuickAddTransactionSheet(),
+        data: (summary) {
+          final isEmpty = transactionsAsync.value?.isEmpty ?? false;
+          return CustomScrollView(
+            slivers: [
+              _DashboardAppBar(userName: userName, onAdd: openAddSheet),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                sliver: SliverList.list(
+                  children: [
+                    if (isEmpty) ...[
+                      DashboardEmptyState(
+                        userName: userName,
+                        onAdd: openAddSheet,
+                      ),
+                    ] else ...[
+                      _BalanceHeroCard(summary: summary),
+                      const SizedBox(height: 12),
+                      _BudgetStatusSection(summary: summary),
+                      const SizedBox(height: 12),
+                      ref.watch(financialInsightProvider).when(
+                        loading: () => const _SectionSkeleton(height: 130),
+                        error: (_, __) => _DashboardSectionError(
+                          label: 'Insight keuangan tidak tersedia',
+                          onRetry: () =>
+                              ref.invalidate(financialInsightProvider),
+                        ),
+                        data: (insight) =>
+                            FinancialInsightCard(insight: insight),
+                      ),
+                      const SizedBox(height: 12),
+                      const CategoryExpensePieCard(),
+                    ],
+                  ],
                 ),
-              )
-            else
-              _BalanceCard(summary: summary),
-            const SizedBox(height: 16),
-            _BudgetStatusSection(summary: summary),
-            const SizedBox(height: 16),
-            ref
-                .watch(financialInsightProvider)
-                .when(
-                  loading: () => const _DashboardSectionLoading(),
-                  error: (_, __) => _DashboardSectionError(
-                    label: 'Insight keuangan tidak tersedia',
-                    onRetry: () => ref.invalidate(financialInsightProvider),
-                  ),
-                  data: (insight) => FinancialInsightCard(insight: insight),
-                ),
-            const SizedBox(height: 16),
-            const CategoryExpensePieCard(),
-          ],
-        ),
+              ),
+            ],
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => openAddSheet(),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Catat'),
       ),
     );
   }
 }
 
-class _BalanceCard extends ConsumerWidget {
-  const _BalanceCard({required this.summary});
+// ─────────────────────────────────────────────────────────────
+// App Bar (SliverAppBar with greeting)
+// ─────────────────────────────────────────────────────────────
+
+class _DashboardAppBar extends ConsumerWidget {
+  const _DashboardAppBar({required this.userName, required this.onAdd});
+
+  final String userName;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final greeting = _greeting();
+    final displayName =
+        userName.trim().isEmpty ? 'Kamu' : userName.trim().split(' ').first;
+    final user = ref.watch(currentUserProvider);
+    final isGuest = user?.isAnonymous ?? true;
+
+    return SliverAppBar(
+      pinned: false,
+      floating: true,
+      snap: true,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            greeting,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            displayName,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        if (isGuest)
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Chip(
+              avatar: Icon(
+                Icons.person_outline_rounded,
+                size: 16,
+                color: colors.onSurfaceVariant,
+              ),
+              label: Text(
+                'Tamu',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+              padding: EdgeInsets.zero,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 5) return 'Selamat malam';
+    if (hour < 12) return 'Selamat pagi';
+    if (hour < 15) return 'Selamat siang';
+    if (hour < 18) return 'Selamat sore';
+    return 'Selamat malam';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Balance Hero Card
+// ─────────────────────────────────────────────────────────────
+
+class _BalanceHeroCard extends ConsumerWidget {
+  const _BalanceHeroCard({required this.summary});
 
   final MonthlySummaryEntity summary;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
-    final balanceColor = summary.balance >= 0
-        ? Colors.green.shade700
-        : Colors.red.shade600;
-    final isPrivacyMode = ref.watch(privacyModeProvider);
+    final colors = theme.colorScheme;
+    final isPrivacy = ref.watch(privacyModeProvider);
+    final isPositive = summary.balance >= 0;
 
-    return Card(
+    // Semantic colors from the theme (no hard-coded shade values).
+    final incomeColor = colors.tertiary;
+    final expenseColor = colors.error;
+    final balanceColor = isPositive ? colors.primary : colors.error;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colors.primaryContainer,
+            colors.secondaryContainer.withValues(alpha: 0.7),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: colors.primary.withValues(alpha: 0.15),
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header row: label + privacy toggle
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Saldo Bulan Ini',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: onSurfaceVariant,
+                Expanded(
+                  child: Text(
+                    'Saldo Siklus Ini',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.onPrimaryContainer.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => ref.read(privacyModeProvider.notifier).toggle(),
-                  child: Icon(
-                    isPrivacyMode
-                        ? Icons.visibility_off_rounded
-                        : Icons.visibility_rounded,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                    size: 20,
-                  ),
-                ),
+                _PrivacyToggle(isPrivacy: isPrivacy, colors: colors, ref: ref),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
+            // Balance amount
             FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(
-                isPrivacyMode ? 'Rp •••••••' : formatRupiah(summary.balance),
-                style: theme.textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isPrivacyMode ? onSurfaceVariant : balanceColor,
+              alignment: Alignment.centerLeft,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  key: ValueKey(isPrivacy),
+                  isPrivacy ? 'Rp •••••••' : formatRupiah(summary.balance),
+                  style: theme.textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1,
+                    color: isPrivacy
+                        ? colors.onPrimaryContainer.withValues(alpha: 0.6)
+                        : balanceColor,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            // Income / Expense tiles
             Row(
               children: [
                 Expanded(
-                  child: _AmountTile(
-                    icon: Icons.south_west,
+                  child: _FlowTile(
+                    icon: Icons.south_west_rounded,
                     label: 'Pemasukan',
-                    amount: isPrivacyMode
+                    amount: isPrivacy
                         ? 'Rp •••'
                         : formatRupiah(summary.totalIncome),
-                    color: isPrivacyMode
-                        ? onSurfaceVariant
-                        : Colors.green.shade700,
+                    color: incomeColor,
+                    isPrivacy: isPrivacy,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: _AmountTile(
-                    icon: Icons.north_east,
+                  child: _FlowTile(
+                    icon: Icons.north_east_rounded,
                     label: 'Pengeluaran',
-                    amount: isPrivacyMode
+                    amount: isPrivacy
                         ? 'Rp •••'
                         : formatRupiah(summary.totalExpense),
-                    color: isPrivacyMode
-                        ? onSurfaceVariant
-                        : Colors.red.shade600,
+                    color: expenseColor,
+                    isPrivacy: isPrivacy,
                   ),
                 ),
               ],
@@ -163,56 +274,97 @@ class _BalanceCard extends ConsumerWidget {
   }
 }
 
-class _AmountTile extends StatelessWidget {
-  const _AmountTile({
+class _PrivacyToggle extends StatelessWidget {
+  const _PrivacyToggle({
+    required this.isPrivacy,
+    required this.colors,
+    required this.ref,
+  });
+  final bool isPrivacy;
+  final ColorScheme colors;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => ref.read(privacyModeProvider.notifier).toggle(),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: Icon(
+              key: ValueKey(isPrivacy),
+              isPrivacy
+                  ? Icons.visibility_off_rounded
+                  : Icons.visibility_rounded,
+              color: colors.onPrimaryContainer.withValues(alpha: 0.6),
+              size: 20,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FlowTile extends StatelessWidget {
+  const _FlowTile({
     required this.icon,
     required this.label,
     required this.amount,
     required this.color,
+    required this.isPrivacy,
   });
 
   final IconData icon;
   final String label;
   final String amount;
   final Color color;
+  final bool isPrivacy;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        color: colors.surface.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18, color: color),
-              const SizedBox(width: 6),
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 5),
               Flexible(
                 child: Text(
                   label,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
           FittedBox(
             fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
             child: Text(
               amount,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: isPrivacy ? colors.onSurfaceVariant : color,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -221,6 +373,10 @@ class _AmountTile extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────
+// Budget Status Section
+// ─────────────────────────────────────────────────────────────
 
 class _BudgetStatusSection extends ConsumerWidget {
   const _BudgetStatusSection({required this.summary});
@@ -231,6 +387,7 @@ class _BudgetStatusSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final budgetLimit = ref.watch(budgetLimitProvider);
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -241,45 +398,67 @@ class _BudgetStatusSection extends ConsumerWidget {
           children: [
             Row(
               children: [
+                Icon(
+                  Icons.account_balance_wallet_outlined,
+                  size: 18,
+                  color: colors.primary,
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Status Anggaran',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: colors.onSurface,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: theme.colorScheme.onSurfaceVariant,
+                  size: 20,
+                  color: colors.onSurfaceVariant,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            if (budgetLimit == null)
-              Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 20,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Batas anggaran belum diatur. Atur di menu Pengaturan '
-                      'untuk mulai memantau pengeluaran bulanmu.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              )
+            const SizedBox(height: 14),
+            if (budgetLimit == null || budgetLimit <= 0)
+              _NoBudgetMessage(colors: colors, theme: theme)
             else
               const _BudgetAlertContent(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _NoBudgetMessage extends StatelessWidget {
+  const _NoBudgetMessage({required this.colors, required this.theme});
+  final ColorScheme colors;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline_rounded, size: 18, color: colors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Atur batas anggaran di Pengaturan untuk mulai memantau pengeluaran.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -290,14 +469,13 @@ class _BudgetAlertContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final overviewAsync = ref.watch(budgetOverviewProvider);
 
     return overviewAsync.when(
-      loading: () => const LinearProgressIndicator(),
+      loading: () => const _SectionSkeleton(height: 80),
       error: (_, __) => Text(
-        'Detail anggaran tidak tersedia',
-        style: theme.textTheme.bodySmall,
+        'Detail anggaran tidak tersedia.',
+        style: Theme.of(context).textTheme.bodySmall,
       ),
       data: (overview) => _BudgetAlertBody(overview: overview),
     );
@@ -312,16 +490,26 @@ class _BudgetAlertBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    // Use semantic theme colors instead of hard-coded shades.
     final statusColor = overview.isExceeded
-        ? Colors.red.shade600
+        ? colors.error
         : overview.isWarning
-        ? Colors.orange.shade700
-        : Colors.green.shade700;
+        ? colors.tertiary
+        : colors.primary;
+
     final statusLabel = overview.isExceeded
         ? 'Anggaran terlampaui'
         : overview.isWarning
         ? 'Perlu diperhatikan'
         : 'Pengeluaran terkendali';
+
+    final statusIcon = overview.isExceeded
+        ? Icons.error_outline_rounded
+        : overview.isWarning
+        ? Icons.warning_amber_rounded
+        : Icons.check_circle_outline_rounded;
 
     return InkWell(
       onTap: () => _showBudgetOverview(context, overview),
@@ -329,87 +517,108 @@ class _BudgetAlertBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Status row
           Row(
             children: [
-              Icon(
-                overview.isExceeded
-                    ? Icons.error_outline_rounded
-                    : overview.isWarning
-                    ? Icons.warning_amber_rounded
-                    : Icons.check_circle_outline_rounded,
-                color: statusColor,
-                size: 20,
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(statusIcon, color: statusColor, size: 16),
               ),
               const SizedBox(width: 8),
-              Text(
-                statusLabel,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: statusColor,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  statusLabel,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-              const Spacer(),
               Text(
                 '${(overview.spentRatio * 100).round()}%',
                 style: theme.textTheme.titleSmall?.copyWith(
                   color: statusColor,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
+          // Progress bar
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: overview.spentRatio.clamp(0.0, 1.0),
-              minHeight: 12,
+              minHeight: 10,
               color: statusColor,
-              backgroundColor: statusColor.withValues(alpha: 0.12),
+              backgroundColor: statusColor.withValues(alpha: 0.1),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
+          // Amount row
           Row(
             children: [
               Expanded(
                 child: Text(
                   '${formatRupiah(overview.totalExpense)} dari ${formatRupiah(overview.budgetLimit)}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
               ),
-              Text(
-                overview.isExceeded
-                    ? 'Lebih ${formatRupiah(overview.remaining.abs())}'
-                    : 'Sisa ${formatRupiah(overview.remaining)}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: statusColor,
-                  fontWeight: FontWeight.w700,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  overview.isExceeded
+                      ? 'Lebih ${formatRupiah(overview.remaining.abs())}'
+                      : 'Sisa ${formatRupiah(overview.remaining)}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
+          // Period + tap hint
           Row(
             children: [
               Icon(
                 Icons.date_range_outlined,
-                size: 16,
-                color: theme.colorScheme.onSurfaceVariant,
+                size: 14,
+                color: colors.onSurfaceVariant,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
               Expanded(
                 child: Text(
-                  '${formatDateShort(overview.periodStart)} - ${formatDateShort(overview.periodEnd)}',
+                  '${formatDateShort(overview.periodStart)} – ${formatDateShort(overview.periodEnd)}',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
               ),
-              const Icon(Icons.touch_app_rounded, size: 16),
+              Icon(
+                Icons.touch_app_rounded,
+                size: 14,
+                color: colors.onSurfaceVariant,
+              ),
               const SizedBox(width: 4),
-              Text('Lihat detail', style: theme.textTheme.labelSmall),
+              Text(
+                'Detail',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ],
@@ -417,10 +626,7 @@ class _BudgetAlertBody extends StatelessWidget {
     );
   }
 
-  void _showBudgetOverview(
-    BuildContext context,
-    BudgetOverviewEntity overview,
-  ) {
+  void _showBudgetOverview(BuildContext context, BudgetOverviewEntity overview) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -430,6 +636,10 @@ class _BudgetAlertBody extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Budget Overview Bottom Sheet
+// ─────────────────────────────────────────────────────────────
+
 class _BudgetOverviewSheet extends StatelessWidget {
   const _BudgetOverviewSheet({required this.overview});
 
@@ -438,11 +648,12 @@ class _BudgetOverviewSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = overview.isExceeded
-        ? Colors.red.shade600
+    final colors = theme.colorScheme;
+    final statusColor = overview.isExceeded
+        ? colors.error
         : overview.isWarning
-        ? Colors.orange.shade700
-        : Colors.green.shade700;
+        ? colors.tertiary
+        : colors.primary;
 
     return SafeArea(
       child: FractionallySizedBox(
@@ -455,20 +666,24 @@ class _BudgetOverviewSheet extends StatelessWidget {
               Text('Overview Anggaran', style: theme.textTheme.labelLarge),
               const SizedBox(height: 4),
               Text(
-                '${formatDateShort(overview.periodStart)} - ${formatDateShort(overview.periodEnd)}',
+                '${formatDateShort(overview.periodStart)} – ${formatDateShort(overview.periodEnd)}',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
+              // Gradient status card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [color, color.withValues(alpha: 0.65)],
+                    colors: [
+                      statusColor,
+                      statusColor.withValues(alpha: 0.68),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(22),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,12 +707,14 @@ class _BudgetOverviewSheet extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    LinearProgressIndicator(
-                      value: overview.spentRatio.clamp(0.0, 1.0),
-                      minHeight: 9,
-                      borderRadius: BorderRadius.circular(5),
-                      backgroundColor: Colors.white24,
-                      color: Colors.white,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: overview.spentRatio.clamp(0.0, 1.0),
+                        minHeight: 8,
+                        backgroundColor: Colors.white24,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -510,6 +727,7 @@ class _BudgetOverviewSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
+              // Metrics row
               Row(
                 children: [
                   Expanded(
@@ -546,7 +764,7 @@ class _BudgetOverviewSheet extends StatelessWidget {
               const SizedBox(height: 8),
               if (overview.topCategories.isEmpty)
                 Text(
-                  'Belum ada pengeluaran pada periode ini',
+                  'Belum ada pengeluaran pada periode ini.',
                   style: theme.textTheme.bodyMedium,
                 )
               else
@@ -556,23 +774,37 @@ class _BudgetOverviewSheet extends StatelessWidget {
                     contentPadding: EdgeInsets.zero,
                     leading: CircleAvatar(
                       radius: 16,
-                      child: Text('${entry.key + 1}'),
+                      backgroundColor: statusColor.withValues(alpha: 0.15),
+                      child: Text(
+                        '${entry.key + 1}',
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
-                    title: Text(item.category),
+                    title: Text(
+                      item.category,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     trailing: Text(
                       formatRupiah(item.amount),
                       style: theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: colors.error,
                       ),
                     ),
                   );
                 }),
               const SizedBox(height: 12),
-              TextButton.icon(
+              FilledButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.check_rounded),
-                label: const Text('Tutup overview'),
-                style: TextButton.styleFrom(
+                label: const Text('Tutup'),
+                style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                 ),
               ),
@@ -600,25 +832,25 @@ class _BudgetMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Container(
       width: wide ? double.infinity : null,
-      padding: const EdgeInsets.all(13),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.45,
-        ),
-        borderRadius: BorderRadius.circular(14),
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 19, color: theme.colorScheme.primary),
-          const SizedBox(width: 9),
+          Icon(icon, size: 18, color: colors.primary),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: theme.textTheme.labelSmall),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
@@ -638,6 +870,113 @@ class _BudgetMetric extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Loading Skeleton
+// ─────────────────────────────────────────────────────────────
+
+class _DashboardSkeleton extends StatelessWidget {
+  const _DashboardSkeleton({required this.userName});
+
+  final String userName;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          pinned: false,
+          floating: true,
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SkeletonBox(width: 90, height: 12, colors: colors),
+              const SizedBox(height: 4),
+              _SkeletonBox(width: 140, height: 18, colors: colors),
+            ],
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          sliver: SliverList.list(
+            children: [
+              _SkeletonBox(
+                width: double.infinity,
+                height: 160,
+                radius: 28,
+                colors: colors,
+              ),
+              const SizedBox(height: 12),
+              _SkeletonBox(
+                width: double.infinity,
+                height: 120,
+                radius: 24,
+                colors: colors,
+              ),
+              const SizedBox(height: 12),
+              _SkeletonBox(
+                width: double.infinity,
+                height: 130,
+                radius: 24,
+                colors: colors,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionSkeleton extends StatelessWidget {
+  const _SectionSkeleton({required this.height});
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return _SkeletonBox(
+      width: double.infinity,
+      height: height,
+      radius: 24,
+      colors: colors,
+    );
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  const _SkeletonBox({
+    required this.width,
+    required this.height,
+    required this.colors,
+    this.radius = 12,
+  });
+
+  final double width;
+  final double height;
+  final double radius;
+  final ColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Error Views
+// ─────────────────────────────────────────────────────────────
+
 class _DashboardErrorView extends StatelessWidget {
   const _DashboardErrorView({required this.onRetry});
 
@@ -646,6 +985,7 @@ class _DashboardErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return Center(
       child: Padding(
@@ -653,28 +993,37 @@ class _DashboardErrorView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.cloud_off_outlined,
-              size: 64,
-              color: theme.colorScheme.error,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: colors.errorContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.cloud_off_outlined,
+                size: 40,
+                color: colors.onErrorContainer,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               'Gagal memuat data keuangan',
-              style: theme.textTheme.titleMedium,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Periksa koneksi internetmu lalu coba lagi.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: colors.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh_rounded),
               label: const Text('Coba Lagi'),
             ),
           ],
@@ -684,22 +1033,11 @@ class _DashboardErrorView extends StatelessWidget {
   }
 }
 
-class _DashboardSectionLoading extends StatelessWidget {
-  const _DashboardSectionLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Center(child: CircularProgressIndicator()),
-      ),
-    );
-  }
-}
-
 class _DashboardSectionError extends StatelessWidget {
-  const _DashboardSectionError({required this.label, required this.onRetry});
+  const _DashboardSectionError({
+    required this.label,
+    required this.onRetry,
+  });
 
   final String label;
   final VoidCallback onRetry;
@@ -708,7 +1046,10 @@ class _DashboardSectionError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: Icon(Icons.cloud_off_outlined, color: Theme.of(context).colorScheme.error),
+        leading: Icon(
+          Icons.cloud_off_outlined,
+          color: Theme.of(context).colorScheme.error,
+        ),
         title: Text(label),
         trailing: IconButton(
           tooltip: 'Coba lagi',
