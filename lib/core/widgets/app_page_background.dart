@@ -11,56 +11,36 @@ class AppPageBackground extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colors.surface,
-            Color.lerp(
-              colors.surface,
-              colors.primaryContainer,
-              isDark ? .16 : .3,
-            )!,
-            colors.surface,
-          ],
-          stops: const [0, .46, 1],
-        ),
-      ),
-      child: CustomPaint(
-        painter: _FinancialGridPainter(
-          color: colors.primary.withValues(alpha: isDark ? .055 : .035),
-        ),
-        child: child,
+      decoration: BoxDecoration(color: colors.surface),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 240,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colors.primary.withValues(alpha: isDark ? .18 : .12),
+                      colors.primaryContainer.withValues(
+                        alpha: isDark ? .1 : .07,
+                      ),
+                      Colors.transparent,
+                    ],
+                    stops: const [0, .45, 1],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          child,
+        ],
       ),
     );
   }
-}
-
-/// A quiet data-grid texture gives the app a finance-dashboard character
-/// without competing with the content above it.
-class _FinancialGridPainter extends CustomPainter {
-  const _FinancialGridPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
-    const spacing = 36.0;
-
-    for (var x = -size.height; x < size.width; x += spacing) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x + size.height, size.height),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_FinancialGridPainter oldDelegate) =>
-      oldDelegate.color != color;
 }

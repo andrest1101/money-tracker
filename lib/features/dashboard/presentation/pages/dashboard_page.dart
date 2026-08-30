@@ -426,29 +426,44 @@ class _BudgetStatusSection extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.account_balance_wallet_outlined,
-                  size: 18,
-                  color: colors.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Status Anggaran',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colors.onSurface,
+            InkWell(
+              onTap: budgetLimit == null || budgetLimit <= 0
+                  ? null
+                  : () => ref
+                        .read(budgetOverviewProvider)
+                        .whenData(
+                          (overview) => _showBudgetOverview(context, overview),
+                        ),
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet_outlined,
+                      size: 18,
+                      color: colors.primary,
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Status Anggaran',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 20,
+                      color: budgetLimit == null || budgetLimit <= 0
+                          ? colors.onSurfaceVariant.withValues(alpha: .4)
+                          : colors.primary,
+                    ),
+                  ],
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20,
-                  color: colors.onSurfaceVariant,
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 14),
             if (budgetLimit == null || budgetLimit <= 0)
@@ -458,6 +473,18 @@ class _BudgetStatusSection extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showBudgetOverview(
+    BuildContext context,
+    BudgetOverviewEntity overview,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _BudgetOverviewSheet(overview: overview),
     );
   }
 }

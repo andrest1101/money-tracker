@@ -224,51 +224,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: AppBar(title: const Text('Riwayat Transaksi')),
       body: Column(
         children: [
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      Icons.receipt_long_rounded,
-                      color: theme.colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Riwayat transaksi',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -.55,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Cari, filter, dan tinjau arus uangmu.',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
             child: TextField(
@@ -355,7 +313,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                     const SizedBox(width: 8),
                     FilterChip(
                       label: const Text('Siklus aktif'),
-                      avatar: const Icon(Icons.autorenew_rounded, size: 16),
+                      avatar: cycleOnly
+                          ? null
+                          : const Icon(Icons.autorenew_rounded, size: 16),
                       selected: cycleOnly,
                       onSelected: (_) =>
                           ref.read(historyCycleProvider.notifier).toggle(),

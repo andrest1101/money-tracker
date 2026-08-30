@@ -12,20 +12,40 @@ abstract final class MoneyTrackerTheme {
 
   static ThemeData _buildTheme(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final scheme = ColorScheme.fromSeed(
+    final generatedScheme = ColorScheme.fromSeed(
       seedColor: _seedColor,
       brightness: brightness,
       surface: isDark ? _darkBackground : _lightBackground,
     );
+    final scheme = generatedScheme.copyWith(
+      primary: isDark ? const Color(0xFF5DD4B5) : const Color(0xFF0F766E),
+      onPrimary: isDark ? const Color(0xFF00382D) : Colors.white,
+      primaryContainer: isDark
+          ? const Color(0xFF075849)
+          : const Color(0xFFD2F2E9),
+      onPrimaryContainer: isDark
+          ? const Color(0xFFB5F2E0)
+          : const Color(0xFF063D35),
+      secondary: isDark ? const Color(0xFF72D7BD) : const Color(0xFF0A8F78),
+      onSecondary: isDark ? const Color(0xFF00382D) : Colors.white,
+      secondaryContainer: isDark
+          ? const Color(0xFF075849)
+          : const Color(0xFFD8F3EB),
+      onSecondaryContainer: isDark
+          ? const Color(0xFFB5F2E0)
+          : const Color(0xFF063D35),
+      tertiary: isDark ? const Color(0xFF72D7BD) : const Color(0xFF087F6B),
+    );
     final outline = scheme.outline.withValues(alpha: isDark ? .38 : .22);
 
-    final baseTextTheme = GoogleFonts.plusJakartaSansTextTheme(
+    final baseTextTheme = GoogleFonts.interTextTheme(
       ThemeData(brightness: brightness).textTheme,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      fontFamily: 'Inter',
       textTheme: baseTextTheme,
       scaffoldBackgroundColor: Colors.transparent,
       visualDensity: VisualDensity.standard,
@@ -37,9 +57,9 @@ abstract final class MoneyTrackerTheme {
         scrolledUnderElevation: 0,
         titleTextStyle: baseTextTheme.titleLarge?.copyWith(
           color: scheme.onSurface,
-          fontSize: 23,
+          fontSize: 24,
           fontWeight: FontWeight.w800,
-          letterSpacing: -.45,
+          letterSpacing: -.4,
         ),
       ),
       cardTheme: CardThemeData(
@@ -112,8 +132,8 @@ abstract final class MoneyTrackerTheme {
         indicatorColor: scheme.primaryContainer,
         labelTextStyle: WidgetStatePropertyAll(
           TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
             color: scheme.onSurface,
           ),
         ),
