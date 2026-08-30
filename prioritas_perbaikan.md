@@ -122,22 +122,31 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 
 ### P1.1 Sistem Theme dan Visual Identity
 
-- Status: `Belum dimulai`
-- Bangun color scheme emerald/teal, typography hierarchy, radius, elevation,
-  spacing, serta style global Card, input, button, chip, snackbar, dialog, dan
-  bottom sheet untuk light dan dark mode.
+- Status: `Selesai`
+- Color scheme emerald/teal, typography hierarchy, radius, elevation, spacing,
+  serta style global Card, input, button, chip, snackbar, dialog, dan bottom
+  sheet untuk light dan dark mode sudah dibuat di
+  `lib/core/theme/money_tracker_theme.dart`.
+- Tahap lanjutan: mengganti warna hard-coded pada feature widgets jika ditemukan
+  saat redesign halaman.
 
 ### P1.2 Shared Page Background dan Layout Container
 
-- Status: `Belum dimulai`
-- Buat wrapper reusable untuk gradient/background, safe area, padding responsif,
-  keyboard inset, dan max-width desktop. Terapkan ke semua halaman utama.
+- Status: `Selesai`
+- Wrapper `AppPageBackground` sudah dibuat di
+  `lib/core/widgets/app_page_background.dart` dan dipasang pada root
+  `AppShell`, sehingga halaman utama berbagi background surface dan dekorasi
+  yang sama.
+- Tahap lanjutan: menambahkan max-width dan page container spesifik saat
+  redesign Dashboard, Savings, History, dan Settings.
 
 ### P1.3 Navigation dan Feedback Pattern
 
-- Status: `Belum dimulai`
-- Poles NavigationBar, transisi, snackbar sukses/error/retry, dialog konfirmasi,
-  dan bottom sheet agar konsisten.
+- Status: `Berjalan`
+- NavigationBar, snackbar, dialog, dan bottom sheet sudah memiliki baseline
+  style global dari theme.
+- Tahap berikutnya: menerapkan surface, spacing, feedback, dan transisi secara
+  konsisten pada setiap halaman dan action flow.
 
 ### P1.4 Redesign Dashboard
 
@@ -201,3 +210,5 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 
 - 2026-08-29: Memperluas intent-filter App Links, menambahkan parsing link
   terbungkus, cooldown resend 60 detik, dan pesan rate limit Firebase.
+- 2026-08-29: Menambahkan UI foundation global berupa theme light/dark,
+  reusable page background, dan baseline style untuk komponen Material.

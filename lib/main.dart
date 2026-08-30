@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/firebase/auth_providers.dart';
 import 'core/local_storage/settings_providers.dart';
 import 'core/navigation/app_shell.dart';
+import 'core/theme/money_tracker_theme.dart';
 import 'features/auth/presentation/pages/auth_landing_page.dart';
 import 'features/auth/presentation/pages/email_verification_page.dart';
 import 'firebase_options.dart';
@@ -163,18 +164,9 @@ class MoneyTrackerApp extends ConsumerWidget {
     return MaterialApp(
       title: 'MoneyTracker',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
-          brightness: Brightness.dark,
-        ),
-      ),
       themeMode: ref.watch(appThemeModeProvider),
+      theme: MoneyTrackerTheme.light(),
+      darkTheme: MoneyTrackerTheme.dark(),
       home: const AppShell(),
     );
   }
