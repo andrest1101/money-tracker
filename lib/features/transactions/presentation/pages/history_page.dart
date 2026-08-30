@@ -188,7 +188,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 ? 'Alokasi berhasil dihapus dan uang dikembalikan ke saldo'
                 : 'Transaksi berhasil dihapus',
           ),
-          backgroundColor: Colors.green.shade700,
         ),
       );
     } else {
@@ -209,7 +208,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final category = ref.watch(historyCategoryProvider);
     final cycleOnly = ref.watch(historyCycleProvider);
     final categories = ref.watch(historyCategoriesProvider);
-    final allTransactions = ref.watch(transactionsStreamProvider).value ?? const [];
+    final allTransactions =
+        ref.watch(transactionsStreamProvider).value ?? const [];
     final categoryCounts = <String, int>{};
     final categoryTypes = <String, TransactionType>{};
     for (final transaction in allTransactions) {
@@ -224,11 +224,53 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Riwayat')),
       body: Column(
         children: [
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      Icons.receipt_long_rounded,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Riwayat transaksi',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -.55,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Cari, filter, dan tinjau arus uangmu.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
             child: TextField(
               controller: _searchController,
               onChanged: (value) {
@@ -254,65 +296,73 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   vertical: 10,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.3,
+                fillColor: theme.colorScheme.surfaceContainerLow.withValues(
+                  alpha: .9,
                 ),
               ),
             ),
           ),
           const SizedBox(height: 8),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final selected = await showModalBottomSheet<String>(
-                        context: context,
-                        isScrollControlled: true,
-                        showDragHandle: true,
-                        builder: (_) => CategoryFilterSheet(
-                          categories: categories,
-                          counts: categoryCounts,
-                          types: categoryTypes,
-                          selectedCategory: category,
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            child: Card(
+              color: theme.colorScheme.surfaceContainerLow.withValues(
+                alpha: .78,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final selected = await showModalBottomSheet<String>(
+                            context: context,
+                            isScrollControlled: true,
+                            showDragHandle: true,
+                            builder: (_) => CategoryFilterSheet(
+                              categories: categories,
+                              counts: categoryCounts,
+                              types: categoryTypes,
+                              selectedCategory: category,
+                            ),
+                          );
+                          if (!mounted || selected == null) return;
+                          ref
+                              .read(historyCategoryProvider.notifier)
+                              .setCategory(selected.isEmpty ? null : selected);
+                        },
+                        icon: Icon(
+                          category == null
+                              ? Icons.category_outlined
+                              : Icons.filter_alt_rounded,
+                          size: 18,
                         ),
-                      );
-                      if (!mounted || selected == null) return;
-                      ref
-                          .read(historyCategoryProvider.notifier)
-                          .setCategory(selected.isEmpty ? null : selected);
-                    },
-                    icon: Icon(
-                      category == null
-                          ? Icons.category_outlined
-                          : Icons.filter_alt_rounded,
-                      size: 18,
+                        label: Text(
+                          category ?? 'Kategori',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                      ),
                     ),
-                    label: Text(
-                      category == null ? 'Kategori' : category,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: const Text('Siklus aktif'),
+                      avatar: const Icon(Icons.autorenew_rounded, size: 16),
+                      selected: cycleOnly,
+                      onSelected: (_) =>
+                          ref.read(historyCycleProvider.notifier).toggle(),
                     ),
-                    style: OutlinedButton.styleFrom(
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                FilterChip(
-                  label: const Text('Siklus aktif'),
-                  avatar: const Icon(Icons.autorenew_rounded, size: 16),
-                  selected: cycleOnly,
-                  onSelected: (_) =>
-                      ref.read(historyCycleProvider.notifier).toggle(),
-                ),
-              ],
+              ),
             ),
           ),
           if (cycleOnly)
@@ -354,7 +404,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   TextButton(
                     onPressed: () {
                       ref.read(historyFilterProvider.notifier).setType(null);
-                      ref.read(historyCategoryProvider.notifier).setCategory(null);
+                      ref
+                          .read(historyCategoryProvider.notifier)
+                          .setCategory(null);
                       if (cycleOnly) {
                         ref.read(historyCycleProvider.notifier).toggle();
                       }
@@ -382,7 +434,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 _FilterChip(
                   label: 'Pemasukan',
                   selected: filter == TransactionType.income,
-                  color: Colors.green,
+                  color: theme.colorScheme.tertiary,
                   onTap: () {
                     ref
                         .read(historyFilterProvider.notifier)
@@ -393,7 +445,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 _FilterChip(
                   label: 'Pengeluaran',
                   selected: filter == TransactionType.expense,
-                  color: Colors.red,
+                  color: theme.colorScheme.error,
                   onTap: () {
                     ref
                         .read(historyFilterProvider.notifier)
@@ -454,15 +506,16 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                       final summary = dailySummary[date];
 
                       return Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                         child: Card(
                           elevation: 0,
-                          color: theme.colorScheme.surface,
+                          color: theme.colorScheme.surfaceContainerLow
+                              .withValues(alpha: .92),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
                               color: theme.colorScheme.outlineVariant
-                                  .withValues(alpha: 0.3),
+                                  .withValues(alpha: 0.45),
                             ),
                           ),
                           child: Column(
@@ -540,13 +593,14 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                                               _SummaryAmount(
                                                 text:
                                                     '+${formatRupiah(summary.income)}',
-                                                color: Colors.green.shade700,
+                                                color:
+                                                    theme.colorScheme.tertiary,
                                               ),
                                             if (summary.expense > 0)
                                               _SummaryAmount(
                                                 text:
                                                     '-${formatRupiah(summary.expense)}',
-                                                color: Colors.red.shade600,
+                                                color: theme.colorScheme.error,
                                               ),
                                           ],
                                         ),
@@ -627,8 +681,9 @@ class _DailyOverviewSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final net = summary.income - summary.expense;
-    final netColor = net >= 0 ? Colors.green.shade700 : Colors.red.shade600;
+    final netColor = net >= 0 ? colors.tertiary : colors.error;
 
     return SafeArea(
       child: FractionallySizedBox(
@@ -656,7 +711,7 @@ class _DailyOverviewSheet extends StatelessWidget {
                         child: _OverviewMetric(
                           label: 'Pemasukan',
                           value: formatRupiah(summary.income),
-                          color: Colors.green.shade700,
+                          color: colors.tertiary,
                           icon: Icons.south_west_rounded,
                         ),
                       ),
@@ -665,7 +720,7 @@ class _DailyOverviewSheet extends StatelessWidget {
                         child: _OverviewMetric(
                           label: 'Pengeluaran',
                           value: formatRupiah(summary.expense),
-                          color: Colors.red.shade600,
+                          color: colors.error,
                           icon: Icons.north_east_rounded,
                         ),
                       ),

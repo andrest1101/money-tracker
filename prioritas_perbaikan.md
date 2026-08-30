@@ -129,6 +129,8 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
   `lib/core/theme/money_tracker_theme.dart`.
 - Tahap lanjutan: mengganti warna hard-coded pada feature widgets jika ditemukan
   saat redesign halaman.
+- Penyempurnaan: typography global kini menggunakan Plus Jakarta Sans untuk
+  hierarki teks yang lebih tegas dan profesional.
 
 ### P1.2 Shared Page Background dan Layout Container
 
@@ -139,6 +141,8 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
   yang sama.
 - Tahap lanjutan: menambahkan max-width dan page container spesifik saat
   redesign Dashboard, Savings, History, dan Settings.
+- Penyempurnaan: glow orb diganti dengan tonal mesh gradient dan tekstur grid
+  diagonal yang halus agar tidak terlihat polos atau generik.
 
 ### P1.3 Navigation dan Feedback Pattern
 
@@ -166,9 +170,11 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 
 ### P1.6 Redesign History
 
-- Status: `Belum dimulai`
-- Poles search, filter aktif, transaction tile, daily summary, empty/loading
-  state, swipe action, dan dialog hapus.
+- Status: `Selesai`
+- Menambahkan header berhierarki jelas, search dan filter surface yang lebih
+  terarah, serta penyelarasan grouped daily card dan transaction tile.
+- Semua warna arus pemasukan/pengeluaran, swipe delete, dan ringkasan harian
+  memakai semantic `ColorScheme`, sehingga konsisten pada light dan dark mode.
 
 ### P1.7 Redesign Settings
 

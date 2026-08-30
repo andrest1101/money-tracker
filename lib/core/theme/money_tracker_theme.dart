@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 abstract final class MoneyTrackerTheme {
   static const _seedColor = Color(0xFF0F766E);
@@ -18,9 +19,14 @@ abstract final class MoneyTrackerTheme {
     );
     final outline = scheme.outline.withValues(alpha: isDark ? .38 : .22);
 
+    final baseTextTheme = GoogleFonts.plusJakartaSansTextTheme(
+      ThemeData(brightness: brightness).textTheme,
+    );
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      textTheme: baseTextTheme,
       scaffoldBackgroundColor: Colors.transparent,
       visualDensity: VisualDensity.standard,
       appBarTheme: AppBarTheme(
@@ -29,11 +35,11 @@ abstract final class MoneyTrackerTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: TextStyle(
+        titleTextStyle: baseTextTheme.titleLarge?.copyWith(
           color: scheme.onSurface,
-          fontSize: 22,
+          fontSize: 23,
           fontWeight: FontWeight.w800,
-          letterSpacing: -.3,
+          letterSpacing: -.45,
         ),
       ),
       cardTheme: CardThemeData(

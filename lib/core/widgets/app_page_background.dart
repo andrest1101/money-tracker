@@ -8,47 +8,59 @@ class AppPageBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return DecoratedBox(
-      decoration: BoxDecoration(color: colors.surface),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -110,
-            right: -70,
-            child: _GlowOrb(
-              color: colors.primary.withValues(alpha: .13),
-              size: 280,
-            ),
-          ),
-          Positioned(
-            top: 190,
-            left: -150,
-            child: _GlowOrb(
-              color: colors.secondary.withValues(alpha: .08),
-              size: 300,
-            ),
-          ),
-          child,
-        ],
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colors.surface,
+            Color.lerp(
+              colors.surface,
+              colors.primaryContainer,
+              isDark ? .16 : .3,
+            )!,
+            colors.surface,
+          ],
+          stops: const [0, .46, 1],
+        ),
+      ),
+      child: CustomPaint(
+        painter: _FinancialGridPainter(
+          color: colors.primary.withValues(alpha: isDark ? .055 : .035),
+        ),
+        child: child,
       ),
     );
   }
 }
 
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.color, required this.size});
+/// A quiet data-grid texture gives the app a finance-dashboard character
+/// without competing with the content above it.
+class _FinancialGridPainter extends CustomPainter {
+  const _FinancialGridPainter({required this.color});
 
   final Color color;
-  final double size;
 
   @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        height: size,
-        width: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      ),
-    );
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+    const spacing = 36.0;
+
+    for (var x = -size.height; x < size.width; x += spacing) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x + size.height, size.height),
+        paint,
+      );
+    }
   }
+
+  @override
+  bool shouldRepaint(_FinancialGridPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

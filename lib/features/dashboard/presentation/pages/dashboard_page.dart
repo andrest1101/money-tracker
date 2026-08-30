@@ -38,7 +38,7 @@ class DashboardPage extends ConsumerWidget {
           final isEmpty = transactionsAsync.value?.isEmpty ?? false;
           return CustomScrollView(
             slivers: [
-              _DashboardAppBar(userName: userName, onAdd: openAddSheet),
+              _DashboardHeader(userName: userName),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 sliver: SliverList.list(
@@ -53,16 +53,18 @@ class DashboardPage extends ConsumerWidget {
                       const SizedBox(height: 12),
                       _BudgetStatusSection(summary: summary),
                       const SizedBox(height: 12),
-                      ref.watch(financialInsightProvider).when(
-                        loading: () => const _SectionSkeleton(height: 130),
-                        error: (_, __) => _DashboardSectionError(
-                          label: 'Insight keuangan tidak tersedia',
-                          onRetry: () =>
-                              ref.invalidate(financialInsightProvider),
-                        ),
-                        data: (insight) =>
-                            FinancialInsightCard(insight: insight),
-                      ),
+                      ref
+                          .watch(financialInsightProvider)
+                          .when(
+                            loading: () => const _SectionSkeleton(height: 130),
+                            error: (_, __) => _DashboardSectionError(
+                              label: 'Insight keuangan tidak tersedia',
+                              onRetry: () =>
+                                  ref.invalidate(financialInsightProvider),
+                            ),
+                            data: (insight) =>
+                                FinancialInsightCard(insight: insight),
+                          ),
                       const SizedBox(height: 12),
                       const CategoryExpensePieCard(),
                     ],
@@ -86,69 +88,99 @@ class DashboardPage extends ConsumerWidget {
 // App Bar (SliverAppBar with greeting)
 // ─────────────────────────────────────────────────────────────
 
-class _DashboardAppBar extends ConsumerWidget {
-  const _DashboardAppBar({required this.userName, required this.onAdd});
+class _DashboardHeader extends ConsumerWidget {
+  const _DashboardHeader({required this.userName});
 
   final String userName;
-  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final greeting = _greeting();
-    final displayName =
-        userName.trim().isEmpty ? 'Kamu' : userName.trim().split(' ').first;
+    final displayName = userName.trim().isEmpty
+        ? 'Kamu'
+        : userName.trim().split(' ').first;
     final user = ref.watch(currentUserProvider);
     final isGuest = user?.isAnonymous ?? true;
 
-    return SliverAppBar(
-      pinned: false,
-      floating: true,
-      snap: true,
-      backgroundColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            greeting,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: colors.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            displayName,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        if (isGuest)
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Chip(
-              avatar: Icon(
-                Icons.person_outline_rounded,
-                size: 16,
-                color: colors.onSurfaceVariant,
-              ),
-              label: Text(
-                'Tamu',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
+    return SliverToBoxAdapter(
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      greeting,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -.15,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      displayName,
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.8,
+                        color: colors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Pantau arus uang dan targetmu hari ini.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              padding: EdgeInsets.zero,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
+              if (isGuest)
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerHighest.withValues(
+                      alpha: .65,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: colors.outlineVariant.withValues(alpha: .4),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.person_outline_rounded,
+                        size: 16,
+                        color: colors.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Tamu',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
-        const SizedBox(width: 8),
-      ],
+        ),
+      ),
     );
   }
 
@@ -194,9 +226,7 @@ class _BalanceHeroCard extends ConsumerWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(22),
@@ -626,7 +656,10 @@ class _BudgetAlertBody extends StatelessWidget {
     );
   }
 
-  void _showBudgetOverview(BuildContext context, BudgetOverviewEntity overview) {
+  void _showBudgetOverview(
+    BuildContext context,
+    BudgetOverviewEntity overview,
+  ) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -678,10 +711,7 @@ class _BudgetOverviewSheet extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      statusColor,
-                      statusColor.withValues(alpha: 0.68),
-                    ],
+                    colors: [statusColor, statusColor.withValues(alpha: 0.68)],
                   ),
                   borderRadius: BorderRadius.circular(22),
                 ),
@@ -885,18 +915,22 @@ class _DashboardSkeleton extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverAppBar(
-          pinned: false,
-          floating: true,
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SkeletonBox(width: 90, height: 12, colors: colors),
-              const SizedBox(height: 4),
-              _SkeletonBox(width: 140, height: 18, colors: colors),
-            ],
+        SliverToBoxAdapter(
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SkeletonBox(width: 130, height: 18, colors: colors),
+                  const SizedBox(height: 6),
+                  _SkeletonBox(width: 180, height: 30, colors: colors),
+                  const SizedBox(height: 7),
+                  _SkeletonBox(width: 220, height: 12, colors: colors),
+                ],
+              ),
+            ),
           ),
         ),
         SliverPadding(
@@ -1034,10 +1068,7 @@ class _DashboardErrorView extends StatelessWidget {
 }
 
 class _DashboardSectionError extends StatelessWidget {
-  const _DashboardSectionError({
-    required this.label,
-    required this.onRetry,
-  });
+  const _DashboardSectionError({required this.label, required this.onRetry});
 
   final String label;
   final VoidCallback onRetry;

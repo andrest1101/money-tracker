@@ -29,7 +29,10 @@ class TransactionTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.red.shade600, Colors.red.shade700],
+          colors: [
+            theme.colorScheme.error,
+            theme.colorScheme.error.withValues(alpha: .74),
+          ],
           begin: isLeft ? Alignment.centerLeft : Alignment.centerRight,
           end: isLeft ? Alignment.centerRight : Alignment.centerLeft,
         ),
@@ -58,21 +61,23 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isExpense = transaction.isExpense;
-    final color = isExpense ? Colors.red.shade600 : Colors.green.shade700;
+    final color = isExpense
+        ? theme.colorScheme.error
+        : theme.colorScheme.tertiary;
     final sign = isExpense ? '-' : '+';
 
     final tileContent = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       child: Card(
         elevation: 0,
         margin: EdgeInsets.zero,
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        color: theme.colorScheme.surfaceContainerLow.withValues(alpha: 0.84),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
                 CategoryIcon(
