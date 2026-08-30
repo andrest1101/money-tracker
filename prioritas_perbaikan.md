@@ -157,9 +157,12 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 
 ### P1.5 Redesign Savings
 
-- Status: `Belum dimulai`
-- Poles goal card, progress bar, deadline chip, tab aktif/selesai, empty state,
-  serta bottom sheet tambah dan alokasi target.
+- Status: `Selesai`
+- Goal card kini memakai warna semantik dari `ColorScheme` untuk status
+  progress, target selesai, dan deadline agar konsisten pada light/dark mode.
+- Ditambahkan overview target, skeleton loading, serta penyempurnaan tab,
+  sorting, empty state, progress bar, dan deadline chip.
+- Bottom sheet tambah dan alokasi tetap mempertahankan alur yang telah ada.
 
 ### P1.6 Redesign History
 

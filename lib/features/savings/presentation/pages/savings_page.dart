@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../providers/savings_providers.dart';
 import '../widgets/add_goal_sheet.dart';
 import '../widgets/allocate_fund_sheet.dart';
 import '../widgets/goal_card.dart';
+import '../widgets/savings_overview.dart';
 
 class SavingsPage extends ConsumerStatefulWidget {
   const SavingsPage({super.key});
@@ -61,7 +63,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
         title: const Text('Hapus Target?'),
         content: Text(
           '"${goal.title}" beserta semua riwayat alokasinya akan dihapus permanen. '
-          'Dana yang sudah dialokasikan (${_formatRupiah(goal.currentAmount)}) '
+          'Dana yang sudah dialokasikan (${formatRupiah(goal.currentAmount)}) '
           'akan dikembalikan ke saldo utama.',
         ),
         actions: [
@@ -91,10 +93,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
 
     if (success) {
       messenger.showSnackBar(
-        SnackBar(
-          content: Text('"${goal.title}" berhasil dihapus.'),
-          backgroundColor: Colors.green.shade700,
-        ),
+        SnackBar(content: Text('"${goal.title}" berhasil dihapus.')),
       );
     } else {
       messenger.showSnackBar(
@@ -104,17 +103,6 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
         ),
       );
     }
-  }
-
-  String _formatRupiah(double amount) {
-    if (amount == 0) return 'Rp 0';
-    final formatted = amount
-        .toStringAsFixed(0)
-        .replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]}.',
-        );
-    return 'Rp $formatted';
   }
 
   @override
@@ -158,10 +146,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                   const Text('Selesai'),
                   if (completedCount > 0) ...[
                     const SizedBox(width: 6),
-                    _TabBadge(
-                      count: completedCount,
-                      color: const Color(0xFF2E7D32),
-                    ),
+                    _TabBadge(count: completedCount, color: cs.tertiary),
                   ],
                 ],
               ),
@@ -176,6 +161,13 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
+            child: SavingsOverview(
+              activeCount: activeCount,
+              completedCount: completedCount,
+            ),
+          ),
           // Sort filter chips
           _SortFilterRow(currentSort: sortOption),
 
@@ -226,15 +218,11 @@ class _SortFilterRow extends ConsumerWidget {
     final cs = theme.colorScheme;
 
     return Container(
-      color: cs.surface,
+      color: Colors.transparent,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(
         children: [
-          Icon(
-            Icons.sort_rounded,
-            size: 16,
-            color: cs.onSurfaceVariant,
-          ),
+          Icon(Icons.sort_rounded, size: 16, color: cs.onSurfaceVariant),
           const SizedBox(width: 8),
           Text(
             'Urutkan:',
@@ -322,19 +310,14 @@ class _SortChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 14,
-              color: selected ? color : cs.onSurfaceVariant,
-            ),
+            Icon(icon, size: 14, color: selected ? color : cs.onSurfaceVariant),
             const SizedBox(width: 5),
             Text(
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: selected ? color : cs.onSurfaceVariant,
-                    fontWeight:
-                        selected ? FontWeight.w700 : FontWeight.normal,
-                  ),
+                color: selected ? color : cs.onSurfaceVariant,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+              ),
             ),
           ],
         ),
@@ -396,7 +379,7 @@ class _GoalListView extends ConsumerWidget {
     final cs = theme.colorScheme;
 
     return goalsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const _GoalListSkeleton(),
       error: (error, _) => Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -410,8 +393,9 @@ class _GoalListView extends ConsumerWidget {
               Text(
                 'Periksa koneksi internetmu lalu coba lagi.',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: cs.onSurfaceVariant),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
@@ -477,6 +461,27 @@ class _GoalListView extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _GoalListSkeleton extends StatelessWidget {
+  const _GoalListSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+      itemCount: 3,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (_, __) => Container(
+        height: 210,
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
     );
   }
 }

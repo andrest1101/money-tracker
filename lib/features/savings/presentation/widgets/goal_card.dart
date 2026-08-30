@@ -68,10 +68,10 @@ class _GoalCardState extends ConsumerState<GoalCard>
   }
 
   Color _progressColor(double progress, ColorScheme cs) {
-    if (progress >= 1.0) return const Color(0xFF2E7D32); // dark green
-    if (progress >= 0.7) return const Color(0xFF388E3C); // green
-    if (progress >= 0.4) return const Color(0xFF1976D2); // blue
-    return cs.primary;
+    if (progress >= 1.0) return cs.tertiary; // completed
+    if (progress >= 0.7) return cs.primary; // near completion
+    if (progress >= 0.4) return cs.secondary; // midway
+    return cs.primary.withValues(alpha: 0.8); // early stage
   }
 
   ({String label, Color color, IconData icon}) _deadlineStatus(
@@ -88,7 +88,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
     if (goal.isDeadlineNear) {
       return (
         label: '${goal.daysUntilDeadline} hari lagi',
-        color: Colors.orange.shade800,
+        color: cs.tertiary,
         icon: Icons.schedule_rounded,
       );
     }
@@ -117,15 +117,10 @@ class _GoalCardState extends ConsumerState<GoalCard>
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: isCompleted
-            ? BorderSide(
-                color: const Color(0xFF2E7D32).withValues(alpha: 0.4),
-                width: 1.5,
-              )
+            ? BorderSide(color: cs.tertiary.withValues(alpha: 0.4), width: 1.5)
             : BorderSide.none,
       ),
-      color: isCompleted
-          ? const Color(0xFF2E7D32).withValues(alpha: 0.05)
-          : cs.surface,
+      color: isCompleted ? cs.tertiary.withValues(alpha: 0.05) : cs.surface,
       child: Column(
         children: [
           // ── Main Card Content ──────────────────────────────────────
@@ -168,7 +163,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: isCompleted
-                                        ? const Color(0xFF2E7D32)
+                                        ? cs.tertiary
                                         : cs.onSurface,
                                   ),
                                   maxLines: 1,
@@ -178,7 +173,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                   Text(
                                     'Target tercapai!',
                                     style: theme.textTheme.bodySmall?.copyWith(
-                                      color: const Color(0xFF2E7D32),
+                                      color: cs.tertiary,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   )
