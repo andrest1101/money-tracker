@@ -7,6 +7,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../transactions/presentation/providers/history_providers.dart';
 import '../../domain/entities/budget_overview_entity.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
 import '../providers/dashboard_providers.dart';
@@ -706,7 +707,8 @@ class _BudgetStatusSection extends ConsumerWidget {
                   : () => ref
                         .read(budgetOverviewProvider)
                         .whenData(
-                          (overview) => _showBudgetOverview(context, overview),
+                          (overview) =>
+                              _showBudgetOverview(context, overview, ref),
                         ),
               borderRadius: BorderRadius.circular(12),
               child: Padding(
@@ -753,12 +755,28 @@ class _BudgetStatusSection extends ConsumerWidget {
   void _showBudgetOverview(
     BuildContext context,
     BudgetOverviewEntity overview,
+    WidgetRef ref,
   ) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => _BudgetOverviewSheet(overview: overview),
+      builder: (_) => _BudgetOverviewSheet(
+        overview: overview,
+        onOpenHistory: (target) {
+          final navigator = Navigator.of(context);
+          if (target == null) {
+            ref
+                .read(historyNavigationIntentProvider.notifier)
+                .openActiveCycle();
+          } else {
+            ref
+                .read(historyNavigationIntentProvider.notifier)
+                .openCategoryInActiveCycle(target);
+          }
+          navigator.pop();
+        },
+      ),
     );
   }
 }
@@ -965,7 +983,8 @@ class _BudgetAlertBody extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => _BudgetOverviewSheet(overview: overview),
+      builder: (_) =>
+          _BudgetOverviewSheet(overview: overview, onOpenHistory: null),
     );
   }
 }
@@ -975,9 +994,13 @@ class _BudgetAlertBody extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────
 
 class _BudgetOverviewSheet extends StatelessWidget {
-  const _BudgetOverviewSheet({required this.overview});
+  const _BudgetOverviewSheet({
+    required this.overview,
+    required this.onOpenHistory,
+  });
 
   final BudgetOverviewEntity overview;
+  final ValueChanged<String?>? onOpenHistory;
 
   @override
   Widget build(BuildContext context) {
@@ -1071,6 +1094,10 @@ class _BudgetOverviewSheet extends StatelessWidget {
                         title: 'Transaksi pada siklus ini',
                         message:
                             'Ada ${overview.transactionCount} transaksi pengeluaran yang tercatat pada periode anggaran aktif.',
+                        actionLabel: 'Lihat di Riwayat',
+                        onAction: onOpenHistory == null
+                            ? null
+                            : () => onOpenHistory!(null),
                       ),
                     ),
                   ),
@@ -1126,6 +1153,10 @@ class _BudgetOverviewSheet extends StatelessWidget {
                       title: item.category,
                       message:
                           '${formatRupiah(item.amount)} adalah pengeluaran terbesar dari tiga kategori teratas pada periode ini.',
+                      actionLabel: 'Lihat transaksi kategori ini',
+                      onAction: onOpenHistory == null
+                          ? null
+                          : () => onOpenHistory!(item.category),
                     ),
                     leading: CircleAvatar(
                       radius: 16,
@@ -1174,6 +1205,8 @@ class _BudgetOverviewSheet extends StatelessWidget {
     BuildContext context, {
     required String title,
     required String message,
+    String? actionLabel,
+    VoidCallback? onAction,
   }) {
     showDialog<void>(
       context: context,
@@ -1181,6 +1214,14 @@ class _BudgetOverviewSheet extends StatelessWidget {
         title: Text(title),
         content: Text(message),
         actions: [
+          if (onAction != null)
+            FilledButton.tonal(
+              onPressed: () {
+                Navigator.pop(context);
+                onAction();
+              },
+              child: Text(actionLabel ?? 'Lihat detail'),
+            ),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Mengerti'),

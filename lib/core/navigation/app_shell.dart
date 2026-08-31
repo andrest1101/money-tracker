@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/savings/presentation/pages/savings_page.dart';
 import '../../features/savings/presentation/widgets/add_goal_sheet.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/presentation/pages/history_page.dart';
+import '../../features/transactions/presentation/providers/history_providers.dart';
 import '../../features/transactions/presentation/widgets/quick_add_transaction_sheet.dart';
 import '../widgets/app_page_background.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   int _currentIndex = 0;
 
   static const List<Widget> _pages = [
@@ -27,6 +29,13 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<HistoryNavigationIntent?>(historyNavigationIntentProvider, (
+      _,
+      intent,
+    ) {
+      if (intent == null) return;
+      if (_currentIndex != 2) setState(() => _currentIndex = 2);
+    });
     return AppPageBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,

@@ -88,6 +88,54 @@ final historyDateRangeProvider =
       _HistoryDateRangeNotifier.new,
     );
 
+enum HistoryNavigationTarget { activeCycle, categoryInActiveCycle }
+
+class HistoryNavigationIntent {
+  const HistoryNavigationIntent._({required this.target, this.category});
+
+  const HistoryNavigationIntent.activeCycle()
+    : this._(target: HistoryNavigationTarget.activeCycle);
+
+  const HistoryNavigationIntent.categoryInActiveCycle(String category)
+    : this._(
+        target: HistoryNavigationTarget.categoryInActiveCycle,
+        category: category,
+      );
+
+  final HistoryNavigationTarget target;
+  final String? category;
+}
+
+class HistoryNavigationController extends Notifier<HistoryNavigationIntent?> {
+  @override
+  HistoryNavigationIntent? build() => null;
+
+  void openActiveCycle() {
+    state = const HistoryNavigationIntent.activeCycle();
+  }
+
+  void openCategoryInActiveCycle(String category) {
+    state = HistoryNavigationIntent.categoryInActiveCycle(category);
+  }
+
+  void consume() => state = null;
+}
+
+final historyNavigationIntentProvider =
+    NotifierProvider<HistoryNavigationController, HistoryNavigationIntent?>(
+      HistoryNavigationController.new,
+    );
+
+void resetHistoryFilters(WidgetRef ref) {
+  ref.read(historyFilterProvider.notifier).setType(null);
+  ref.read(historyCategoryProvider.notifier).setCategory(null);
+  ref.read(historySearchQueryProvider.notifier).setQuery('');
+  ref.read(historyDateRangeProvider.notifier).clear();
+  if (ref.read(historyCycleProvider)) {
+    ref.read(historyCycleProvider.notifier).toggle();
+  }
+}
+
 final historyCategoriesProvider = Provider<List<String>>((ref) {
   final transactions = ref.watch(transactionsStreamProvider).value ?? const [];
   final counts = <String, int>{};

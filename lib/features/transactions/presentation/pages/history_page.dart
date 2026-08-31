@@ -230,6 +230,14 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final pendingIntent = ref.watch(historyNavigationIntentProvider);
+    ref.listen<HistoryNavigationIntent?>(historyNavigationIntentProvider, (
+      _,
+      intent,
+    ) {
+      if (intent != null) _scheduleApplyIntent(intent);
+    });
+    if (pendingIntent != null) _scheduleApplyIntent(pendingIntent);
     final grouped = ref.watch(filteredGroupedTransactionsProvider);
     final dailySummary = ref.watch(dailySummaryProvider);
     final filter = ref.watch(historyFilterProvider);
@@ -432,14 +440,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      ref.read(historyFilterProvider.notifier).setType(null);
-                      ref
-                          .read(historyCategoryProvider.notifier)
-                          .setCategory(null);
-                      if (cycleOnly) {
-                        ref.read(historyCycleProvider.notifier).toggle();
-                      }
-                      ref.read(historyDateRangeProvider.notifier).clear();
+                      resetHistoryFilters(ref);
                     },
                     child: const Text('Reset'),
                   ),
@@ -663,6 +664,22 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ],
       ),
     );
+  }
+
+  void _scheduleApplyIntent(HistoryNavigationIntent intent) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || ref.read(historyNavigationIntentProvider) != intent) {
+        return;
+      }
+      resetHistoryFilters(ref);
+      if (intent.target == HistoryNavigationTarget.activeCycle) {
+        ref.read(historyCycleProvider.notifier).toggle();
+      } else if (intent.category != null) {
+        ref.read(historyCategoryProvider.notifier).setCategory(intent.category);
+        ref.read(historyCycleProvider.notifier).toggle();
+      }
+      ref.read(historyNavigationIntentProvider.notifier).consume();
+    });
   }
 }
 

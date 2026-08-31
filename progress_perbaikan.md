@@ -165,6 +165,14 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Tambahkan shortcut edit dan hapus yang tetap aman untuk allocation transaction.
 - Pertimbangkan export berdasarkan filter aktif.
 
+### D1.2 Budget Overview to History
+
+- Status: `Selesai`
+- Budget Overview dapat mengirim intent navigasi ke tab History.
+- Klik transaksi membuka History dengan filter siklus aktif.
+- Klik kategori terbesar membuka History dengan filter kategori dan siklus aktif.
+- Intent diterapkan satu kali setelah History siap dirender.
+
 ## E. Navigation dan Global UI
 
 ### E1. Floating Navigation
