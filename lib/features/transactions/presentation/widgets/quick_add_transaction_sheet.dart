@@ -120,7 +120,8 @@ class _QuickAddTransactionSheetState
     if (trimmed == null || trimmed.isEmpty) return;
 
     setState(() {
-      final alreadyExists = _extraCategories.contains(trimmed) ||
+      final alreadyExists =
+          _extraCategories.contains(trimmed) ||
           (_selectedType == TransactionType.expense
                   ? ref.read(expenseCategoriesProvider)
                   : ref.read(incomeCategoriesProvider))
@@ -148,12 +149,14 @@ class _QuickAddTransactionSheetState
     final parsed = double.tryParse(raw.replaceAll('.', ''));
     if (parsed == null) return 'Nominal harus berupa angka';
     if (parsed < 0) return 'Nominal tidak boleh negatif';
-    
+
     // Allow 0 for allocation edit with warning
-    if (parsed == 0 && widget.isEditMode && widget.transaction?.isAllocation == true) {
+    if (parsed == 0 &&
+        widget.isEditMode &&
+        widget.transaction?.isAllocation == true) {
       return 'Nominal 0 akan withdraw semua alokasi (transaksi akan dihapus)';
     }
-    
+
     if (parsed <= 0) return 'Nominal harus lebih dari 0';
     return null;
   }
@@ -163,9 +166,9 @@ class _QuickAddTransactionSheetState
 
     final category = _selectedCategory;
     if (category == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih kategori dulu ya')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Pilih kategori dulu ya')));
       return;
     }
 
@@ -173,8 +176,8 @@ class _QuickAddTransactionSheetState
         double.tryParse(_amountController.text.trim().replaceAll('.', '')) ?? 0;
 
     // Show confirmation dialog if editing allocation to 0
-    if (widget.isEditMode && 
-        widget.transaction?.isAllocation == true && 
+    if (widget.isEditMode &&
+        widget.transaction?.isAllocation == true &&
         amount == 0) {
       final confirm = await showDialog<bool>(
         context: context,
@@ -198,7 +201,7 @@ class _QuickAddTransactionSheetState
           ],
         ),
       );
-      
+
       if (confirm != true) return;
     }
 
@@ -216,11 +219,11 @@ class _QuickAddTransactionSheetState
 
     final success = widget.isEditMode
         ? await ref
-            .read(quickAddControllerProvider.notifier)
-            .updateTransaction(transaction)
+              .read(quickAddControllerProvider.notifier)
+              .updateTransaction(transaction)
         : await ref
-            .read(quickAddControllerProvider.notifier)
-            .submit(transaction);
+              .read(quickAddControllerProvider.notifier)
+              .submit(transaction);
 
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
@@ -237,13 +240,16 @@ class _QuickAddTransactionSheetState
         ),
       );
     } else {
+      final errorMessage = ref
+          .read(quickAddControllerProvider)
+          .when(
+            data: (_) => 'Gagal menyimpan transaksi. Coba lagi ya.',
+            loading: () => 'Transaksi masih diproses. Coba lagi sebentar.',
+            error: (error, _) => error.toString(),
+          );
       messenger.showSnackBar(
         SnackBar(
-          content: Text(
-            widget.isEditMode
-                ? 'Gagal memperbarui transaksi. Coba lagi ya.'
-                : 'Gagal menyimpan transaksi. Coba lagi ya.',
-          ),
+          content: Text(errorMessage),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -277,8 +283,9 @@ class _QuickAddTransactionSheetState
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.4),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.4,
+                      ),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -339,18 +346,16 @@ class _QuickAddTransactionSheetState
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: typeColor,
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: typeColor, width: 2),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(4),
@@ -394,17 +399,16 @@ class _QuickAddTransactionSheetState
                         selected: _selectedCategory == category,
                         selectedColor: typeColor.withValues(alpha: 0.15),
                         side: _selectedCategory == category
-                            ? BorderSide(color: typeColor.withValues(alpha: 0.5))
+                            ? BorderSide(
+                                color: typeColor.withValues(alpha: 0.5),
+                              )
                             : null,
                         onSelected: (_) =>
                             setState(() => _selectedCategory = category),
                       ),
                     ActionChip(
                       avatar: Icon(Icons.add, size: 18, color: typeColor),
-                      label: Text(
-                        'Baru',
-                        style: TextStyle(color: typeColor),
-                      ),
+                      label: Text('Baru', style: TextStyle(color: typeColor)),
                       onPressed: _addCustomCategory,
                     ),
                   ],
@@ -422,7 +426,9 @@ class _QuickAddTransactionSheetState
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: theme.colorScheme.outlineVariant,
@@ -431,11 +437,7 @@ class _QuickAddTransactionSheetState
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 20,
-                          color: typeColor,
-                        ),
+                        Icon(Icons.calendar_today, size: 20, color: typeColor),
                         const SizedBox(width: 12),
                         Text(
                           '${_selectedDate.day} ${_monthNames[_selectedDate.month - 1]} ${_selectedDate.year}',
@@ -477,10 +479,7 @@ class _QuickAddTransactionSheetState
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: typeColor,
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: typeColor, width: 2),
                     ),
                   ),
                 ),

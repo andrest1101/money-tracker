@@ -86,6 +86,20 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Polish UI: hierarchy header, surface card, border accent, semantic emerald
   coloring, dan tooltip chart dengan format Rupiah bertitik.
 
+### B2.2 Expense Flow Chart Overview
+
+- Status: `Selesai`
+- Preview chart arus pengeluaran di Financial Insight Card sekarang memiliki
+  hit target dan feedback hover/splash sendiri.
+- Klik chart membuka overview khusus yang menampilkan total pengeluaran,
+  rata-rata harian, hari aktif, puncak pengeluaran, rincian setiap hari, dan
+  rekomendasi finansial berdasarkan pola pengeluaran.
+- Detail memakai format Rupiah bertitik dan tetap mengikuti rentang tujuh hari
+  terakhir dari preview chart.
+- Implementasi berada di `expense_flow_insight_entity.dart`,
+  `calculate_expense_flow_insight_usecase.dart`, dan
+  `expense_flow_overview_sheet.dart`.
+
 ### B3. Balance Trend Chart
 
 - Status: `Selesai`
@@ -178,10 +192,17 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 
 ### F1. Firestore Error State Audit
 
-- Status: `Belum dimulai`
+- Status: `Selesai sebagian`
 - Audit seluruh stream/provider untuk loading, error, empty, dan retry.
 - Pastikan pesan error tidak membocorkan data sensitif.
 - Pastikan setiap operasi Firestore memakai try-catch.
+- Error mapper terpusat tersedia di `core/errors/app_error_message.dart`.
+- Action transaksi dan target sekarang menyimpan pesan user-friendly pada
+  `AsyncError`, termasuk permission, koneksi, timeout, dan session error.
+- Sheet transaksi, tambah/edit target, dan alokasi menampilkan pesan error
+  hasil mapping, bukan detail exception internal.
+- Stream error dan retry UI telah tersedia pada Dashboard, History, Savings,
+  dan chart; audit lanjutan untuk seluruh Settings/Auth tetap diperlukan.
 
 ### F2. Windows Firestore Compatibility
 

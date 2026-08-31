@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/errors/app_error_message.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
@@ -110,8 +111,11 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
       await ref.read(savingsGoalRepositoryProvider).addGoal(goal);
       state = const AsyncData(null);
       return true;
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncError(
+        appErrorMessage(e, fallback: 'Target gagal dibuat. Coba lagi.'),
+        stackTrace,
+      );
       return false;
     }
   }
@@ -122,8 +126,11 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
       await ref.read(savingsGoalRepositoryProvider).updateGoal(goal);
       state = const AsyncData(null);
       return true;
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncError(
+        appErrorMessage(e, fallback: 'Target gagal diperbarui. Coba lagi.'),
+        stackTrace,
+      );
       return false;
     }
   }
@@ -136,8 +143,11 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
           .deleteGoalWithAllocations(goal.id);
       state = const AsyncData(null);
       return true;
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncError(
+        appErrorMessage(e, fallback: 'Target gagal dihapus. Coba lagi.'),
+        stackTrace,
+      );
       return false;
     }
   }
@@ -150,8 +160,11 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
       ref.invalidate(savingsGoalsStreamProvider);
       state = const AsyncData(null);
       return true;
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncError(
+        appErrorMessage(e, fallback: 'Data gagal dihapus. Coba lagi.'),
+        stackTrace,
+      );
       return false;
     }
   }
@@ -192,8 +205,11 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
 
       state = const AsyncData(null);
       return true;
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncError(
+        appErrorMessage(e, fallback: 'Dana gagal dialokasikan. Coba lagi.'),
+        stackTrace,
+      );
       return false;
     }
   }

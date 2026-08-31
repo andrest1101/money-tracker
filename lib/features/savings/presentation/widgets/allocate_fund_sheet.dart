@@ -74,9 +74,16 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
         ),
       );
     } else {
+      final errorMessage = ref
+          .read(savingsActionsControllerProvider)
+          .when(
+            data: (_) => 'Gagal mengalokasikan dana. Coba lagi ya.',
+            loading: () => 'Alokasi masih diproses. Coba lagi sebentar.',
+            error: (error, _) => error.toString(),
+          );
       messenger.showSnackBar(
         SnackBar(
-          content: const Text('Gagal mengalokasikan dana. Coba lagi ya.'),
+          content: Text(errorMessage),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -104,8 +111,9 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.4),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.4,
+                      ),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -114,8 +122,9 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
                 Text(
                   'Alokasikan Dana',
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -169,8 +178,7 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.savings_outlined),
-                  label:
-                      Text(isSaving ? 'Mengalokasikan...' : 'Alokasikan'),
+                  label: Text(isSaving ? 'Mengalokasikan...' : 'Alokasikan'),
                 ),
               ],
             ),

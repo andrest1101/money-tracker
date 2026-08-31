@@ -88,7 +88,14 @@ class _EditGoalSheetState extends ConsumerState<EditGoalSheet> {
           SnackBar(content: Text('Target "${updatedGoal.title}" diperbarui.')),
         );
       } else {
-        _showError('Gagal memperbarui target. Coba lagi ya.');
+        final errorMessage = ref
+            .read(savingsActionsControllerProvider)
+            .when(
+              data: (_) => 'Gagal memperbarui target. Coba lagi ya.',
+              loading: () => 'Target masih diproses. Coba lagi sebentar.',
+              error: (error, _) => error.toString(),
+            );
+        _showError(errorMessage);
       }
     } on FormatException catch (error) {
       _showError(error.message);

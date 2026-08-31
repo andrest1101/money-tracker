@@ -41,7 +41,8 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final amount = double.tryParse(_amountController.text.trim().replaceAll('.', '')) ?? 0;
+    final amount =
+        double.tryParse(_amountController.text.trim().replaceAll('.', '')) ?? 0;
     final now = DateTime.now();
 
     final goal = SavingsGoalEntity(
@@ -53,18 +54,29 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
       createdAt: now,
     );
 
-    final success = await ref.read(savingsActionsControllerProvider.notifier).addGoal(goal);
+    final success = await ref
+        .read(savingsActionsControllerProvider.notifier)
+        .addGoal(goal);
 
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
 
     if (success) {
       Navigator.of(context).pop();
-      messenger.showSnackBar(SnackBar(content: Text('Target "${goal.title}" berhasil dibuat!')));
+      messenger.showSnackBar(
+        SnackBar(content: Text('Target "${goal.title}" berhasil dibuat!')),
+      );
     } else {
+      final errorMessage = ref
+          .read(savingsActionsControllerProvider)
+          .when(
+            data: (_) => 'Gagal membuat target. Coba lagi ya.',
+            loading: () => 'Target masih diproses. Coba lagi sebentar.',
+            error: (error, _) => error.toString(),
+          );
       messenger.showSnackBar(
         SnackBar(
-          content: const Text('Gagal membuat target. Coba lagi ya.'),
+          content: Text(errorMessage),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -106,7 +118,9 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.4,
+                      ),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -115,14 +129,17 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
                 Text(
                   'Target Tabungan Baru',
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _titleController,
                   textCapitalization: TextCapitalization.words,
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Judul wajib diisi' : null,
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Judul wajib diisi'
+                      : null,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     labelText: 'Judul target',
