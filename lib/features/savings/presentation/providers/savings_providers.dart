@@ -116,6 +116,18 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
     }
   }
 
+  Future<bool> updateGoal(SavingsGoalEntity goal) async {
+    state = const AsyncLoading();
+    try {
+      await ref.read(savingsGoalRepositoryProvider).updateGoal(goal);
+      state = const AsyncData(null);
+      return true;
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+      return false;
+    }
+  }
+
   Future<bool> deleteGoal(SavingsGoalEntity goal) async {
     state = const AsyncLoading();
     try {

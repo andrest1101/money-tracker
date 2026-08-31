@@ -5,6 +5,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../providers/savings_providers.dart';
+import 'edit_goal_sheet.dart';
 import 'edit_allocation_sheet.dart';
 
 class GoalCard extends ConsumerStatefulWidget {
@@ -64,6 +65,15 @@ class _GoalCardState extends ConsumerState<GoalCard>
       useSafeArea: true,
       builder: (_) =>
           EditAllocationSheet(transaction: allocation, goal: widget.goal),
+    );
+  }
+
+  void _showEditGoalSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => EditGoalSheet(goal: widget.goal),
     );
   }
 
@@ -228,19 +238,40 @@ class _GoalCardState extends ConsumerState<GoalCard>
                           ),
                         ),
                         const SizedBox(height: 2),
-                        SizedBox(
-                          width: 34,
-                          height: 34,
-                          child: IconButton(
-                            onPressed: widget.onDelete,
-                            padding: EdgeInsets.zero,
-                            iconSize: 18,
-                            icon: Icon(
-                              Icons.delete_outline_rounded,
-                              color: cs.onSurfaceVariant.withValues(alpha: 0.6),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 34,
+                              height: 34,
+                              child: IconButton(
+                                onPressed: () => _showEditGoalSheet(context),
+                                padding: EdgeInsets.zero,
+                                iconSize: 18,
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  color: cs.primary,
+                                ),
+                                tooltip: 'Edit target',
+                              ),
                             ),
-                            tooltip: 'Hapus target',
-                          ),
+                            SizedBox(
+                              width: 34,
+                              height: 34,
+                              child: IconButton(
+                                onPressed: widget.onDelete,
+                                padding: EdgeInsets.zero,
+                                iconSize: 18,
+                                icon: Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: cs.onSurfaceVariant.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
+                                tooltip: 'Hapus target',
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
