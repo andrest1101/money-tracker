@@ -11,7 +11,7 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 | Area | Tahap aktif | Status |
 | --- | --- | --- |
 | Dashboard | Balance Card Overview dan Budget Overview interaktif | Selesai |
-| Analytics | Konsistensi periode chart | Belum dimulai |
+| Analytics | Konsistensi periode chart | Selesai |
 | Savings | Edit target tabungan | Selesai |
 | History | Redesign dasar dan filter | Selesai |
 | Navigation | Floating pill, center action, dan transisi | Selesai |
@@ -51,10 +51,14 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 
 ### B1. Konsistensi Periode Chart
 
-- Status: `Belum dimulai`
+- Status: `Selesai`
 - Samakan detail pie chart dengan budget cycle aktif.
 - Pastikan siklus lintas bulan tidak menghasilkan angka berbeda.
 - Tambahkan test chart untuk siklus tanggal 25 sampai 24.
+- Summary dan category aggregation sekarang menerima rentang tanggal inklusif.
+- Provider Dashboard memakai periode budget cycle yang sama.
+- Detail pie chart mengikuti budget cycle dan batas akhir hari.
+- Regression test tersedia di `test/calculate_cycle_summary_usecase_test.dart`.
 
 ### B2. Cash Flow Chart
 

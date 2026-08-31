@@ -11,11 +11,13 @@ import '../../domain/usecases/calculate_budget_overview_usecase.dart';
 import '../../domain/usecases/calculate_monthly_summary_usecase.dart';
 import '../../domain/entities/financial_insight_entity.dart';
 import '../../domain/usecases/calculate_financial_insight_usecase.dart';
+import '../../domain/usecases/calculate_budget_cycle_period_usecase.dart';
 
 const _calculateMonthlySummary = CalculateMonthlySummaryUseCase();
 const _calculateCategoryExpenses = CalculateCategoryExpensesUseCase();
 const _calculateBudgetOverview = CalculateBudgetOverviewUseCase();
 const _calculateFinancialInsight = CalculateFinancialInsightUseCase();
+const _calculateCycle = CalculateBudgetCyclePeriodUseCase();
 
 final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((
   ref,
@@ -31,25 +33,17 @@ final monthlySummaryProvider = Provider<AsyncValue<MonthlySummaryEntity>>((
   final cycleDay = ref.watch(budgetCycleDateProvider);
 
   return asyncTransactions.whenData((transactions) {
-    final cycleStart = _cycleStartFor(DateTime.now(), cycleDay);
+    final cycle = _calculateCycle.execute(
+      date: DateTime.now(),
+      cycleDay: cycleDay,
+    );
     return _calculateMonthlySummary.execute(
       transactions: transactions,
-      month: cycleStart,
+      periodStart: cycle.start,
+      periodEnd: _endOfDay(cycle.end),
     );
   });
 });
-
-/// Returns the start date of the active budget cycle so that monthly summary
-/// always matches the budget cycle window, not the calendar month.
-DateTime _cycleStartFor(DateTime now, int cycleDay) {
-  final day = cycleDay.clamp(1, 28);
-  if (now.day >= day) {
-    return DateTime(now.year, now.month, day);
-  } else {
-    final prevMonth = DateTime(now.year, now.month - 1);
-    return DateTime(prevMonth.year, prevMonth.month, day);
-  }
-}
 
 final categoryExpensesProvider =
     Provider<AsyncValue<List<CategoryExpenseEntity>>>((ref) {
@@ -57,13 +51,20 @@ final categoryExpensesProvider =
       final cycleDay = ref.watch(budgetCycleDateProvider);
 
       return asyncTransactions.whenData((transactions) {
-        final cycleStart = _cycleStartFor(DateTime.now(), cycleDay);
+        final cycle = _calculateCycle.execute(
+          date: DateTime.now(),
+          cycleDay: cycleDay,
+        );
         return _calculateCategoryExpenses.execute(
           transactions: transactions,
-          month: cycleStart,
+          periodStart: cycle.start,
+          periodEnd: _endOfDay(cycle.end),
         );
       });
     });
+
+DateTime _endOfDay(DateTime date) =>
+    DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
 
 final budgetOverviewProvider = Provider<AsyncValue<BudgetOverviewEntity>>((
   ref,
