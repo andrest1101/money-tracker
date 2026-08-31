@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../analytics/domain/entities/expense_flow_insight_entity.dart';
 import '../../domain/entities/financial_insight_entity.dart';
+import '../../../analytics/domain/usecases/calculate_expense_flow_insight_usecase.dart';
 import '../../domain/usecases/calculate_budget_cycle_period_usecase.dart';
 
 class FinancialInsightOverviewSheet extends StatelessWidget {
@@ -46,6 +48,11 @@ class FinancialInsightOverviewSheet extends StatelessWidget {
     final improving = insight.expenseChangeRatio <= 0;
     final trendColor = improving ? colors.tertiary : colors.error;
     final difference = insight.expense - insight.previousExpense;
+    final expenseFlow = const CalculateExpenseFlowInsightUseCase().execute(
+      transactions: current,
+      start: DateTime.now().subtract(const Duration(days: 6)),
+      end: DateTime.now(),
+    );
 
     return SafeArea(
       child: FractionallySizedBox(
@@ -187,6 +194,8 @@ class FinancialInsightOverviewSheet extends StatelessWidget {
                 ),
                 child: _CashFlowChart(transactions: current, colors: colors),
               ),
+              const SizedBox(height: 14),
+              _ExpenseFlowSummary(insight: expenseFlow, colors: colors),
               const SizedBox(height: 20),
               Text(
                 'Kategori terbesar',
@@ -245,6 +254,181 @@ class FinancialInsightOverviewSheet extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ExpenseFlowSummary extends StatelessWidget {
+  const _ExpenseFlowSummary({required this.insight, required this.colors});
+
+  final ExpenseFlowInsightEntity insight;
+  final ColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final peakLabel = insight.peakDay == null
+        ? 'Belum ada puncak pengeluaran'
+        : '${formatDateShort(insight.peakDay!)} • ${formatRupiah(insight.peakAmount)}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _InsightStat(
+                label: 'Hari aktif',
+                value: '${insight.activeDays} / ${insight.totalDays}',
+                icon: Icons.event_available_outlined,
+                color: colors.primary,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _InsightStat(
+                label: 'Puncak harian',
+                value: formatRupiah(insight.peakAmount),
+                icon: Icons.trending_up_rounded,
+                color: colors.error,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: colors.primaryContainer,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.lightbulb_outline_rounded,
+                color: colors.onPrimaryContainer,
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Saran berdasarkan pola pengeluaran',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colors.onPrimaryContainer,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      insight.recommendation,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onPrimaryContainer,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      peakLabel,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: colors.onPrimaryContainer.withValues(alpha: .75),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Rincian 7 hari terakhir',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 6),
+        ...insight.points.reversed.map(
+          (point) => ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              point.expense > 0
+                  ? Icons.arrow_upward_rounded
+                  : Icons.remove_rounded,
+              size: 17,
+              color: point.expense > 0 ? colors.error : colors.onSurfaceVariant,
+            ),
+            title: Text(formatDateShort(point.date)),
+            trailing: Text(
+              formatRupiah(point.expense),
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: point.expense > 0
+                    ? colors.error
+                    : colors.onSurfaceVariant,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InsightStat extends StatelessWidget {
+  const _InsightStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: color.withValues(alpha: .2)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: theme.textTheme.labelSmall),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

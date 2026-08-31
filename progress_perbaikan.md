@@ -101,6 +101,10 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Implementasi berada di `expense_flow_insight_entity.dart`,
   `calculate_expense_flow_insight_usecase.dart`, dan
   `expense_flow_overview_sheet.dart`.
+- Preview chart kecil kemudian dihapus dari Dashboard untuk mengurangi duplikasi
+  visual; chart lengkap hanya muncul setelah user membuka body Insight Card.
+- Insight Card sekarang menjadi satu entry point yang ringkas menuju seluruh
+  detail analitik.
 
 ### B3. Balance Trend Chart
 
@@ -150,6 +154,10 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
   `Lanjutkan` yang dapat ditekan user.
 - Implementasi berada di `goal_celebration_dialog.dart` dan memakai package
   `confetti`.
+- Kontras SnackBar Settings diperbaiki dengan foreground/background eksplisit
+  pada perubahan tema light/dark.
+- Header card kategori pengeluaran kini memiliki aksi `Lihat detail` yang benar-
+  benar dapat diketuk.
 
 ## D. Transaction History
 
