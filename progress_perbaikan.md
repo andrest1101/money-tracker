@@ -109,6 +109,16 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Filter siklus aktif tidak boleh menabrakkan icon refresh dan checkmark.
 - Lakukan validasi visual pada Android kecil dan Windows.
 
+### D1.1 Custom Date Range History
+
+- Status: `Selesai`
+- User dapat memilih rentang tanggal custom secara inklusif.
+- Rentang maksimal 31 hari dan range yang lebih panjang ditolak.
+- Filter tanggal dapat digabung dengan search, tipe, kategori, dan siklus aktif.
+- Ditambahkan ringkasan jumlah hari dan label filter aktif.
+- Regression test tersedia di `test/history_date_range_test.dart` dan
+  `test/filter_transactions_usecase_test.dart`.
+
 ### D2. History Detail
 
 - Status: `Belum dimulai`

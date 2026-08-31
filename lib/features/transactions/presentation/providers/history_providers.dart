@@ -56,6 +56,38 @@ final historyCycleProvider = NotifierProvider<_HistoryCycleNotifier, bool>(
   _HistoryCycleNotifier.new,
 );
 
+class HistoryDateRange {
+  const HistoryDateRange({required this.start, required this.end});
+
+  final DateTime start;
+  final DateTime end;
+
+  int get lengthInDays => end.difference(start).inDays + 1;
+  bool get isValid => !end.isBefore(start) && lengthInDays <= 31;
+}
+
+class _HistoryDateRangeNotifier extends Notifier<HistoryDateRange?> {
+  @override
+  HistoryDateRange? build() => null;
+
+  bool setRange(DateTime start, DateTime end) {
+    final value = HistoryDateRange(
+      start: DateTime(start.year, start.month, start.day),
+      end: DateTime(end.year, end.month, end.day, 23, 59, 59, 999),
+    );
+    if (!value.isValid) return false;
+    state = value;
+    return true;
+  }
+
+  void clear() => state = null;
+}
+
+final historyDateRangeProvider =
+    NotifierProvider<_HistoryDateRangeNotifier, HistoryDateRange?>(
+      _HistoryDateRangeNotifier.new,
+    );
+
 final historyCategoriesProvider = Provider<List<String>>((ref) {
   final transactions = ref.watch(transactionsStreamProvider).value ?? const [];
   final counts = <String, int>{};
@@ -78,6 +110,7 @@ final filteredGroupedTransactionsProvider =
       final filter = ref.watch(historyFilterProvider);
       final category = ref.watch(historyCategoryProvider);
       final cycleOnly = ref.watch(historyCycleProvider);
+      final dateRange = ref.watch(historyDateRangeProvider);
       final cycleDay = ref.watch(budgetCycleDateProvider);
       final cycle = _calculatePeriod.execute(
         date: DateTime.now(),
@@ -85,7 +118,11 @@ final filteredGroupedTransactionsProvider =
       );
       final query = ref.watch(historySearchQueryProvider).toLowerCase().trim();
 
-      if (filter == null && category == null && !cycleOnly && query.isEmpty) {
+      if (filter == null &&
+          category == null &&
+          !cycleOnly &&
+          dateRange == null &&
+          query.isEmpty) {
         return grouped;
       }
 
@@ -99,6 +136,8 @@ final filteredGroupedTransactionsProvider =
           query: query,
           cycleStart: cycleOnly ? cycle.start : null,
           cycleEnd: cycleOnly ? cycle.end : null,
+          dateRangeStart: dateRange?.start,
+          dateRangeEnd: dateRange?.end,
         );
 
         if (filtered.isNotEmpty) {

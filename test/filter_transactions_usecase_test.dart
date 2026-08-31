@@ -60,4 +60,14 @@ void main() {
 
     expect(result.map((transaction) => transaction.id), ['food', 'income']);
   });
+
+  test('filters an inclusive custom date range', () {
+    final result = useCase.execute(
+      transactions: transactions,
+      dateRangeStart: DateTime(2026, 8, 27),
+      dateRangeEnd: DateTime(2026, 8, 28, 23, 59, 59),
+    );
+
+    expect(result.map((transaction) => transaction.id), ['food', 'income']);
+  });
 }
