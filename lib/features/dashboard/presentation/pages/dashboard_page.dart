@@ -6,6 +6,7 @@ import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
+import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../domain/entities/budget_overview_entity.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
 import '../providers/dashboard_providers.dart';
@@ -49,7 +50,10 @@ class DashboardPage extends ConsumerWidget {
                         onAdd: openAddSheet,
                       ),
                     ] else ...[
-                      _BalanceHeroCard(summary: summary),
+                      _BalanceHeroCard(
+                        summary: summary,
+                        transactions: transactionsAsync.value ?? const [],
+                      ),
                       const SizedBox(height: 12),
                       _BudgetStatusSection(summary: summary),
                       const SizedBox(height: 12),
@@ -194,9 +198,10 @@ class _DashboardHeader extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────
 
 class _BalanceHeroCard extends ConsumerWidget {
-  const _BalanceHeroCard({required this.summary});
+  const _BalanceHeroCard({required this.summary, required this.transactions});
 
   final MonthlySummaryEntity summary;
+  final List<TransactionEntity> transactions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -210,90 +215,322 @@ class _BalanceHeroCard extends ConsumerWidget {
     final expenseColor = colors.error;
     final balanceColor = isPositive ? colors.primary : colors.error;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colors.primaryContainer,
-            colors.secondaryContainer.withValues(alpha: 0.7),
-          ],
-        ),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(28),
+      child: InkWell(
+        onTap: () => _showBalanceOverview(context, isPrivacy),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row: label + privacy toggle
-            Row(
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colors.primaryContainer,
+                colors.secondaryContainer.withValues(alpha: 0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    'Saldo Siklus Ini',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.onPrimaryContainer.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w600,
+                // Header row: label + privacy toggle
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Saldo Siklus Ini',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: colors.onPrimaryContainer.withValues(
+                            alpha: 0.7,
+                          ),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    _PrivacyToggle(
+                      isPrivacy: isPrivacy,
+                      colors: colors,
+                      ref: ref,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                // Balance amount
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      key: ValueKey(isPrivacy),
+                      isPrivacy ? 'Rp •••••••' : formatRupiah(summary.balance),
+                      style: theme.textTheme.displayMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1,
+                        color: isPrivacy
+                            ? colors.onPrimaryContainer.withValues(alpha: 0.6)
+                            : balanceColor,
+                      ),
                     ),
                   ),
                 ),
-                _PrivacyToggle(isPrivacy: isPrivacy, colors: colors, ref: ref),
+                const SizedBox(height: 20),
+                // Income / Expense tiles
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FlowTile(
+                        icon: Icons.south_west_rounded,
+                        label: 'Pemasukan',
+                        amount: isPrivacy
+                            ? 'Rp •••'
+                            : formatRupiah(summary.totalIncome),
+                        color: incomeColor,
+                        isPrivacy: isPrivacy,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _FlowTile(
+                        icon: Icons.north_east_rounded,
+                        label: 'Pengeluaran',
+                        amount: isPrivacy
+                            ? 'Rp •••'
+                            : formatRupiah(summary.totalExpense),
+                        color: expenseColor,
+                        isPrivacy: isPrivacy,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 6),
-            // Balance amount
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  key: ValueKey(isPrivacy),
-                  isPrivacy ? 'Rp •••••••' : formatRupiah(summary.balance),
-                  style: theme.textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
-                    color: isPrivacy
-                        ? colors.onPrimaryContainer.withValues(alpha: 0.6)
-                        : balanceColor,
-                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showBalanceOverview(BuildContext context, bool isPrivacy) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _BalanceOverviewSheet(
+        summary: summary,
+        transactions: transactions,
+        isPrivacy: isPrivacy,
+      ),
+    );
+  }
+}
+
+class _BalanceOverviewSheet extends StatelessWidget {
+  const _BalanceOverviewSheet({
+    required this.summary,
+    required this.transactions,
+    required this.isPrivacy,
+  });
+
+  final MonthlySummaryEntity summary;
+  final List<TransactionEntity> transactions;
+  final bool isPrivacy;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final visibleTransactions = transactions
+        .where((transaction) => !transaction.isAllocation)
+        .toList();
+    final largestExpense = visibleTransactions
+        .where((transaction) => transaction.isExpense)
+        .fold<TransactionEntity?>(
+          null,
+          (largest, transaction) =>
+              largest == null || transaction.amount > largest.amount
+              ? transaction
+              : largest,
+        );
+    String amount(double value) =>
+        isPrivacy ? 'Rp •••••••' : formatRupiah(value);
+
+    return SafeArea(
+      child: FractionallySizedBox(
+        heightFactor: .86,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Ringkasan saldo', style: theme.textTheme.labelLarge),
+              const SizedBox(height: 4),
+              Text(
+                'Siklus anggaran berjalan',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // Income / Expense tiles
-            Row(
-              children: [
-                Expanded(
-                  child: _FlowTile(
-                    icon: Icons.south_west_rounded,
-                    label: 'Pemasukan',
-                    amount: isPrivacy
-                        ? 'Rp •••'
-                        : formatRupiah(summary.totalIncome),
-                    color: incomeColor,
-                    isPrivacy: isPrivacy,
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Saldo bersih',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colors.onPrimaryContainer.withValues(alpha: .75),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      amount(summary.balance),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: colors.onPrimaryContainer,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _BalanceOverviewMetric(
+                      label: 'Pemasukan',
+                      value: amount(summary.totalIncome),
+                      icon: Icons.south_west_rounded,
+                      color: colors.tertiary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _BalanceOverviewMetric(
+                      label: 'Pengeluaran',
+                      value: amount(summary.totalExpense),
+                      icon: Icons.north_east_rounded,
+                      color: colors.error,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              _BalanceOverviewMetric(
+                label: 'Transaksi tercatat',
+                value: '${summary.transactionCount} transaksi',
+                icon: Icons.receipt_long_outlined,
+                color: colors.primary,
+                wide: true,
+              ),
+              if (largestExpense != null) ...[
+                const SizedBox(height: 18),
+                Text(
+                  'Pengeluaran terbesar',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _FlowTile(
-                    icon: Icons.north_east_rounded,
-                    label: 'Pengeluaran',
-                    amount: isPrivacy
-                        ? 'Rp •••'
-                        : formatRupiah(summary.totalExpense),
-                    color: expenseColor,
-                    isPrivacy: isPrivacy,
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: colors.errorContainer,
+                    child: Icon(
+                      Icons.trending_up_rounded,
+                      color: colors.onErrorContainer,
+                    ),
+                  ),
+                  title: Text(largestExpense.category),
+                  subtitle: Text(
+                    largestExpense.note.isEmpty
+                        ? 'Transaksi terbesar pada siklus ini'
+                        : largestExpense.note,
+                  ),
+                  trailing: Text(
+                    amount(largestExpense.amount),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.error,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tutup ringkasan'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BalanceOverviewMetric extends StatelessWidget {
+  const _BalanceOverviewMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    this.wide = false,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final bool wide;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      width: wide ? double.infinity : null,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: .48),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 19, color: color),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: theme.textTheme.labelSmall),
+                const SizedBox(height: 3),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -787,6 +1024,12 @@ class _BudgetOverviewSheet extends StatelessWidget {
                       label: 'Transaksi',
                       value: '${overview.transactionCount}',
                       icon: Icons.receipt_long_outlined,
+                      onTap: () => _showMetricDetail(
+                        context,
+                        title: 'Transaksi pada siklus ini',
+                        message:
+                            'Ada ${overview.transactionCount} transaksi pengeluaran yang tercatat pada periode anggaran aktif.',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -795,6 +1038,12 @@ class _BudgetOverviewSheet extends StatelessWidget {
                       label: 'Rata-rata / hari',
                       value: formatRupiah(overview.averageDailyExpense),
                       icon: Icons.show_chart_rounded,
+                      onTap: () => _showMetricDetail(
+                        context,
+                        title: 'Rata-rata pengeluaran harian',
+                        message:
+                            'Angka ini dihitung dari total pengeluaran yang sudah terjadi dibagi jumlah hari yang telah berjalan pada siklus ini.',
+                      ),
                     ),
                   ),
                 ],
@@ -805,6 +1054,12 @@ class _BudgetOverviewSheet extends StatelessWidget {
                 value: formatRupiah(overview.projectedExpense),
                 icon: Icons.insights_rounded,
                 wide: true,
+                onTap: () => _showMetricDetail(
+                  context,
+                  title: 'Estimasi akhir periode',
+                  message:
+                      'Proyeksi ini menggunakan rata-rata pengeluaran harian saat ini untuk memperkirakan total pengeluaran sampai akhir siklus.',
+                ),
               ),
               const SizedBox(height: 20),
               Text(
@@ -824,6 +1079,12 @@ class _BudgetOverviewSheet extends StatelessWidget {
                   final item = entry.value;
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
+                    onTap: () => _showMetricDetail(
+                      context,
+                      title: item.category,
+                      message:
+                          '${formatRupiah(item.amount)} adalah pengeluaran terbesar dari tiga kategori teratas pada periode ini.',
+                    ),
                     leading: CircleAvatar(
                       radius: 16,
                       backgroundColor: statusColor.withValues(alpha: 0.15),
@@ -866,6 +1127,26 @@ class _BudgetOverviewSheet extends StatelessWidget {
       ),
     );
   }
+
+  void _showMetricDetail(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Mengerti'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _BudgetMetric extends StatelessWidget {
@@ -873,12 +1154,14 @@ class _BudgetMetric extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
+    this.onTap,
     this.wide = false,
   });
 
   final String label;
   final String value;
   final IconData icon;
+  final VoidCallback? onTap;
   final bool wide;
 
   @override
@@ -886,7 +1169,7 @@ class _BudgetMetric extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    return Container(
+    final content = Container(
       width: wide ? double.infinity : null,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -917,6 +1200,17 @@ class _BudgetMetric extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+
+    if (onTap == null) return content;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: content,
       ),
     );
   }
