@@ -75,11 +75,6 @@ class DashboardPage extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => openAddSheet(),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Catat'),
-      ),
     );
   }
 }
