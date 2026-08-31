@@ -68,6 +68,18 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Sediakan filter 7 hari, 30 hari, dan siklus aktif.
 - Sediakan empty state saat data belum cukup.
 
+### B2.1 Financial Insight Overview
+
+- Status: `Selesai`
+- Card Insight Keuangan sekarang dapat diketuk untuk membuka overview detail.
+- Overview menampilkan pemasukan, pengeluaran, saldo bersih, perbandingan
+  dengan periode sebelumnya, chart pengeluaran tujuh hari, top kategori, rata-rata
+  harian, dan jumlah transaksi.
+- Perhitungan mengikuti budget cycle aktif.
+- Implementasi berada di `financial_insight_overview_sheet.dart`.
+- Polish UI: hierarchy header, surface card, border accent, semantic emerald
+  coloring, dan tooltip chart dengan format Rupiah bertitik.
+
 ### B3. Balance Trend Chart
 
 - Status: `Belum dimulai`

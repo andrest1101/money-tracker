@@ -13,6 +13,7 @@ import '../providers/dashboard_providers.dart';
 import '../widgets/category_expense_pie_card.dart';
 import '../widgets/dashboard_empty_state.dart';
 import '../widgets/financial_insight_card.dart';
+import '../widgets/financial_insight_overview_sheet.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -66,8 +67,20 @@ class DashboardPage extends ConsumerWidget {
                               onRetry: () =>
                                   ref.invalidate(financialInsightProvider),
                             ),
-                            data: (insight) =>
-                                FinancialInsightCard(insight: insight),
+                            data: (insight) => FinancialInsightCard(
+                              insight: insight,
+                              onTap: () => showModalBottomSheet<void>(
+                                context: context,
+                                isScrollControlled: true,
+                                showDragHandle: true,
+                                builder: (_) => FinancialInsightOverviewSheet(
+                                  insight: insight,
+                                  transactions:
+                                      transactionsAsync.value ?? const [],
+                                  cycleDay: ref.read(budgetCycleDateProvider),
+                                ),
+                              ),
+                            ),
                           ),
                       const SizedBox(height: 12),
                       const CategoryExpensePieCard(),
