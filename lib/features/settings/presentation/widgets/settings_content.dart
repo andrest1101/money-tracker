@@ -20,26 +20,34 @@ void _showSettingsSnackBar(
   required String message,
   bool isError = false,
 }) {
+  final colors = Theme.of(context).colorScheme;
+  final backgroundColor = isError ? colors.error : colors.inverseSurface;
+  final foregroundColor = isError ? colors.onError : colors.onInverseSurface;
+
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: isError
-            ? Theme.of(context).colorScheme.error
-            : Theme.of(context).colorScheme.inverseSurface,
+        backgroundColor: backgroundColor,
         content: Row(
           children: [
             Icon(
               isError
                   ? Icons.error_outline_rounded
                   : Icons.check_circle_outline,
-              color: isError
-                  ? Theme.of(context).colorScheme.onError
-                  : Theme.of(context).colorScheme.onInverseSurface,
+              color: foregroundColor,
             ),
             const SizedBox(width: 10),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: foregroundColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ],
         ),
       ),

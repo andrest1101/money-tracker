@@ -37,8 +37,10 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Tambahkan detail perhitungan rata-rata pengeluaran harian.
 - Tambahkan detail proyeksi akhir periode.
 - Jadikan kategori terbesar dapat membuka History berdasarkan kategori.
-- Implementasi: metric budget menampilkan dialog penjelasan saat diketuk.
-- Catatan: integrasi deep-link filter langsung ke History menjadi tahap lanjutan.
+- Header Status Anggaran dibuat statis; hanya body status/progress yang menjadi
+  satu interaction surface untuk membuka overview.
+- Metric transaksi dan kategori di dalam overview memiliki jalur langsung ke
+  History dengan filter yang sesuai.
 
 ### A3. Dashboard Polish
 
@@ -209,6 +211,8 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
   teks tetap terbaca saat tema berpindah light/dark.
 - Card kategori pengeluaran memiliki header yang benar-benar clickable untuk
   membuka detail kategori; affordance jari diganti label `Lihat detail`.
+- Helper SnackBar Settings menetapkan foreground icon dan teks secara eksplisit
+  untuk mode sukses maupun error.
 
 ## F. Reliability dan Sistem
 

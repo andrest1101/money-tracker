@@ -701,51 +701,41 @@ class _BudgetStatusSection extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InkWell(
-              onTap: budgetLimit == null || budgetLimit <= 0
-                  ? null
-                  : () => ref
-                        .read(budgetOverviewProvider)
-                        .whenData(
-                          (overview) =>
-                              _showBudgetOverview(context, overview, ref),
-                        ),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 18,
-                      color: colors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Status Anggaran',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: colors.onSurface,
-                        ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 18,
+                    color: colors.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Status Anggaran',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.onSurface,
                       ),
                     ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 20,
-                      color: budgetLimit == null || budgetLimit <= 0
-                          ? colors.onSurfaceVariant.withValues(alpha: .4)
-                          : colors.primary,
-                    ),
-                  ],
-                ),
+                  ),
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 18,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 14),
             if (budgetLimit == null || budgetLimit <= 0)
               _NoBudgetMessage(colors: colors, theme: theme)
             else
-              const _BudgetAlertContent(),
+              _BudgetAlertContent(
+                onOpenOverview: (overview) =>
+                    _showBudgetOverview(context, overview, ref),
+              ),
           ],
         ),
       ),
@@ -814,7 +804,9 @@ class _NoBudgetMessage extends StatelessWidget {
 }
 
 class _BudgetAlertContent extends ConsumerWidget {
-  const _BudgetAlertContent();
+  const _BudgetAlertContent({required this.onOpenOverview});
+
+  final ValueChanged<BudgetOverviewEntity> onOpenOverview;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -826,15 +818,20 @@ class _BudgetAlertContent extends ConsumerWidget {
         'Detail anggaran tidak tersedia.',
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      data: (overview) => _BudgetAlertBody(overview: overview),
+      data: (overview) =>
+          _BudgetAlertBody(overview: overview, onOpenOverview: onOpenOverview),
     );
   }
 }
 
 class _BudgetAlertBody extends StatelessWidget {
-  const _BudgetAlertBody({required this.overview});
+  const _BudgetAlertBody({
+    required this.overview,
+    required this.onOpenOverview,
+  });
 
   final BudgetOverviewEntity overview;
+  final ValueChanged<BudgetOverviewEntity> onOpenOverview;
 
   @override
   Widget build(BuildContext context) {
@@ -861,7 +858,7 @@ class _BudgetAlertBody extends StatelessWidget {
         : Icons.check_circle_outline_rounded;
 
     return InkWell(
-      onTap: () => _showBudgetOverview(context, overview),
+      onTap: () => onOpenOverview(overview),
       borderRadius: BorderRadius.circular(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -974,19 +971,6 @@ class _BudgetAlertBody extends StatelessWidget {
       ),
     );
   }
-
-  void _showBudgetOverview(
-    BuildContext context,
-    BudgetOverviewEntity overview,
-  ) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) =>
-          _BudgetOverviewSheet(overview: overview, onOpenHistory: null),
-    );
-  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1089,16 +1073,9 @@ class _BudgetOverviewSheet extends StatelessWidget {
                       label: 'Transaksi',
                       value: '${overview.transactionCount}',
                       icon: Icons.receipt_long_outlined,
-                      onTap: () => _showMetricDetail(
-                        context,
-                        title: 'Transaksi pada siklus ini',
-                        message:
-                            'Ada ${overview.transactionCount} transaksi pengeluaran yang tercatat pada periode anggaran aktif.',
-                        actionLabel: 'Lihat di Riwayat',
-                        onAction: onOpenHistory == null
-                            ? null
-                            : () => onOpenHistory!(null),
-                      ),
+                      onTap: onOpenHistory == null
+                          ? null
+                          : () => onOpenHistory!(null),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -1148,16 +1125,9 @@ class _BudgetOverviewSheet extends StatelessWidget {
                   final item = entry.value;
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
-                    onTap: () => _showMetricDetail(
-                      context,
-                      title: item.category,
-                      message:
-                          '${formatRupiah(item.amount)} adalah pengeluaran terbesar dari tiga kategori teratas pada periode ini.',
-                      actionLabel: 'Lihat transaksi kategori ini',
-                      onAction: onOpenHistory == null
-                          ? null
-                          : () => onOpenHistory!(item.category),
-                    ),
+                    onTap: onOpenHistory == null
+                        ? null
+                        : () => onOpenHistory!(item.category),
                     leading: CircleAvatar(
                       radius: 16,
                       backgroundColor: statusColor.withValues(alpha: 0.15),
