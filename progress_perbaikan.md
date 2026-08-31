@@ -62,11 +62,15 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 
 ### B2. Cash Flow Chart
 
-- Status: `Belum dimulai`
+- Status: `Selesai`
 - Buat use case agregasi pemasukan dan pengeluaran per hari/minggu.
 - Tampilkan bar chart memakai `fl_chart`.
 - Sediakan filter 7 hari, 30 hari, dan siklus aktif.
 - Sediakan empty state saat data belum cukup.
+- Implementasi tersedia di `features/analytics`.
+- Tooltip menampilkan nominal dengan format Rupiah bertitik.
+- Chart memakai data harian inklusif dari periode yang dipilih.
+- Dashboard sekarang menampilkan card Arus Kas sebagai section ringkas.
 
 ### B2.1 Financial Insight Overview
 
