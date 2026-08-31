@@ -70,7 +70,9 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Implementasi tersedia di `features/analytics`.
 - Tooltip menampilkan nominal dengan format Rupiah bertitik.
 - Chart memakai data harian inklusif dari periode yang dipilih.
-- Dashboard sekarang menampilkan card Arus Kas sebagai section ringkas.
+- Chart tidak lagi menjadi card terpisah di Dashboard.
+- Preview arus kas sekarang menjadi bagian dari Financial Insight Card dan
+  detail lengkapnya dibuka melalui overview card tersebut.
 
 ### B2.1 Financial Insight Overview
 
@@ -86,17 +88,24 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 
 ### B3. Balance Trend Chart
 
-- Status: `Belum dimulai`
+- Status: `Selesai`
 - Buat use case tren saldo kumulatif.
 - Tampilkan line chart dengan tooltip tanggal dan saldo.
 - Tampilkan insight tren naik, stabil, atau menurun.
+- Implementasi tersedia di `features/analytics` dan menggunakan range yang sama
+  dengan Cash Flow Chart.
+- Test agregasi tren saldo tersedia di `test/calculate_balance_trend_usecase_test.dart`.
 
 ### B4. Analytics Page
 
-- Status: `Belum dimulai`
+- Status: `Ditunda`
 - Buat halaman Analitik khusus setelah chart dasar stabil.
 - Satukan cash flow, balance trend, category breakdown, dan top spending.
 - Tentukan akses dari Dashboard terlebih dahulu sebelum menambah tab navigation.
+- Akses halaman penuh ditunda agar Dashboard tidak memiliki terlalu banyak
+  chart dan user memiliki satu entry point analitik melalui Insight Card.
+- `AnalyticsPage` dan Balance Trend tetap tersedia sebagai fondasi lanjutan,
+  tetapi belum ditampilkan pada navigation atau Dashboard.
 
 ## C. Savings Goals
 

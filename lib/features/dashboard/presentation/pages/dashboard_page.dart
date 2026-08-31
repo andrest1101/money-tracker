@@ -5,7 +5,6 @@ import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
-import '../../../analytics/presentation/widgets/cash_flow_chart_card.dart';
 import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../domain/entities/budget_overview_entity.dart';
@@ -58,8 +57,6 @@ class DashboardPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       _BudgetStatusSection(summary: summary),
-                      const SizedBox(height: 12),
-                      const CashFlowChartCard(),
                       const SizedBox(height: 12),
                       ref
                           .watch(financialInsightProvider)
