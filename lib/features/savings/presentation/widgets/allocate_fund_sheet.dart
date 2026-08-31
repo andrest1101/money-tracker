@@ -7,6 +7,7 @@ import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../../domain/usecases/allocate_to_goal_usecase.dart';
 import '../providers/savings_providers.dart';
+import 'goal_celebration_dialog.dart';
 
 class AllocateFundSheet extends ConsumerStatefulWidget {
   const AllocateFundSheet({super.key, required this.goal});
@@ -65,6 +66,15 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
     final messenger = ScaffoldMessenger.of(context);
 
     if (success) {
+      final completed = amount >= widget.goal.remainingAmount;
+      if (completed && mounted) {
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => GoalCelebrationDialog(goalTitle: widget.goal.title),
+        );
+      }
+      if (!mounted) return;
       Navigator.of(context).pop();
       messenger.showSnackBar(
         SnackBar(

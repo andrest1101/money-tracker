@@ -153,6 +153,12 @@ abstract final class MoneyTrackerTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
+        backgroundColor: scheme.inverseSurface,
+        contentTextStyle: TextStyle(
+          color: scheme.onInverseSurface,
+          fontWeight: FontWeight.w600,
+        ),
+        actionTextColor: scheme.inversePrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         insetPadding: const EdgeInsets.all(16),
       ),

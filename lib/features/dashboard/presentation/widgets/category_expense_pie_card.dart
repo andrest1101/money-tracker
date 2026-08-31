@@ -130,34 +130,49 @@ class _CategoryExpenseContentState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pengeluaran per Kategori',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+            InkWell(
+              onTap: () => _showCategoryDetails(selected),
+              borderRadius: BorderRadius.circular(14),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pengeluaran per Kategori',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Ketuk bagian chart untuk menjelajah',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Ketuk bagian chart untuk menjelajah',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
+                    ),
+                    Text(
+                      'Lihat detail',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 5),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: theme.colorScheme.primary,
+                      size: 18,
+                    ),
+                  ],
                 ),
-                Icon(
-                  Icons.touch_app_rounded,
-                  color: theme.colorScheme.primary,
-                  size: 22,
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 20),
             Stack(

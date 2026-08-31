@@ -139,6 +139,16 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Tambahkan feedback loading/error yang konsisten.
 - Pertimbangkan ringkasan total dana seluruh target.
 
+### C2.1 Success Celebration
+
+- Status: `Selesai`
+- Alokasi terakhir yang memenuhi target menampilkan dialog perayaan sebelum
+  sheet alokasi ditutup dan target berpindah ke tab Selesai.
+- Dialog memakai trophy badge, animasi confetti 1,6 detik, dan tombol
+  `Lanjutkan` yang dapat ditekan user.
+- Implementasi berada di `goal_celebration_dialog.dart` dan memakai package
+  `confetti`.
+
 ## D. Transaction History
 
 ### D1. History Polish
@@ -195,6 +205,10 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Font Inter digunakan dengan weight yang lebih mudah dibaca.
 - Background harus tetap clean dan tidak memakai orb, circle, grid, atau dot pattern.
 - Audit kontras dan ukuran teks kecil pada perangkat Android.
+- SnackBar global kini memakai `inverseSurface` dan `onInverseSurface` agar
+  teks tetap terbaca saat tema berpindah light/dark.
+- Card kategori pengeluaran memiliki header yang benar-benar clickable untuk
+  membuka detail kategori; affordance jari diganti label `Lihat detail`.
 
 ## F. Reliability dan Sistem
 
