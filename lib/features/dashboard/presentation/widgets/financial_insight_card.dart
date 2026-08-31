@@ -8,10 +8,16 @@ import '../../../analytics/presentation/providers/analytics_providers.dart';
 import '../../domain/entities/financial_insight_entity.dart';
 
 class FinancialInsightCard extends ConsumerWidget {
-  const FinancialInsightCard({super.key, required this.insight, this.onTap});
+  const FinancialInsightCard({
+    super.key,
+    required this.insight,
+    this.onTap,
+    this.onChartTap,
+  });
 
   final FinancialInsightEntity insight;
   final VoidCallback? onTap;
+  final VoidCallback? onChartTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -183,7 +189,7 @@ class FinancialInsightCard extends ConsumerWidget {
                 error: (_, __) => const SizedBox.shrink(),
                 data: (points) => points.every((point) => !point.hasActivity)
                     ? const SizedBox.shrink()
-                    : _InsightChartPreview(points: points),
+                    : _InsightChartPreview(points: points, onTap: onChartTap),
               ),
               const SizedBox(height: 12),
               Text(
@@ -203,9 +209,10 @@ class FinancialInsightCard extends ConsumerWidget {
 }
 
 class _InsightChartPreview extends StatelessWidget {
-  const _InsightChartPreview({required this.points});
+  const _InsightChartPreview({required this.points, this.onTap});
 
   final List<CashFlowPointEntity> points;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -215,73 +222,87 @@ class _InsightChartPreview extends StatelessWidget {
       return value > max ? value : max;
     });
 
-    return Container(
-      height: 88,
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
-      decoration: BoxDecoration(
-        color: colors.surface.withValues(alpha: .55),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colors.primary.withValues(alpha: .16)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        hoverColor: colors.primary.withValues(alpha: .08),
+        splashColor: colors.primary.withValues(alpha: .12),
+        child: Ink(
+          height: 88,
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
+          decoration: BoxDecoration(
+            color: colors.surface.withValues(alpha: .55),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: colors.primary.withValues(alpha: .16)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.bar_chart_rounded, size: 15, color: colors.primary),
-              const SizedBox(width: 5),
-              Text(
-                'Arus kas 7 hari terakhir',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.bar_chart_rounded,
+                    size: 15,
+                    color: colors.primary,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Arus kas 7 hari terakhir',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Ketuk untuk detail',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
-              const Spacer(),
-              Text(
-                'Ketuk untuk detail',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colors.primary,
-                  fontWeight: FontWeight.w700,
+              const SizedBox(height: 5),
+              Expanded(
+                child: BarChart(
+                  BarChartData(
+                    maxY: maxValue == 0 ? 1 : maxValue * 1.2,
+                    alignment: BarChartAlignment.spaceAround,
+                    gridData: const FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    titlesData: const FlTitlesData(show: false),
+                    barTouchData: BarTouchData(enabled: false),
+                    barGroups: [
+                      for (var index = 0; index < points.length; index++)
+                        BarChartGroupData(
+                          x: index,
+                          barsSpace: 2,
+                          barRods: [
+                            BarChartRodData(
+                              toY: points[index].income,
+                              width: 4,
+                              color: colors.tertiary,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                            BarChartRodData(
+                              toY: points[index].expense,
+                              width: 4,
+                              color: colors.error,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 5),
-          Expanded(
-            child: BarChart(
-              BarChartData(
-                maxY: maxValue == 0 ? 1 : maxValue * 1.2,
-                alignment: BarChartAlignment.spaceAround,
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                titlesData: const FlTitlesData(show: false),
-                barTouchData: BarTouchData(enabled: false),
-                barGroups: [
-                  for (var index = 0; index < points.length; index++)
-                    BarChartGroupData(
-                      x: index,
-                      barsSpace: 2,
-                      barRods: [
-                        BarChartRodData(
-                          toY: points[index].income,
-                          width: 4,
-                          color: colors.tertiary,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        BarChartRodData(
-                          toY: points[index].expense,
-                          width: 4,
-                          color: colors.error,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

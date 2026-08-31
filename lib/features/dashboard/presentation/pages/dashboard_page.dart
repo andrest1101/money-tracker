@@ -14,6 +14,8 @@ import '../widgets/category_expense_pie_card.dart';
 import '../widgets/dashboard_empty_state.dart';
 import '../widgets/financial_insight_card.dart';
 import '../widgets/financial_insight_overview_sheet.dart';
+import '../../../analytics/domain/usecases/calculate_expense_flow_insight_usecase.dart';
+import '../../../analytics/presentation/widgets/expense_flow_overview_sheet.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -69,6 +71,33 @@ class DashboardPage extends ConsumerWidget {
                             ),
                             data: (insight) => FinancialInsightCard(
                               insight: insight,
+                              onChartTap: () {
+                                final now = DateTime.now();
+                                final today = DateTime(
+                                  now.year,
+                                  now.month,
+                                  now.day,
+                                );
+                                final chartInsight =
+                                    const CalculateExpenseFlowInsightUseCase()
+                                        .execute(
+                                          transactions:
+                                              transactionsAsync.value ??
+                                              const [],
+                                          start: today.subtract(
+                                            const Duration(days: 6),
+                                          ),
+                                          end: today,
+                                        );
+                                showModalBottomSheet<void>(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  showDragHandle: true,
+                                  builder: (_) => ExpenseFlowOverviewSheet(
+                                    insight: chartInsight,
+                                  ),
+                                );
+                              },
                               onTap: () => showModalBottomSheet<void>(
                                 context: context,
                                 isScrollControlled: true,
