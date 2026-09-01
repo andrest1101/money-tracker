@@ -8,17 +8,23 @@ import '../providers/savings_providers.dart';
 import 'edit_goal_sheet.dart';
 import 'edit_allocation_sheet.dart';
 
+enum _GoalAction { edit, favorite, archive, delete }
+
 class GoalCard extends ConsumerStatefulWidget {
   const GoalCard({
     super.key,
     required this.goal,
     required this.onAllocate,
     required this.onDelete,
+    required this.onFavorite,
+    required this.onArchive,
   });
 
   final SavingsGoalEntity goal;
   final VoidCallback onAllocate;
   final VoidCallback onDelete;
+  final VoidCallback onFavorite;
+  final VoidCallback onArchive;
 
   @override
   ConsumerState<GoalCard> createState() => _GoalCardState();
@@ -63,6 +69,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      showDragHandle: true,
       builder: (_) =>
           EditAllocationSheet(transaction: allocation, goal: widget.goal),
     );
@@ -73,6 +80,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      showDragHandle: true,
       builder: (_) => EditGoalSheet(goal: widget.goal),
     );
   }
@@ -238,37 +246,64 @@ class _GoalCardState extends ConsumerState<GoalCard>
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 34,
-                              height: 34,
-                              child: IconButton(
-                                onPressed: () => _showEditGoalSheet(context),
-                                padding: EdgeInsets.zero,
-                                iconSize: 18,
-                                icon: Icon(
-                                  Icons.edit_outlined,
-                                  color: cs.primary,
-                                ),
-                                tooltip: 'Edit target',
+                        PopupMenuButton<_GoalAction>(
+                          tooltip: 'Aksi target',
+                          icon: const Icon(Icons.more_horiz_rounded),
+                          onSelected: (action) {
+                            switch (action) {
+                              case _GoalAction.edit:
+                                _showEditGoalSheet(context);
+                              case _GoalAction.favorite:
+                                widget.onFavorite();
+                              case _GoalAction.archive:
+                                widget.onArchive();
+                              case _GoalAction.delete:
+                                widget.onDelete();
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            const PopupMenuItem(
+                              value: _GoalAction.edit,
+                              child: ListTile(
+                                leading: Icon(Icons.edit_outlined),
+                                title: Text('Edit target'),
                               ),
                             ),
-                            SizedBox(
-                              width: 34,
-                              height: 34,
-                              child: IconButton(
-                                onPressed: widget.onDelete,
-                                padding: EdgeInsets.zero,
-                                iconSize: 18,
-                                icon: Icon(
-                                  Icons.delete_outline_rounded,
-                                  color: cs.onSurfaceVariant.withValues(
-                                    alpha: 0.6,
-                                  ),
+                            PopupMenuItem(
+                              value: _GoalAction.favorite,
+                              child: ListTile(
+                                leading: Icon(
+                                  widget.goal.isFavorite
+                                      ? Icons.star_rounded
+                                      : Icons.star_outline_rounded,
                                 ),
-                                tooltip: 'Hapus target',
+                                title: Text(
+                                  widget.goal.isFavorite
+                                      ? 'Hapus dari favorit'
+                                      : 'Favoritkan target',
+                                ),
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: _GoalAction.archive,
+                              child: ListTile(
+                                leading: Icon(
+                                  widget.goal.isArchived
+                                      ? Icons.unarchive_outlined
+                                      : Icons.archive_outlined,
+                                ),
+                                title: Text(
+                                  widget.goal.isArchived
+                                      ? 'Kembalikan dari arsip'
+                                      : 'Arsipkan target',
+                                ),
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: _GoalAction.delete,
+                              child: ListTile(
+                                leading: Icon(Icons.delete_outline_rounded),
+                                title: Text('Hapus target'),
                               ),
                             ),
                           ],

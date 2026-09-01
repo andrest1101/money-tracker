@@ -159,6 +159,22 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 - Header card kategori pengeluaran kini memiliki aksi `Lihat detail` yang benar-
   benar dapat diketuk.
 
+### C3. Savings Archive and Goal Actions
+
+- Status: `Selesai`
+- Target menyimpan metadata `isArchived` dan `isFavorite` dengan default `false`
+  agar dokumen Firestore lama tetap kompatibel.
+- Provider memisahkan target normal dan target arsip berdasarkan status Aktif atau
+  Selesai.
+- Goal card memiliki menu tiga titik untuk edit, favorit, arsip/kembalikan, dan
+  hapus, dengan SnackBar feedback untuk archive/favorite.
+- Sorting target memakai tombol compact dengan bottom sheet pilihan urutan.
+- Penghapusan target selesai hanya menghapus dokumen target; transaksi alokasi
+  tetap dipertahankan sebagai ledger sehingga saldo utama tidak berubah.
+- Bottom sheet Savings memakai satu drag handle dari `showDragHandle` tanpa handle
+  manual ganda.
+- Verifikasi: `flutter analyze` bersih dan seluruh test lulus.
+
 ## D. Transaction History
 
 ### D1. History Polish
