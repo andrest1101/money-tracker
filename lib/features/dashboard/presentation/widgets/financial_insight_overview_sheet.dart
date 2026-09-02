@@ -183,7 +183,6 @@ class FinancialInsightOverviewSheet extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Container(
-                height: 220,
                 padding: const EdgeInsets.fromLTRB(10, 18, 10, 8),
                 decoration: BoxDecoration(
                   color: colors.surfaceContainerLow,
@@ -434,14 +433,22 @@ class _InsightStat extends StatelessWidget {
   }
 }
 
-class _CashFlowChart extends StatelessWidget {
+class _CashFlowChart extends StatefulWidget {
   const _CashFlowChart({required this.transactions, required this.colors});
 
   final List<TransactionEntity> transactions;
   final ColorScheme colors;
 
   @override
+  State<_CashFlowChart> createState() => _CashFlowChartState();
+}
+
+class _CashFlowChartState extends State<_CashFlowChart> {
+  int? _selectedIndex;
+
+  @override
   Widget build(BuildContext context) {
+    final colors = widget.colors;
     final now = DateTime.now();
     final days = List.generate(7, (index) {
       final date = DateTime(now.year, now.month, now.day - (6 - index));
@@ -449,7 +456,7 @@ class _CashFlowChart extends StatelessWidget {
     });
     final values = days.map((day) {
       var total = 0.0;
-      for (final transaction in transactions) {
+      for (final transaction in widget.transactions) {
         if (transaction.isExpense &&
             transaction.date.year == day.year &&
             transaction.date.month == day.month &&
@@ -464,13 +471,31 @@ class _CashFlowChart extends StatelessWidget {
       (max, value) => value > max ? value : max,
     );
 
-    return BarChart(
-      BarChartData(
+    return Column(
+      children: [
+        if (_selectedIndex case final index?) ...[
+          _SelectedExpenseDay(
+            date: days[index],
+            amount: values[index],
+            onClear: () => setState(() => _selectedIndex = null),
+          ),
+          const SizedBox(height: 10),
+        ],
+        SizedBox(
+          height: 180,
+          child: BarChart(
+            BarChartData(
         maxY: maxValue == 0 ? 1 : maxValue * 1.2,
         gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
         barTouchData: BarTouchData(
           enabled: true,
+          touchCallback: (event, response) {
+            if (event is! FlTapUpEvent) return;
+            final index = response?.spot?.touchedBarGroupIndex;
+            if (index == null || index < 0 || index >= values.length) return;
+            setState(() => _selectedIndex = index);
+          },
           touchTooltipData: BarTouchTooltipData(
             getTooltipColor: (_) => colors.inverseSurface,
             getTooltipItem: (group, groupIndex, rod, rodIndex) =>
@@ -517,6 +542,57 @@ class _CashFlowChart extends StatelessWidget {
                 ),
               ],
             ),
+        ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SelectedExpenseDay extends StatelessWidget {
+  const _SelectedExpenseDay({
+    required this.date,
+    required this.amount,
+    required this.onClear,
+  });
+
+  final DateTime date;
+  final double amount;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 9, 6, 9),
+      decoration: BoxDecoration(
+        color: colors.errorContainer.withValues(alpha: .55),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: colors.error.withValues(alpha: .2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.touch_app_rounded, size: 17, color: colors.error),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${date.day}/${date.month}/${date.year}  •  Pengeluaran ${formatRupiah(amount)}',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: colors.onErrorContainer,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: onClear,
+            tooltip: 'Sembunyikan detail',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.close_rounded, size: 17),
+          ),
         ],
       ),
     );
