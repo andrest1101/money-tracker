@@ -76,19 +76,15 @@ class ProfileAvatarSheet extends ConsumerStatefulWidget {
 
 class _ProfileAvatarSheetState extends ConsumerState<ProfileAvatarSheet> {
   var _category = PresetAvatarCategory.people;
-  PresetAvatarGender? _gender;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final selectedId = ref.watch(profileAvatarProvider);
-    final avatars = presetAvatars.where((avatar) {
-      return avatar.category == _category &&
-          (_category != PresetAvatarCategory.people ||
-              _gender == null ||
-              avatar.gender == _gender);
-    }).toList();
+    final avatars = presetAvatars
+        .where((avatar) => avatar.category == _category)
+        .toList();
 
     return SafeArea(
       child: LayoutBuilder(
@@ -112,19 +108,12 @@ class _ProfileAvatarSheetState extends ConsumerState<ProfileAvatarSheet> {
                     'Pilih avatar manusia atau gaya umum. Kamu dapat menggantinya kapan saja.',
                     style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   _CategorySelector(
                     category: _category,
                     onChanged: (category) => setState(() => _category = category),
                   ),
-                  if (_category == PresetAvatarCategory.people) ...[
-                    const SizedBox(height: 10),
-                    _GenderSelector(
-                      gender: _gender,
-                      onChanged: (gender) => setState(() => _gender = gender),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   LayoutBuilder(
                     builder: (context, gridConstraints) {
                       final columns = gridConstraints.maxWidth < 360 ? 3 : 4;
@@ -179,52 +168,22 @@ class _CategorySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return SegmentedButton<PresetAvatarCategory>(
       segments: const [
-        ButtonSegment(value: PresetAvatarCategory.people, label: Text('Manusia'), icon: Icon(Icons.face_rounded)),
-        ButtonSegment(value: PresetAvatarCategory.general, label: Text('Gaya umum'), icon: Icon(Icons.auto_awesome_rounded)),
+        ButtonSegment(
+          value: PresetAvatarCategory.people,
+          label: Text('Manusia'),
+          icon: Icon(Icons.face_rounded),
+        ),
+        ButtonSegment(
+          value: PresetAvatarCategory.general,
+          label: Text('Gaya umum'),
+          icon: Icon(Icons.auto_awesome_rounded),
+        ),
       ],
       selected: {category},
       onSelectionChanged: (value) => onChanged(value.first),
-      style: ButtonStyle(
-        visualDensity: VisualDensity.compact,
-        foregroundColor: WidgetStatePropertyAll(colors.onSurface),
-      ),
-    );
-  }
-}
-
-class _GenderSelector extends StatelessWidget {
-  const _GenderSelector({required this.gender, required this.onChanged});
-
-  final PresetAvatarGender? gender;
-  final ValueChanged<PresetAvatarGender?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        ChoiceChip(
-          label: const Text('Semua'),
-          selected: gender == null,
-          onSelected: (_) => onChanged(null),
-        ),
-        ChoiceChip(
-          label: const Text('Laki-laki'),
-          avatar: const Icon(Icons.face_rounded, size: 17),
-          selected: gender == PresetAvatarGender.male,
-          onSelected: (_) => onChanged(PresetAvatarGender.male),
-        ),
-        ChoiceChip(
-          label: const Text('Perempuan'),
-          avatar: const Icon(Icons.face_3_rounded, size: 17),
-          selected: gender == PresetAvatarGender.female,
-          onSelected: (_) => onChanged(PresetAvatarGender.female),
-        ),
-      ],
+      style: const ButtonStyle(visualDensity: VisualDensity.compact),
     );
   }
 }
