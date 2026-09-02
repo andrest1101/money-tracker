@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/core/utils/thousands_separator_input_formatter.dart';
+import 'package:savu/core/utils/thousands_separator_input_formatter.dart';
 
 void main() {
   final formatter = ThousandsSeparatorInputFormatter();

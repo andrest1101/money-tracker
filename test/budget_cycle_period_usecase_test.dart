@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:money_tracker/features/dashboard/domain/usecases/calculate_budget_cycle_period_usecase.dart';
+import 'package:savu/features/dashboard/domain/usecases/calculate_budget_cycle_period_usecase.dart';
 
 void main() {
   test('calculates cycle across month boundary', () {

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/features/transactions/domain/entities/transaction_entity.dart';
-import 'package:money_tracker/features/transactions/domain/usecases/filter_transactions_usecase.dart';
+import 'package:savu/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:savu/features/transactions/domain/usecases/filter_transactions_usecase.dart';
 
 void main() {
   const useCase = FilterTransactionsUseCase();

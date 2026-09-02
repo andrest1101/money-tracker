@@ -1,6 +1,6 @@
 <div align="center">
 
-# 💰 MoneyTracker
+# 💰 Savu
 
 ### 📊 Catat lebih cepat. Atur lebih cerdas. Capai target lebih konsisten.
 
@@ -20,7 +20,7 @@ yang ingin memahami ke mana uangnya pergi.
 
 ## 🧭 Daftar Isi
 
-- [Tentang MoneyTracker](#-tentang-moneytracker)
+- [Tentang Savu](#-tentang-savu)
 - [Fitur Utama](#-fitur-utama)
 - [Teknologi yang Digunakan](#️-teknologi-yang-digunakan)
 - [Arsitektur dan Struktur Proyek](#️-arsitektur-dan-struktur-proyek)
@@ -43,9 +43,9 @@ yang ingin memahami ke mana uangnya pergi.
 - **iOS:** konfigurasi dasar tersedia; Google Sign-In dan deep link tetap perlu
   divalidasi menggunakan macOS dan Xcode.
 
-## 🚀 Tentang MoneyTracker
+## 🚀 Tentang Savu
 
-MoneyTracker adalah aplikasi mobile berbasis Flutter dan Firebase yang dibuat
+Savu adalah aplikasi mobile berbasis Flutter dan Firebase yang dibuat
 untuk membantu pengguna mencatat transaksi tanpa proses yang panjang. Fokus
 utamanya adalah mengurangi kebiasaan lupa mencatat, mendeteksi pengeluaran yang
 mulai berlebihan, dan membuat target tabungan terasa lebih terukur.
@@ -164,7 +164,7 @@ mulai berlebihan, dan membuat target tabungan terasa lebih terukur.
 
 ## 🏗️ Arsitektur dan Struktur Proyek
 
-MoneyTracker menerapkan Clean Architecture agar tampilan, aturan bisnis, dan
+Savu menerapkan Clean Architecture agar tampilan, aturan bisnis, dan
 akses database tidak tercampur. Ibarat sebuah restoran, **Presentation** adalah
 pelayan, **Domain** adalah resep dan aturan masakan, sedangkan **Data** adalah
 dapur yang berkomunikasi dengan pemasok atau database.
@@ -172,7 +172,7 @@ dapur yang berkomunikasi dengan pemasok atau database.
 ### 🧱 Struktur Direktori Utama
 
 ```text
-money_tracker/
+savu/
 ├── android/                         # Konfigurasi dan resource Android
 ├── ios/                             # Konfigurasi dan resource iOS
 ├── linux/                           # Konfigurasi desktop Linux
@@ -241,7 +241,7 @@ feature/
 
 ```bash
 git clone <URL_REPOSITORY>
-cd money_tracker
+cd savu
 ```
 
 - Ganti `<URL_REPOSITORY>` dengan URL repository GitHub project.
@@ -287,7 +287,7 @@ money-tracker-e22c0
 ### 📱 Android
 
 - `android/app/google-services.json` diperlukan oleh Firebase Android SDK.
-- Package name aplikasi adalah `com.example.money_tracker`.
+- Package name aplikasi adalah `com.example.savu`.
 - Daftarkan SHA-1 dan SHA-256 debug maupun release di Firebase Console.
 - Aktifkan provider Anonymous, Email/Password, Google, dan Email Link sesuai
   kebutuhan aplikasi.
@@ -438,5 +438,5 @@ firebase deploy --only hosting,firestore:rules
 ## 🤝 Kontributor dan Author
 
 - **Author:** Andre Robert
-- **Product:** MoneyTracker
+- **Product:** Savu
 

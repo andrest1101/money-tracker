@@ -234,7 +234,7 @@ class _CreateOptionsSheet extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             Text(
-              'Pilih yang ingin kamu tambahkan ke MoneyTracker.',
+              'Pilih yang ingin kamu tambahkan ke Savu.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurfaceVariant,
               ),

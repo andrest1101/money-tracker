@@ -1,6 +1,6 @@
 {
-    "name": "money_tracker",
-    "short_name": "money_tracker",
+    "name": "savu",
+    "short_name": "savu",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

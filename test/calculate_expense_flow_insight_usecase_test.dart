@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/features/analytics/domain/usecases/calculate_expense_flow_insight_usecase.dart';
-import 'package:money_tracker/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:savu/features/analytics/domain/usecases/calculate_expense_flow_insight_usecase.dart';
+import 'package:savu/features/transactions/domain/entities/transaction_entity.dart';
 
 void main() {
   const useCase = CalculateExpenseFlowInsightUseCase();

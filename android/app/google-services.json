@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:671219337997:android:44ec7894230a08241abe44",
         "android_client_info": {
-          "package_name": "com.example.money_tracker"
+          "package_name": "com.example.savu"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "671219337997-23tlj63vve1nktt2se8etnv0unkici9a.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.money_tracker",
+            "package_name": "com.example.savu",
             "certificate_hash": "a0738b4d528ff1a73edce30753974eb2862b24cb"
           }
         },
@@ -42,7 +42,7 @@
               "client_id": "671219337997-1ej77r4io7phgtatcdsp4b00ecpmand0.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.moneyTracker"
+                "bundle_id": "com.example.savu"
               }
             }
           ]

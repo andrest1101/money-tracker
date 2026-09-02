@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/core/local_storage/settings_providers.dart';
-import 'package:money_tracker/core/navigation/app_shell.dart';
-import 'package:money_tracker/main.dart';
+import 'package:savu/core/local_storage/settings_providers.dart';
+import 'package:savu/core/navigation/app_shell.dart';
+import 'package:savu/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<Widget> buildApp() async {
@@ -11,7 +11,7 @@ Future<Widget> buildApp() async {
   final prefs = await SharedPreferences.getInstance();
   return ProviderScope(
     overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-    child: const MoneyTrackerApp(),
+    child: const SavuApp(),
   );
 }
 

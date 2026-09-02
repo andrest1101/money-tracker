@@ -1,6 +1,6 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
-project(money_tracker LANGUAGES CXX)
+project(savu LANGUAGES CXX)
 
 # Firebase's bundled C++ SDK still declares compatibility with CMake versions
 # older than 3.5. Recent CMake releases require this policy to be explicit.
@@ -8,7 +8,7 @@ set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "money_tracker")
+set(BINARY_NAME "savu")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

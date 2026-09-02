@@ -18,7 +18,7 @@ class DeveloperCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'MoneyTracker v1.0.0',
+            'Savu v1.0.0',
             style: theme.textTheme.titleSmall?.copyWith(
                   color: colors.onSurfaceVariant,
                   fontWeight: FontWeight.bold,

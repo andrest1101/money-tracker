@@ -1,4 +1,4 @@
-name: money_tracker
+name: savu
 description: "Aplikasi pencatat keuangan pribadi untuk mengatur transaksi, anggaran, dan target tabungan."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.

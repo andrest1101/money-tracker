@@ -238,7 +238,7 @@ class _ProfileHeader extends ConsumerWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Informasi ini tersimpan di perangkatmu dan membantu menyesuaikan pengalaman MoneyTracker.',
+                'Informasi ini tersimpan di perangkatmu dan membantu menyesuaikan pengalaman Savu.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),

@@ -7,7 +7,7 @@
 - Menambahkan dependency `firebase_auth`.
 - Menambahkan Firebase Anonymous Authentication.
 - Menambahkan provider Riverpod untuk Firebase Auth dan auth state.
-- Menambahkan `AuthGate` agar `MoneyTrackerApp` hanya dibuka setelah anonymous user tersedia.
+- Menambahkan `AuthGate` agar `SavuApp` hanya dibuka setelah anonymous user tersedia.
 - Repository transaksi memakai path `users/{uid}/transactions`.
 - Repository target memakai path `users/{uid}/savings_goals`.
 - Operasi alokasi, edit alokasi, hapus alokasi, reset data, dan hapus target menggunakan path user-scoped yang sama.

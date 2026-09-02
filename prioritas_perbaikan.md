@@ -1,4 +1,4 @@
-# Prioritas Perbaikan MoneyTracker
+# Prioritas Perbaikan Savu
 
 Dokumen ini menjadi catatan lanjutan ketika sesi AI terputus, laptop di-refresh,
 atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
@@ -126,7 +126,7 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 - Color scheme emerald/teal, typography hierarchy, radius, elevation, spacing,
   serta style global Card, input, button, chip, snackbar, dialog, dan bottom
   sheet untuk light dan dark mode sudah dibuat di
-  `lib/core/theme/money_tracker_theme.dart`.
+  `lib/core/theme/savu_theme.dart`.
 - Tahap lanjutan: mengganti warna hard-coded pada feature widgets jika ditemukan
   saat redesign halaman.
 - Penyempurnaan: typography global kini menggunakan Plus Jakarta Sans untuk

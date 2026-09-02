@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-abstract final class MoneyTrackerTheme {
+abstract final class SavuTheme {
   static const _seedColor = Color(0xFF0F766E);
   static const _lightBackground = Color(0xFFF5F8F7);
   static const _darkBackground = Color(0xFF0D1515);

@@ -317,7 +317,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
     if (ref.read(authControllerProvider).hasValue &&
         (_mode != _EmailMode.link || _linkSent)) {
       final message = _mode == _EmailMode.register
-          ? 'Akun berhasil dibuat. Selamat datang di MoneyTracker.'
+          ? 'Akun berhasil dibuat. Selamat datang di Savu.'
           : _mode == _EmailMode.login
           ? 'Login berhasil. Selamat datang kembali.'
           : 'Link login berhasil diverifikasi.';
@@ -382,7 +382,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
     final isLink = _mode == _EmailMode.link;
     final title = switch (_mode) {
       _EmailMode.login => 'Selamat datang kembali',
-      _EmailMode.register => 'Buat akun MoneyTracker',
+      _EmailMode.register => 'Buat akun Savu',
       _EmailMode.link =>
         _linkSent ? 'Masukkan link login' : 'Login tanpa password',
     };
