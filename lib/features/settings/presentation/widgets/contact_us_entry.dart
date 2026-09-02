@@ -7,6 +7,7 @@ class ContactUsEntry extends StatelessWidget {
   void _openSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       showDragHandle: true,
       builder: (_) => const _ContactUsSheet(),
     );
@@ -87,12 +88,18 @@ class _ContactUsSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final mediaQuery = MediaQuery.of(context);
+          final keyboardInset = mediaQuery.viewInsets.bottom;
+          final maxHeight = mediaQuery.size.height * .8;
+          return ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(20, 4, 20, 24 + keyboardInset),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             Text('Hubungi Kami', style: theme.textTheme.labelLarge),
             const SizedBox(height: 4),
             Text(
@@ -132,16 +139,19 @@ class _ContactUsSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () => _shareFeedback(context),
-              icon: const Icon(Icons.share_outlined),
-              label: const Text('Kirim feedback'),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
+                  FilledButton.icon(
+                    onPressed: () => _shareFeedback(context),
+                    icon: const Icon(Icons.share_outlined),
+                    label: const Text('Kirim feedback'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
