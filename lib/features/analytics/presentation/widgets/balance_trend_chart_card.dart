@@ -57,22 +57,27 @@ class BalanceTrendChartCard extends ConsumerWidget {
   }
 }
 
-class _TrendContent extends StatelessWidget {
+class _TrendContent extends StatefulWidget {
   const _TrendContent({required this.points});
   final List<BalanceTrendPointEntity> points;
 
   @override
+  State<_TrendContent> createState() => _TrendContentState();
+}
+
+class _TrendContentState extends State<_TrendContent> {
+  int? _selectedIndex;
+
+  @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final points = widget.points;
     final values = points.map((point) => point.balance).toList();
     final minValue = values.reduce((a, b) => a < b ? a : b);
     final maxValue = values.reduce((a, b) => a > b ? a : b);
     final spread = maxValue - minValue;
     final padding = spread == 0 ? 100000.0 : spread * .18;
-    return SizedBox(
-      height: 210,
-      child: LineChart(
-        LineChartData(
+    final chart = LineChartData(
           minY: minValue - padding,
           maxY: maxValue + padding,
           gridData: FlGridData(
@@ -85,6 +90,15 @@ class _TrendContent extends StatelessWidget {
           ),
           borderData: FlBorderData(show: false),
           lineTouchData: LineTouchData(
+            touchCallback: (event, response) {
+              if (event is! FlTapUpEvent) return;
+              final spot = response?.lineBarSpots?.firstOrNull;
+              if (spot == null) return;
+              final index = spot.x.toInt();
+              if (index >= 0 && index < points.length) {
+                setState(() => _selectedIndex = index);
+              }
+            },
             touchTooltipData: LineTouchTooltipData(
               getTooltipColor: (_) => colors.inverseSurface,
               getTooltipItems: (spots) => spots
@@ -118,7 +132,71 @@ class _TrendContent extends StatelessWidget {
               ),
             ),
           ],
-        ),
+        );
+    return Column(
+      children: [
+        if (_selectedIndex case final index?) ...[
+          _SelectedBalancePoint(
+            point: points[index],
+            onClear: () => setState(() => _selectedIndex = null),
+          ),
+          const SizedBox(height: 10),
+        ],
+        SizedBox(height: 210, child: LineChart(chart)),
+      ],
+    );
+  }
+}
+
+class _SelectedBalancePoint extends StatelessWidget {
+  const _SelectedBalancePoint({required this.point, required this.onClear});
+
+  final BalanceTrendPointEntity point;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 11, 8, 11),
+      decoration: BoxDecoration(
+        color: colors.primaryContainer.withValues(alpha: .55),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colors.primary.withValues(alpha: .18)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.show_chart_rounded, size: 18, color: colors.primary),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${point.date.day}/${point.date.month}/${point.date.year}',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Saldo ${formatRupiah(point.balance)}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onClear,
+            tooltip: 'Sembunyikan detail',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.close_rounded, size: 18),
+          ),
+        ],
       ),
     );
   }
