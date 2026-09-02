@@ -708,10 +708,20 @@ class _BudgetStatusSection extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  Icon(
-                    Icons.info_outline_rounded,
-                    size: 18,
-                    color: colors.onSurfaceVariant,
+                  IconButton(
+                    onPressed: () => _showBudgetInfo(context),
+                    tooltip: 'Apa itu status anggaran?',
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                    icon: Icon(
+                      Icons.info_outline_rounded,
+                      size: 20,
+                      color: colors.primary,
+                    ),
                   ),
                 ],
               ),
@@ -727,6 +737,14 @@ class _BudgetStatusSection extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showBudgetInfo(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => const _BudgetInfoSheet(),
     );
   }
 
@@ -754,6 +772,132 @@ class _BudgetStatusSection extends ConsumerWidget {
           }
           navigator.pop();
         },
+      ),
+    );
+  }
+}
+
+class _BudgetInfoSheet extends StatelessWidget {
+  const _BudgetInfoSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Tentang Status Anggaran', style: theme.textTheme.labelLarge),
+            const SizedBox(height: 4),
+            Text(
+              'Lampu lalu lintas untuk pengeluaranmu',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Status ini membandingkan total pengeluaran dalam siklus aktif dengan batas anggaran yang kamu atur. Gunakan sebagai pengingat sebelum pengeluaran mulai berlebihan.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 18),
+            const _BudgetInfoLevel(
+              icon: Icons.check_circle_outline_rounded,
+              title: 'Aman',
+              description: 'Pengeluaran masih di bawah 80% anggaran.',
+            ),
+            const SizedBox(height: 10),
+            const _BudgetInfoLevel(
+              icon: Icons.warning_amber_rounded,
+              title: 'Perlu diperhatikan',
+              description: 'Pengeluaran sudah mencapai 80% atau lebih.',
+            ),
+            const SizedBox(height: 10),
+            const _BudgetInfoLevel(
+              icon: Icons.error_outline_rounded,
+              title: 'Terlampaui',
+              description: 'Total pengeluaran sudah melewati batas anggaran.',
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: colors.primaryContainer.withValues(alpha: .55),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lightbulb_outline_rounded, color: colors.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Tips: catat semua pengeluaran kecil. Pengeluaran kecil yang sering dilakukan bisa menjadi penyebab “bocor halus”.',
+                      style: theme.textTheme.bodySmall?.copyWith(height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => Navigator.pop(context),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+              child: const Text('Mengerti'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BudgetInfoLevel extends StatelessWidget {
+  const _BudgetInfoLevel({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: .5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: colors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text(description, style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
