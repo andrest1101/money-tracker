@@ -206,14 +206,6 @@ class _ProfileHeader extends ConsumerWidget {
 
   final AsyncValue<List<TransactionEntity>> syncState;
 
-  static const _profileTypes = [
-    'Mahasiswa',
-    'Karyawan',
-    'Freelancer',
-    'Wirausaha',
-    'Lainnya',
-  ];
-
   void _showProfileDetails(
     BuildContext context,
     WidgetRef ref, {
@@ -306,106 +298,13 @@ class _ProfileHeader extends ConsumerWidget {
     required String userName,
     required String profileType,
   }) {
-    final nameController = TextEditingController(text: userName);
-    var selectedType = profileType;
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Edit profil'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  autofocus: true,
-                  maxLength: 60,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    labelText: 'Nama lengkap atau panggilan',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: selectedType,
-                  decoration: InputDecoration(
-                    labelText: 'Kamu seorang',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  items: _profileTypes
-                      .map(
-                        (type) =>
-                            DropdownMenuItem(value: type, child: Text(type)),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) setState(() => selectedType = value);
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
-                    ),
-                    child: const Text('Batal'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () async {
-                      final name = nameController.text.trim();
-                      if (name.isEmpty) return;
-                      final nameSaved = await ref
-                          .read(userNameProvider.notifier)
-                          .setUserName(name);
-                      final typeSaved = await ref
-                          .read(userProfileTypeProvider.notifier)
-                          .setProfileType(selectedType);
-                      if (!context.mounted) return;
-                      if (!nameSaved || !typeSaved) {
-                        _showSettingsSnackBar(
-                          context,
-                          message: 'Profil gagal disimpan.',
-                          isError: true,
-                        );
-                        return;
-                      }
-                      Navigator.pop(dialogContext);
-                      _showSettingsSnackBar(
-                        context,
-                        message: 'Profil diperbarui.',
-                      );
-                    },
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
-                    ),
-                    child: const Text('Simpan'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 24,
-          ),
-        ),
+      builder: (_) => _EditProfileDialog(
+        initialName: userName,
+        initialType: profileType,
       ),
-    ).whenComplete(nameController.dispose);
+    );
   }
 
   @override
@@ -556,6 +455,184 @@ class _ProfileHeader extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _EditProfileDialog extends ConsumerStatefulWidget {
+  const _EditProfileDialog({
+    required this.initialName,
+    required this.initialType,
+  });
+
+  final String initialName;
+  final String initialType;
+
+  @override
+  ConsumerState<_EditProfileDialog> createState() =>
+      _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
+  static const _profileTypes = [
+    'Mahasiswa',
+    'Karyawan',
+    'Freelancer',
+    'Wirausaha',
+    'Lainnya',
+  ];
+
+  late final TextEditingController _nameController;
+  late String _selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+    _selectedType = widget.initialType;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+    // Capture messenger/nav before async gap to avoid using a disposed context.
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final nameSaved = await ref
+        .read(userNameProvider.notifier)
+        .setUserName(name);
+    final typeSaved = await ref
+        .read(userProfileTypeProvider.notifier)
+        .setProfileType(_selectedType);
+    if (!mounted) return;
+    if (!nameSaved || !typeSaved) {
+      messenger.showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.error,
+          content: Row(
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                color: Theme.of(context).colorScheme.onError,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Profil gagal disimpan.',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onError,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
+    navigator.pop();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Theme.of(context).colorScheme.inverseSurface,
+        content: Row(
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              color: Theme.of(context).colorScheme.onInverseSurface,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Profil diperbarui.',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onInverseSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit profil'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              maxLength: 60,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: 'Nama lengkap atau panggilan',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _selectedType,
+              decoration: InputDecoration(
+                labelText: 'Kamu seorang',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              isExpanded: true,
+              items: _profileTypes
+                  .map(
+                    (type) => DropdownMenuItem(value: type, child: Text(type)),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) setState(() => _selectedType = value);
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: _save,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Simpan'),
+              ),
+            ),
+          ],
+        ),
+      ],
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
   }
 }

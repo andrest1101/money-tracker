@@ -102,16 +102,16 @@ class DashboardPage extends ConsumerWidget {
 
 String _resolveDisplayName(String storedName, User? user) {
   final cleanStoredName = storedName.trim();
+  if (cleanStoredName.isNotEmpty) return cleanStoredName;
+  // Fallback lama untuk data sebelum ada pengaturan nama; sekarang default di
+  // SettingsService sudah "Pengguna", jadi ini hanya untuk migrasi.
   if (user != null && !user.isAnonymous) {
     final googleName = user.displayName?.trim() ?? '';
     if (googleName.isNotEmpty) return googleName;
     final emailName = user.email?.split('@').first.trim() ?? '';
     if (emailName.isNotEmpty) return emailName;
   }
-  if (cleanStoredName.isNotEmpty && cleanStoredName != 'Pengguna') {
-    return cleanStoredName;
-  }
-  return cleanStoredName.isEmpty ? 'Pengguna' : cleanStoredName;
+  return 'Pengguna';
 }
 
 // ─────────────────────────────────────────────────────────────
