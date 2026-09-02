@@ -27,6 +27,7 @@ class SettingsService {
   static const String _privacyModeKey = 'privacy_mode';
   static const String _budgetCycleDateKey = 'budget_cycle_date';
   static const String _lastSyncKey = 'last_successful_sync';
+  static const String _profileAvatarKey = 'profile_avatar_id';
 
   double? getBudgetLimit() {
     try {
@@ -114,6 +115,22 @@ class SettingsService {
       await _sharedPreferences.setString(_userProfileTypeKey, profileType);
     } catch (e) {
       throw SettingsServiceException('Gagal menyimpan tipe pengguna', e);
+    }
+  }
+
+  String getProfileAvatarId() {
+    try {
+      return _sharedPreferences.getString(_profileAvatarKey) ?? 'sunrise';
+    } catch (e) {
+      throw SettingsServiceException('Gagal memuat avatar profil', e);
+    }
+  }
+
+  Future<void> setProfileAvatarId(String avatarId) async {
+    try {
+      await _sharedPreferences.setString(_profileAvatarKey, avatarId);
+    } catch (e) {
+      throw SettingsServiceException('Gagal menyimpan avatar profil', e);
     }
   }
 

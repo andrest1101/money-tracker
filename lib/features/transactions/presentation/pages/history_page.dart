@@ -200,13 +200,50 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     }
   }
 
+  Future<void> _pickDateRange(HistoryDateRange? currentRange) async {
+    final today = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(today.year, today.month, today.day),
+      initialDateRange: currentRange == null
+          ? null
+          : DateTimeRange(start: currentRange.start, end: currentRange.end),
+      helpText: 'Pilih rentang tanggal',
+      saveText: 'Terapkan',
+      cancelText: 'Batal',
+    );
+    if (!mounted || picked == null) return;
+
+    final accepted = ref
+        .read(historyDateRangeProvider.notifier)
+        .setRange(picked.start, picked.end);
+    if (!accepted && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Rentang maksimal adalah 31 hari.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final pendingIntent = ref.watch(historyNavigationIntentProvider);
+    ref.listen<HistoryNavigationIntent?>(historyNavigationIntentProvider, (
+      _,
+      intent,
+    ) {
+      if (intent != null) _scheduleApplyIntent(intent);
+    });
+    if (pendingIntent != null) _scheduleApplyIntent(pendingIntent);
     final grouped = ref.watch(filteredGroupedTransactionsProvider);
     final dailySummary = ref.watch(dailySummaryProvider);
     final filter = ref.watch(historyFilterProvider);
     final category = ref.watch(historyCategoryProvider);
     final cycleOnly = ref.watch(historyCycleProvider);
+    final dateRange = ref.watch(historyDateRangeProvider);
     final categories = ref.watch(historyCategoriesProvider);
     final allTransactions =
         ref.watch(transactionsStreamProvider).value ?? const [];
@@ -276,6 +313,29 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
+                        onPressed: () => _pickDateRange(dateRange),
+                        icon: Icon(
+                          dateRange == null
+                              ? Icons.date_range_outlined
+                              : Icons.event_available_rounded,
+                          size: 18,
+                        ),
+                        label: Text(
+                          dateRange == null
+                              ? 'Tanggal'
+                              : '${formatDateShort(dateRange.start)} - ${formatDateShort(dateRange.end)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
                         onPressed: () async {
                           final selected = await showModalBottomSheet<String>(
                             context: context,
@@ -339,7 +399,24 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 ),
               ),
             ),
-          if (filter != null || category != null || cycleOnly)
+          if (dateRange != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Rentang ${dateRange.lengthInDays} hari',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          if (filter != null ||
+              category != null ||
+              cycleOnly ||
+              dateRange != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
               child: Row(
@@ -352,7 +429,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Filter aktif${filter != null ? ' • ${filter == TransactionType.income ? 'Pemasukan' : 'Pengeluaran'}' : ''}${category != null ? ' • $category' : ''}${cycleOnly ? ' • Siklus' : ''}',
+                      'Filter aktif${filter != null ? ' • ${filter == TransactionType.income ? 'Pemasukan' : 'Pengeluaran'}' : ''}${category != null ? ' • $category' : ''}${cycleOnly ? ' • Siklus' : ''}${dateRange != null ? ' • Rentang tanggal' : ''}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.labelSmall?.copyWith(
@@ -363,13 +440,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      ref.read(historyFilterProvider.notifier).setType(null);
-                      ref
-                          .read(historyCategoryProvider.notifier)
-                          .setCategory(null);
-                      if (cycleOnly) {
-                        ref.read(historyCycleProvider.notifier).toggle();
-                      }
+                      resetHistoryFilters(ref);
                     },
                     child: const Text('Reset'),
                   ),
@@ -593,6 +664,22 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ],
       ),
     );
+  }
+
+  void _scheduleApplyIntent(HistoryNavigationIntent intent) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || ref.read(historyNavigationIntentProvider) != intent) {
+        return;
+      }
+      resetHistoryFilters(ref);
+      if (intent.target == HistoryNavigationTarget.activeCycle) {
+        ref.read(historyCycleProvider.notifier).toggle();
+      } else if (intent.category != null) {
+        ref.read(historyCategoryProvider.notifier).setCategory(intent.category);
+        ref.read(historyCycleProvider.notifier).toggle();
+      }
+      ref.read(historyNavigationIntentProvider.notifier).consume();
+    });
   }
 }
 

@@ -7,6 +7,7 @@ import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../../domain/usecases/allocate_to_goal_usecase.dart';
 import '../providers/savings_providers.dart';
+import 'goal_celebration_dialog.dart';
 
 class AllocateFundSheet extends ConsumerStatefulWidget {
   const AllocateFundSheet({super.key, required this.goal});
@@ -65,6 +66,15 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
     final messenger = ScaffoldMessenger.of(context);
 
     if (success) {
+      final completed = amount >= widget.goal.remainingAmount;
+      if (completed && mounted) {
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => GoalCelebrationDialog(goalTitle: widget.goal.title),
+        );
+      }
+      if (!mounted) return;
       Navigator.of(context).pop();
       messenger.showSnackBar(
         SnackBar(
@@ -74,9 +84,16 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
         ),
       );
     } else {
+      final errorMessage = ref
+          .read(savingsActionsControllerProvider)
+          .when(
+            data: (_) => 'Gagal mengalokasikan dana. Coba lagi ya.',
+            loading: () => 'Alokasi masih diproses. Coba lagi sebentar.',
+            error: (error, _) => error.toString(),
+          );
       messenger.showSnackBar(
         SnackBar(
-          content: const Text('Gagal mengalokasikan dana. Coba lagi ya.'),
+          content: Text(errorMessage),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -99,23 +116,13 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Text(
                   'Alokasikan Dana',
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -169,8 +176,7 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.savings_outlined),
-                  label:
-                      Text(isSaving ? 'Mengalokasikan...' : 'Alokasikan'),
+                  label: Text(isSaving ? 'Mengalokasikan...' : 'Alokasikan'),
                 ),
               ],
             ),

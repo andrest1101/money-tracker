@@ -6,16 +6,22 @@ class CalculateMonthlySummaryUseCase {
 
   MonthlySummaryEntity execute({
     required List<TransactionEntity> transactions,
-    required DateTime month,
+    DateTime? month,
+    DateTime? periodStart,
+    DateTime? periodEnd,
   }) {
     var totalIncome = 0.0;
     var totalExpense = 0.0;
     var transactionCount = 0;
 
     for (final transaction in transactions) {
-      final isSameMonth = transaction.date.year == month.year &&
-          transaction.date.month == month.month;
-      if (!isSameMonth) continue;
+      final isInPeriod = periodStart != null && periodEnd != null
+          ? !transaction.date.isBefore(periodStart) &&
+                !transaction.date.isAfter(periodEnd)
+          : month != null &&
+                transaction.date.year == month.year &&
+                transaction.date.month == month.month;
+      if (!isInPeriod) continue;
 
       transactionCount++;
       if (transaction.isExpense) {

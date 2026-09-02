@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/features/dashboard/domain/entities/budget_status_entity.dart';
-import 'package:money_tracker/features/dashboard/domain/usecases/check_budget_status_usecase.dart';
+import 'package:savu/features/dashboard/domain/entities/budget_status_entity.dart';
+import 'package:savu/features/dashboard/domain/usecases/check_budget_status_usecase.dart';
 
 void main() {
   const useCase = CheckBudgetStatusUseCase();

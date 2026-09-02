@@ -11,7 +11,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.money_tracker"
+    namespace = "com.example.savu"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -27,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.money_tracker"
+        applicationId = "com.example.savu"
         // Cloud Firestore 6.x requires Android 6.0 (API level 23) or higher.
         minSdk = 23
         targetSdk = flutter.targetSdkVersion

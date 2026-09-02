@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/features/transactions/domain/entities/transaction_entity.dart';
-import 'package:money_tracker/features/transactions/domain/usecases/filter_transactions_usecase.dart';
+import 'package:savu/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:savu/features/transactions/domain/usecases/filter_transactions_usecase.dart';
 
 void main() {
   const useCase = FilterTransactionsUseCase();
@@ -56,6 +56,16 @@ void main() {
       transactions: transactions,
       cycleStart: DateTime(2026, 8, 25),
       cycleEnd: DateTime(2026, 9, 24, 23, 59, 59),
+    );
+
+    expect(result.map((transaction) => transaction.id), ['food', 'income']);
+  });
+
+  test('filters an inclusive custom date range', () {
+    final result = useCase.execute(
+      transactions: transactions,
+      dateRangeStart: DateTime(2026, 8, 27),
+      dateRangeEnd: DateTime(2026, 8, 28, 23, 59, 59),
     );
 
     expect(result.map((transaction) => transaction.id), ['food', 'income']);

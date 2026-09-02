@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/features/dashboard/domain/entities/budget_status_entity.dart';
-import 'package:money_tracker/features/dashboard/domain/usecases/calculate_budget_overview_usecase.dart';
-import 'package:money_tracker/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:savu/features/dashboard/domain/entities/budget_status_entity.dart';
+import 'package:savu/features/dashboard/domain/usecases/calculate_budget_overview_usecase.dart';
+import 'package:savu/features/transactions/domain/entities/transaction_entity.dart';
 
 void main() {
   const useCase = CalculateBudgetOverviewUseCase();

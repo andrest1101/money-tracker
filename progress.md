@@ -1,4 +1,4 @@
-# 🔄 PROGRESS HANDOFF - MoneyTracker
+# 🔄 PROGRESS HANDOFF - Savu
 
 > File ini dibuat untuk melanjutkan sesi di model AI lain tanpa kehilangan memori.
 > **Cara pakai di sesi baru:** suruh AI `baca progress.md + task.md + AGENTS.md + PRD.md` lalu lanjutkan dari `NEXT TASK` di bawah.

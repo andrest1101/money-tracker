@@ -6,14 +6,20 @@ class CalculateCategoryExpensesUseCase {
 
   List<CategoryExpenseEntity> execute({
     required List<TransactionEntity> transactions,
-    required DateTime month,
+    DateTime? month,
+    DateTime? periodStart,
+    DateTime? periodEnd,
   }) {
     final totalsByCategory = <String, double>{};
 
     for (final transaction in transactions) {
-      final isSameMonth = transaction.date.year == month.year &&
-          transaction.date.month == month.month;
-      if (!isSameMonth || !transaction.isExpense) continue;
+      final isInPeriod = periodStart != null && periodEnd != null
+          ? !transaction.date.isBefore(periodStart) &&
+                !transaction.date.isAfter(periodEnd)
+          : month != null &&
+                transaction.date.year == month.year &&
+                transaction.date.month == month.month;
+      if (!isInPeriod || !transaction.isExpense) continue;
 
       totalsByCategory[transaction.category] =
           (totalsByCategory[transaction.category] ?? 0) + transaction.amount;
@@ -24,10 +30,8 @@ class CalculateCategoryExpensesUseCase {
 
     return entries
         .map(
-          (entry) => CategoryExpenseEntity(
-            category: entry.key,
-            amount: entry.value,
-          ),
+          (entry) =>
+              CategoryExpenseEntity(category: entry.key, amount: entry.value),
         )
         .toList();
   }

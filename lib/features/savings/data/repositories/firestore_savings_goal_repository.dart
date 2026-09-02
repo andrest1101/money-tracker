@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../transactions/data/repositories/firestore_transaction_repository.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
@@ -29,6 +30,9 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
+
+  bool get _useWindowsBatch =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
 
   static const String _collectionName = 'savings_goals';
 
@@ -109,6 +113,15 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
         'Gagal menghapus target tabungan',
         e,
       );
+    }
+  }
+
+  @override
+  Future<void> deleteCompletedGoal(String id) async {
+    try {
+      await _goalsRef.doc(id).delete();
+    } catch (e) {
+      throw SavingsGoalRepositoryException('Gagal menghapus target selesai', e);
     }
   }
 
@@ -199,6 +212,39 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
       final goalReference = _goalsRef.doc(goal.id);
       final transactionReference = _transactionsRef.doc(transaction.id);
 
+      if (_useWindowsBatch) {
+        final latestSnapshot = await goalReference.get();
+        if (!latestSnapshot.exists) {
+          throw const SavingsGoalRepositoryException(
+            'Target tabungan tidak ditemukan',
+          );
+        }
+        final latestGoal = SavingsGoalModel.fromMap(
+          latestSnapshot.id,
+          latestSnapshot.data()!,
+        );
+        final updatedAmount = latestGoal.currentAmount + transaction.amount;
+        if (updatedAmount > latestGoal.targetAmount) {
+          throw const SavingsGoalRepositoryException(
+            'Nominal alokasi melebihi sisa target tabungan',
+          );
+        }
+        final batch = _firestore.batch();
+        batch.update(
+          goalReference,
+          SavingsGoalModel.fromEntity(
+            latestGoal.copyWith(currentAmount: updatedAmount),
+          ).toMap(),
+        );
+        batch.set(
+          transactionReference,
+          transaction.toMap(),
+          SetOptions(merge: false),
+        );
+        await batch.commit();
+        return;
+      }
+
       await _firestore.runTransaction((firestoreTransaction) async {
         final goalSnapshot = await firestoreTransaction.get(goalReference);
         if (!goalSnapshot.exists) {
@@ -223,7 +269,14 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
           goalReference,
           SavingsGoalModel.fromEntity(updatedGoal).toMap(),
         );
-        firestoreTransaction.set(transactionReference, transaction.toMap());
+        // cloud_firestore Windows 5.6.x dereferences transaction set options
+        // without checking for null. Passing explicit options avoids a native
+        // abort while keeping the same full-document write semantics.
+        firestoreTransaction.set(
+          transactionReference,
+          transaction.toMap(),
+          SetOptions(merge: false),
+        );
       });
     } catch (e) {
       throw SavingsGoalRepositoryException(
@@ -243,6 +296,48 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
       final transaction = TransactionModel.fromEntity(updatedTransaction);
       final goalReference = _goalsRef.doc(goalId);
       final transactionReference = _transactionsRef.doc(transaction.id);
+
+      if (_useWindowsBatch) {
+        final goalSnapshot = await goalReference.get();
+        final oldTransactionSnapshot = await transactionReference.get();
+        if (!goalSnapshot.exists) {
+          throw const SavingsGoalRepositoryException(
+            'Target tabungan tidak ditemukan',
+          );
+        }
+        if (!oldTransactionSnapshot.exists) {
+          throw const SavingsGoalRepositoryException(
+            'Transaksi alokasi tidak ditemukan',
+          );
+        }
+        final latestGoal = SavingsGoalModel.fromMap(
+          goalSnapshot.id,
+          goalSnapshot.data()!,
+        );
+        final oldTransaction = TransactionModel.fromMap(
+          oldTransactionSnapshot.id,
+          oldTransactionSnapshot.data()!,
+        );
+        final updatedAmount =
+            latestGoal.currentAmount -
+            oldTransaction.amount +
+            transaction.amount;
+        if (updatedAmount < 0 || updatedAmount > latestGoal.targetAmount) {
+          throw const SavingsGoalRepositoryException(
+            'Perubahan alokasi tidak valid untuk target tabungan ini',
+          );
+        }
+        final batch = _firestore.batch();
+        batch.update(
+          goalReference,
+          SavingsGoalModel.fromEntity(
+            latestGoal.copyWith(currentAmount: updatedAmount),
+          ).toMap(),
+        );
+        batch.update(transactionReference, transaction.toMap());
+        await batch.commit();
+        return;
+      }
 
       await _firestore.runTransaction((firestoreTransaction) async {
         final goalSnapshot = await firestoreTransaction.get(goalReference);
@@ -307,6 +402,45 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
     try {
       final goalReference = _goalsRef.doc(goalId);
       final transactionReference = _transactionsRef.doc(transactionId);
+
+      if (_useWindowsBatch) {
+        final goalSnapshot = await goalReference.get();
+        final allocationSnapshot = await transactionReference.get();
+        if (!goalSnapshot.exists) {
+          throw const SavingsGoalRepositoryException(
+            'Target tabungan tidak ditemukan',
+          );
+        }
+        if (!allocationSnapshot.exists) {
+          throw const SavingsGoalRepositoryException(
+            'Transaksi alokasi tidak ditemukan',
+          );
+        }
+        final latestGoal = SavingsGoalModel.fromMap(
+          goalSnapshot.id,
+          goalSnapshot.data()!,
+        );
+        final allocation = TransactionModel.fromMap(
+          allocationSnapshot.id,
+          allocationSnapshot.data()!,
+        );
+        final restoredAmount = latestGoal.currentAmount - allocation.amount;
+        if (restoredAmount < 0) {
+          throw const SavingsGoalRepositoryException(
+            'Tidak dapat menghapus alokasi: saldo target menjadi negatif',
+          );
+        }
+        final batch = _firestore.batch();
+        batch.update(
+          goalReference,
+          SavingsGoalModel.fromEntity(
+            latestGoal.copyWith(currentAmount: restoredAmount),
+          ).toMap(),
+        );
+        batch.delete(transactionReference);
+        await batch.commit();
+        return;
+      }
 
       await _firestore.runTransaction((firestoreTransaction) async {
         final goalSnapshot = await firestoreTransaction.get(goalReference);

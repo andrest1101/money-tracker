@@ -10,21 +10,35 @@ class FilterTransactionsUseCase {
     String query = '',
     DateTime? cycleStart,
     DateTime? cycleEnd,
+    DateTime? dateRangeStart,
+    DateTime? dateRangeEnd,
   }) {
     final normalizedQuery = query.trim().toLowerCase();
 
     return transactions.where((transaction) {
       final matchesType = type == null || transaction.type == type;
-      final matchesCategory = category == null || transaction.category == category;
-      final matchesCycle = cycleStart == null ||
+      final matchesCategory =
+          category == null || transaction.category == category;
+      final matchesCycle =
+          cycleStart == null ||
           cycleEnd == null ||
           !transaction.date.isBefore(cycleStart) &&
               !transaction.date.isAfter(cycleEnd);
-      final matchesQuery = normalizedQuery.isEmpty ||
+      final matchesDateRange =
+          dateRangeStart == null ||
+          dateRangeEnd == null ||
+          !transaction.date.isBefore(dateRangeStart) &&
+              !transaction.date.isAfter(dateRangeEnd);
+      final matchesQuery =
+          normalizedQuery.isEmpty ||
           transaction.category.toLowerCase().contains(normalizedQuery) ||
           transaction.note.toLowerCase().contains(normalizedQuery);
 
-      return matchesType && matchesCategory && matchesCycle && matchesQuery;
+      return matchesType &&
+          matchesCategory &&
+          matchesCycle &&
+          matchesDateRange &&
+          matchesQuery;
     }).toList();
   }
 }

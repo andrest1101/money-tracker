@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../../core/local_storage/settings_providers.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/presentation/widgets/transaction_tile.dart';
 import '../../domain/entities/category_expense_entity.dart';
+import '../../domain/usecases/calculate_budget_cycle_period_usecase.dart';
 import '../providers/dashboard_providers.dart';
 
 const _piePalette = [
@@ -78,12 +80,25 @@ class _CategoryExpenseContentState
 
   void _showCategoryDetails(CategoryExpenseEntity category) {
     final transactions = ref.read(transactionsStreamProvider).value ?? const [];
-    final now = DateTime.now();
+    final cycle = const CalculateBudgetCyclePeriodUseCase().execute(
+      date: DateTime.now(),
+      cycleDay: ref.read(budgetCycleDateProvider),
+    );
     final categoryTransactions = transactions.where((transaction) {
       return transaction.isExpense &&
           transaction.category == category.category &&
-          transaction.date.year == now.year &&
-          transaction.date.month == now.month;
+          !transaction.date.isBefore(cycle.start) &&
+          !transaction.date.isAfter(
+            DateTime(
+              cycle.end.year,
+              cycle.end.month,
+              cycle.end.day,
+              23,
+              59,
+              59,
+              999,
+            ),
+          );
     }).toList()..sort((a, b) => b.date.compareTo(a.date));
 
     showModalBottomSheet<void>(
@@ -115,34 +130,49 @@ class _CategoryExpenseContentState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pengeluaran per Kategori',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+            InkWell(
+              onTap: () => _showCategoryDetails(selected),
+              borderRadius: BorderRadius.circular(14),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pengeluaran per Kategori',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Ketuk bagian chart untuk menjelajah',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Ketuk bagian chart untuk menjelajah',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
+                    ),
+                    Text(
+                      'Lihat detail',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 5),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: theme.colorScheme.primary,
+                      size: 18,
+                    ),
+                  ],
                 ),
-                Icon(
-                  Icons.touch_app_rounded,
-                  color: theme.colorScheme.primary,
-                  size: 22,
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 20),
             Stack(
@@ -549,7 +579,10 @@ class _EmptyExpenseCard extends StatelessWidget {
                 color: colors.primary.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.pie_chart_outline_rounded, color: colors.primary),
+              child: Icon(
+                Icons.pie_chart_outline_rounded,
+                color: colors.primary,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(

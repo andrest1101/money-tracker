@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/features/dashboard/presentation/widgets/dashboard_empty_state.dart';
+import 'package:savu/features/dashboard/presentation/widgets/dashboard_empty_state.dart';
 
 void main() {
   testWidgets('empty state menampilkan greeting dan CTA transaksi', (

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/errors/app_error_message.dart';
 import '../../../savings/data/providers/savings_goal_repository_provider.dart';
 import '../../../savings/domain/usecases/allocate_to_goal_usecase.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
@@ -17,8 +18,11 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
       await repository.addTransaction(transaction);
       state = const AsyncData(null);
       return true;
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncError(
+        appErrorMessage(e, fallback: 'Transaksi gagal disimpan. Coba lagi.'),
+        stackTrace,
+      );
       return false;
     }
   }
@@ -34,8 +38,11 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
       }
       state = const AsyncData(null);
       return true;
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncError(
+        appErrorMessage(e, fallback: 'Transaksi gagal diperbarui. Coba lagi.'),
+        stackTrace,
+      );
       return false;
     }
   }
@@ -50,7 +57,9 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
         final newGoalAmount = goal.currentAmount - transaction.amount;
 
         if (newGoalAmount < 0) {
-          throw Exception('Tidak dapat menghapus alokasi: saldo target menjadi negatif');
+          throw Exception(
+            'Tidak dapat menghapus alokasi: saldo target menjadi negatif',
+          );
         }
 
         await savingsRepo.deleteAllocation(
@@ -65,8 +74,11 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
       }
       state = const AsyncData(null);
       return true;
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncError(
+        appErrorMessage(e, fallback: 'Transaksi gagal dihapus. Coba lagi.'),
+        stackTrace,
+      );
       return false;
     }
   }
@@ -78,7 +90,9 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
     final transactionRepo = ref.read(transactionRepositoryProvider);
 
     final goal = await savingsRepo.getGoalById(transaction.goalId!);
-    final oldTransaction = await transactionRepo.getTransactionById(transaction.id);
+    final oldTransaction = await transactionRepo.getTransactionById(
+      transaction.id,
+    );
 
     final oldAmount = oldTransaction.amount;
     final newAmount = transaction.amount;
@@ -122,7 +136,9 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
       type: oldTransaction.type,
       category: oldTransaction.category,
       date: transaction.date,
-      note: transaction.note.isNotEmpty ? transaction.note : oldTransaction.note,
+      note: transaction.note.isNotEmpty
+          ? transaction.note
+          : oldTransaction.note,
       goalId: oldTransaction.goalId,
     );
 
@@ -136,5 +152,5 @@ class QuickAddController extends Notifier<AsyncValue<void>> {
 
 final quickAddControllerProvider =
     NotifierProvider<QuickAddController, AsyncValue<void>>(
-  QuickAddController.new,
-);
+      QuickAddController.new,
+    );

@@ -60,7 +60,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '671219337997',
     projectId: 'money-tracker-e22c0',
     storageBucket: 'money-tracker-e22c0.firebasestorage.app',
-    iosBundleId: 'com.example.moneyTracker',
+    iosBundleId: 'com.example.savu',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -69,7 +69,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '671219337997',
     projectId: 'money-tracker-e22c0',
     storageBucket: 'money-tracker-e22c0.firebasestorage.app',
-    iosBundleId: 'com.example.moneyTracker',
+    iosBundleId: 'com.example.savu',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

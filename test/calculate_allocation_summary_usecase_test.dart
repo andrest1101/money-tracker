@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:money_tracker/features/savings/domain/usecases/calculate_allocation_summary_usecase.dart';
-import 'package:money_tracker/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:savu/features/savings/domain/usecases/calculate_allocation_summary_usecase.dart';
+import 'package:savu/features/transactions/domain/entities/transaction_entity.dart';
 
 void main() {
   test('summarizes allocation amount, count, and latest transaction', () {

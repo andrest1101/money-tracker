@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
+import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../transactions/presentation/providers/history_providers.dart';
 import '../../domain/entities/budget_overview_entity.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/category_expense_pie_card.dart';
 import '../widgets/dashboard_empty_state.dart';
 import '../widgets/financial_insight_card.dart';
+import '../widgets/financial_insight_overview_sheet.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -20,7 +24,9 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(monthlySummaryProvider);
     final transactionsAsync = ref.watch(transactionsStreamProvider);
-    final userName = ref.watch(userNameProvider);
+    final storedUserName = ref.watch(userNameProvider);
+    final authUser = ref.watch(currentUserProvider);
+    final userName = _resolveDisplayName(storedUserName, authUser);
 
     void openAddSheet() => showModalBottomSheet<void>(
       context: context,
@@ -49,7 +55,10 @@ class DashboardPage extends ConsumerWidget {
                         onAdd: openAddSheet,
                       ),
                     ] else ...[
-                      _BalanceHeroCard(summary: summary),
+                      _BalanceHeroCard(
+                        summary: summary,
+                        transactions: transactionsAsync.value ?? const [],
+                      ),
                       const SizedBox(height: 12),
                       _BudgetStatusSection(summary: summary),
                       const SizedBox(height: 12),
@@ -62,8 +71,20 @@ class DashboardPage extends ConsumerWidget {
                               onRetry: () =>
                                   ref.invalidate(financialInsightProvider),
                             ),
-                            data: (insight) =>
-                                FinancialInsightCard(insight: insight),
+                            data: (insight) => FinancialInsightCard(
+                              insight: insight,
+                              onTap: () => showModalBottomSheet<void>(
+                                context: context,
+                                isScrollControlled: true,
+                                showDragHandle: true,
+                                builder: (_) => FinancialInsightOverviewSheet(
+                                  insight: insight,
+                                  transactions:
+                                      transactionsAsync.value ?? const [],
+                                  cycleDay: ref.read(budgetCycleDateProvider),
+                                ),
+                              ),
+                            ),
                           ),
                       const SizedBox(height: 12),
                       const CategoryExpensePieCard(),
@@ -75,13 +96,22 @@ class DashboardPage extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => openAddSheet(),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Catat'),
-      ),
     );
   }
+}
+
+String _resolveDisplayName(String storedName, User? user) {
+  final cleanStoredName = storedName.trim();
+  if (cleanStoredName.isNotEmpty) return cleanStoredName;
+  // Fallback lama untuk data sebelum ada pengaturan nama; sekarang default di
+  // SettingsService sudah "Pengguna", jadi ini hanya untuk migrasi.
+  if (user != null && !user.isAnonymous) {
+    final googleName = user.displayName?.trim() ?? '';
+    if (googleName.isNotEmpty) return googleName;
+    final emailName = user.email?.split('@').first.trim() ?? '';
+    if (emailName.isNotEmpty) return emailName;
+  }
+  return 'Pengguna';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -199,9 +229,10 @@ class _DashboardHeader extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────
 
 class _BalanceHeroCard extends ConsumerWidget {
-  const _BalanceHeroCard({required this.summary});
+  const _BalanceHeroCard({required this.summary, required this.transactions});
 
   final MonthlySummaryEntity summary;
+  final List<TransactionEntity> transactions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -215,90 +246,322 @@ class _BalanceHeroCard extends ConsumerWidget {
     final expenseColor = colors.error;
     final balanceColor = isPositive ? colors.primary : colors.error;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colors.primaryContainer,
-            colors.secondaryContainer.withValues(alpha: 0.7),
-          ],
-        ),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(28),
+      child: InkWell(
+        onTap: () => _showBalanceOverview(context, isPrivacy),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row: label + privacy toggle
-            Row(
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colors.primaryContainer,
+                colors.secondaryContainer.withValues(alpha: 0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    'Saldo Siklus Ini',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.onPrimaryContainer.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w600,
+                // Header row: label + privacy toggle
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Saldo Siklus Ini',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: colors.onPrimaryContainer.withValues(
+                            alpha: 0.7,
+                          ),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    _PrivacyToggle(
+                      isPrivacy: isPrivacy,
+                      colors: colors,
+                      ref: ref,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                // Balance amount
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      key: ValueKey(isPrivacy),
+                      isPrivacy ? 'Rp •••••••' : formatRupiah(summary.balance),
+                      style: theme.textTheme.displayMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1,
+                        color: isPrivacy
+                            ? colors.onPrimaryContainer.withValues(alpha: 0.6)
+                            : balanceColor,
+                      ),
                     ),
                   ),
                 ),
-                _PrivacyToggle(isPrivacy: isPrivacy, colors: colors, ref: ref),
+                const SizedBox(height: 20),
+                // Income / Expense tiles
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FlowTile(
+                        icon: Icons.south_west_rounded,
+                        label: 'Pemasukan',
+                        amount: isPrivacy
+                            ? 'Rp •••'
+                            : formatRupiah(summary.totalIncome),
+                        color: incomeColor,
+                        isPrivacy: isPrivacy,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _FlowTile(
+                        icon: Icons.north_east_rounded,
+                        label: 'Pengeluaran',
+                        amount: isPrivacy
+                            ? 'Rp •••'
+                            : formatRupiah(summary.totalExpense),
+                        color: expenseColor,
+                        isPrivacy: isPrivacy,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 6),
-            // Balance amount
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  key: ValueKey(isPrivacy),
-                  isPrivacy ? 'Rp •••••••' : formatRupiah(summary.balance),
-                  style: theme.textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
-                    color: isPrivacy
-                        ? colors.onPrimaryContainer.withValues(alpha: 0.6)
-                        : balanceColor,
-                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showBalanceOverview(BuildContext context, bool isPrivacy) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _BalanceOverviewSheet(
+        summary: summary,
+        transactions: transactions,
+        isPrivacy: isPrivacy,
+      ),
+    );
+  }
+}
+
+class _BalanceOverviewSheet extends StatelessWidget {
+  const _BalanceOverviewSheet({
+    required this.summary,
+    required this.transactions,
+    required this.isPrivacy,
+  });
+
+  final MonthlySummaryEntity summary;
+  final List<TransactionEntity> transactions;
+  final bool isPrivacy;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final visibleTransactions = transactions
+        .where((transaction) => !transaction.isAllocation)
+        .toList();
+    final largestExpense = visibleTransactions
+        .where((transaction) => transaction.isExpense)
+        .fold<TransactionEntity?>(
+          null,
+          (largest, transaction) =>
+              largest == null || transaction.amount > largest.amount
+              ? transaction
+              : largest,
+        );
+    String amount(double value) =>
+        isPrivacy ? 'Rp •••••••' : formatRupiah(value);
+
+    return SafeArea(
+      child: FractionallySizedBox(
+        heightFactor: .86,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Ringkasan saldo', style: theme.textTheme.labelLarge),
+              const SizedBox(height: 4),
+              Text(
+                'Siklus anggaran berjalan',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // Income / Expense tiles
-            Row(
-              children: [
-                Expanded(
-                  child: _FlowTile(
-                    icon: Icons.south_west_rounded,
-                    label: 'Pemasukan',
-                    amount: isPrivacy
-                        ? 'Rp •••'
-                        : formatRupiah(summary.totalIncome),
-                    color: incomeColor,
-                    isPrivacy: isPrivacy,
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Saldo bersih',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colors.onPrimaryContainer.withValues(alpha: .75),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      amount(summary.balance),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: colors.onPrimaryContainer,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _BalanceOverviewMetric(
+                      label: 'Pemasukan',
+                      value: amount(summary.totalIncome),
+                      icon: Icons.south_west_rounded,
+                      color: colors.tertiary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _BalanceOverviewMetric(
+                      label: 'Pengeluaran',
+                      value: amount(summary.totalExpense),
+                      icon: Icons.north_east_rounded,
+                      color: colors.error,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              _BalanceOverviewMetric(
+                label: 'Transaksi tercatat',
+                value: '${summary.transactionCount} transaksi',
+                icon: Icons.receipt_long_outlined,
+                color: colors.primary,
+                wide: true,
+              ),
+              if (largestExpense != null) ...[
+                const SizedBox(height: 18),
+                Text(
+                  'Pengeluaran terbesar',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _FlowTile(
-                    icon: Icons.north_east_rounded,
-                    label: 'Pengeluaran',
-                    amount: isPrivacy
-                        ? 'Rp •••'
-                        : formatRupiah(summary.totalExpense),
-                    color: expenseColor,
-                    isPrivacy: isPrivacy,
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: colors.errorContainer,
+                    child: Icon(
+                      Icons.trending_up_rounded,
+                      color: colors.onErrorContainer,
+                    ),
+                  ),
+                  title: Text(largestExpense.category),
+                  subtitle: Text(
+                    largestExpense.note.isEmpty
+                        ? 'Transaksi terbesar pada siklus ini'
+                        : largestExpense.note,
+                  ),
+                  trailing: Text(
+                    amount(largestExpense.amount),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.error,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tutup ringkasan'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BalanceOverviewMetric extends StatelessWidget {
+  const _BalanceOverviewMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    this.wide = false,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final bool wide;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      width: wide ? double.infinity : null,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: .48),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 19, color: color),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: theme.textTheme.labelSmall),
+                const SizedBox(height: 3),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -426,65 +689,216 @@ class _BudgetStatusSection extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InkWell(
-              onTap: budgetLimit == null || budgetLimit <= 0
-                  ? null
-                  : () => ref
-                        .read(budgetOverviewProvider)
-                        .whenData(
-                          (overview) => _showBudgetOverview(context, overview),
-                        ),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 18,
-                      color: colors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Status Anggaran',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: colors.onSurface,
-                        ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 18,
+                    color: colors.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Status Anggaran',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.onSurface,
                       ),
                     ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 20,
-                      color: budgetLimit == null || budgetLimit <= 0
-                          ? colors.onSurfaceVariant.withValues(alpha: .4)
-                          : colors.primary,
+                  ),
+                  IconButton(
+                    onPressed: () => _showBudgetInfo(context),
+                    tooltip: 'Apa itu status anggaran?',
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
                     ),
-                  ],
-                ),
+                    icon: Icon(
+                      Icons.info_outline_rounded,
+                      size: 20,
+                      color: colors.primary,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 14),
             if (budgetLimit == null || budgetLimit <= 0)
               _NoBudgetMessage(colors: colors, theme: theme)
             else
-              const _BudgetAlertContent(),
+              _BudgetAlertContent(
+                onOpenOverview: (overview) =>
+                    _showBudgetOverview(context, overview, ref),
+              ),
           ],
         ),
       ),
     );
   }
 
+  void _showBudgetInfo(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => const _BudgetInfoSheet(),
+    );
+  }
+
   void _showBudgetOverview(
     BuildContext context,
     BudgetOverviewEntity overview,
+    WidgetRef ref,
   ) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => _BudgetOverviewSheet(overview: overview),
+      builder: (_) => _BudgetOverviewSheet(
+        overview: overview,
+        onOpenHistory: (target) {
+          final navigator = Navigator.of(context);
+          if (target == null) {
+            ref
+                .read(historyNavigationIntentProvider.notifier)
+                .openActiveCycle();
+          } else {
+            ref
+                .read(historyNavigationIntentProvider.notifier)
+                .openCategoryInActiveCycle(target);
+          }
+          navigator.pop();
+        },
+      ),
+    );
+  }
+}
+
+class _BudgetInfoSheet extends StatelessWidget {
+  const _BudgetInfoSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Tentang Status Anggaran', style: theme.textTheme.labelLarge),
+            const SizedBox(height: 4),
+            Text(
+              'Lampu lalu lintas untuk pengeluaranmu',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Status ini membandingkan total pengeluaran dalam siklus aktif dengan batas anggaran yang kamu atur. Gunakan sebagai pengingat sebelum pengeluaran mulai berlebihan.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 18),
+            const _BudgetInfoLevel(
+              icon: Icons.check_circle_outline_rounded,
+              title: 'Aman',
+              description: 'Pengeluaran masih di bawah 80% anggaran.',
+            ),
+            const SizedBox(height: 10),
+            const _BudgetInfoLevel(
+              icon: Icons.warning_amber_rounded,
+              title: 'Perlu diperhatikan',
+              description: 'Pengeluaran sudah mencapai 80% atau lebih.',
+            ),
+            const SizedBox(height: 10),
+            const _BudgetInfoLevel(
+              icon: Icons.error_outline_rounded,
+              title: 'Terlampaui',
+              description: 'Total pengeluaran sudah melewati batas anggaran.',
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: colors.primaryContainer.withValues(alpha: .55),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lightbulb_outline_rounded, color: colors.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Tips: catat semua pengeluaran kecil. Pengeluaran kecil yang sering dilakukan bisa menjadi penyebab “bocor halus”.',
+                      style: theme.textTheme.bodySmall?.copyWith(height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => Navigator.pop(context),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+              child: const Text('Mengerti'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BudgetInfoLevel extends StatelessWidget {
+  const _BudgetInfoLevel({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: .5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: colors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text(description, style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -522,7 +936,9 @@ class _NoBudgetMessage extends StatelessWidget {
 }
 
 class _BudgetAlertContent extends ConsumerWidget {
-  const _BudgetAlertContent();
+  const _BudgetAlertContent({required this.onOpenOverview});
+
+  final ValueChanged<BudgetOverviewEntity> onOpenOverview;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -534,15 +950,20 @@ class _BudgetAlertContent extends ConsumerWidget {
         'Detail anggaran tidak tersedia.',
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      data: (overview) => _BudgetAlertBody(overview: overview),
+      data: (overview) =>
+          _BudgetAlertBody(overview: overview, onOpenOverview: onOpenOverview),
     );
   }
 }
 
 class _BudgetAlertBody extends StatelessWidget {
-  const _BudgetAlertBody({required this.overview});
+  const _BudgetAlertBody({
+    required this.overview,
+    required this.onOpenOverview,
+  });
 
   final BudgetOverviewEntity overview;
+  final ValueChanged<BudgetOverviewEntity> onOpenOverview;
 
   @override
   Widget build(BuildContext context) {
@@ -569,7 +990,7 @@ class _BudgetAlertBody extends StatelessWidget {
         : Icons.check_circle_outline_rounded;
 
     return InkWell(
-      onTap: () => _showBudgetOverview(context, overview),
+      onTap: () => onOpenOverview(overview),
       borderRadius: BorderRadius.circular(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -682,18 +1103,6 @@ class _BudgetAlertBody extends StatelessWidget {
       ),
     );
   }
-
-  void _showBudgetOverview(
-    BuildContext context,
-    BudgetOverviewEntity overview,
-  ) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) => _BudgetOverviewSheet(overview: overview),
-    );
-  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -701,9 +1110,13 @@ class _BudgetAlertBody extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────
 
 class _BudgetOverviewSheet extends StatelessWidget {
-  const _BudgetOverviewSheet({required this.overview});
+  const _BudgetOverviewSheet({
+    required this.overview,
+    required this.onOpenHistory,
+  });
 
   final BudgetOverviewEntity overview;
+  final ValueChanged<String?>? onOpenHistory;
 
   @override
   Widget build(BuildContext context) {
@@ -792,6 +1205,9 @@ class _BudgetOverviewSheet extends StatelessWidget {
                       label: 'Transaksi',
                       value: '${overview.transactionCount}',
                       icon: Icons.receipt_long_outlined,
+                      onTap: onOpenHistory == null
+                          ? null
+                          : () => onOpenHistory!(null),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -800,6 +1216,12 @@ class _BudgetOverviewSheet extends StatelessWidget {
                       label: 'Rata-rata / hari',
                       value: formatRupiah(overview.averageDailyExpense),
                       icon: Icons.show_chart_rounded,
+                      onTap: () => _showMetricDetail(
+                        context,
+                        title: 'Rata-rata pengeluaran harian',
+                        message:
+                            'Angka ini dihitung dari total pengeluaran yang sudah terjadi dibagi jumlah hari yang telah berjalan pada siklus ini.',
+                      ),
                     ),
                   ),
                 ],
@@ -810,6 +1232,12 @@ class _BudgetOverviewSheet extends StatelessWidget {
                 value: formatRupiah(overview.projectedExpense),
                 icon: Icons.insights_rounded,
                 wide: true,
+                onTap: () => _showMetricDetail(
+                  context,
+                  title: 'Estimasi akhir periode',
+                  message:
+                      'Proyeksi ini menggunakan rata-rata pengeluaran harian saat ini untuk memperkirakan total pengeluaran sampai akhir siklus.',
+                ),
               ),
               const SizedBox(height: 20),
               Text(
@@ -829,6 +1257,9 @@ class _BudgetOverviewSheet extends StatelessWidget {
                   final item = entry.value;
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
+                    onTap: onOpenHistory == null
+                        ? null
+                        : () => onOpenHistory!(item.category),
                     leading: CircleAvatar(
                       radius: 16,
                       backgroundColor: statusColor.withValues(alpha: 0.15),
@@ -871,6 +1302,36 @@ class _BudgetOverviewSheet extends StatelessWidget {
       ),
     );
   }
+
+  void _showMetricDetail(
+    BuildContext context, {
+    required String title,
+    required String message,
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          if (onAction != null)
+            FilledButton.tonal(
+              onPressed: () {
+                Navigator.pop(context);
+                onAction();
+              },
+              child: Text(actionLabel ?? 'Lihat detail'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Mengerti'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _BudgetMetric extends StatelessWidget {
@@ -878,12 +1339,14 @@ class _BudgetMetric extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
+    this.onTap,
     this.wide = false,
   });
 
   final String label;
   final String value;
   final IconData icon;
+  final VoidCallback? onTap;
   final bool wide;
 
   @override
@@ -891,7 +1354,7 @@ class _BudgetMetric extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    return Container(
+    final content = Container(
       width: wide ? double.infinity : null,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -922,6 +1385,17 @@ class _BudgetMetric extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+
+    if (onTap == null) return content;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: content,
       ),
     );
   }

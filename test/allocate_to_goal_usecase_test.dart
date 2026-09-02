@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/features/savings/domain/entities/savings_goal_entity.dart';
-import 'package:money_tracker/features/savings/domain/usecases/allocate_to_goal_usecase.dart';
+import 'package:savu/features/savings/domain/entities/savings_goal_entity.dart';
+import 'package:savu/features/savings/domain/usecases/allocate_to_goal_usecase.dart';
 
 void main() {
   const useCase = AllocateToGoalUseCase();
