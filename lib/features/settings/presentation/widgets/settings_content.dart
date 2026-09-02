@@ -14,6 +14,7 @@ import 'help_center_entry.dart';
 import 'help_center_sheet.dart';
 import 'settings_section_title.dart';
 import 'account_security_sheet.dart';
+import 'contact_us_entry.dart';
 
 void _showSettingsSnackBar(
   BuildContext context, {
@@ -90,9 +91,11 @@ class SettingsContent extends ConsumerWidget {
         const SettingsSectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
         const _DataManagementCard(),
         const SizedBox(height: 24),
-        const SettingsSectionTitle(title: 'BANTUAN'),
-        HelpCenterEntry(onTap: () => _showHelpCenter(context)),
-        const SizedBox(height: 32),
+         const SettingsSectionTitle(title: 'BANTUAN'),
+         HelpCenterEntry(onTap: () => _showHelpCenter(context)),
+         const SizedBox(height: 10),
+         const ContactUsEntry(),
+         const SizedBox(height: 32),
         const DeveloperCard(),
       ],
     );
