@@ -85,6 +85,24 @@ class UserProfileType extends Notifier<String> {
 final userProfileTypeProvider =
     NotifierProvider<UserProfileType, String>(UserProfileType.new);
 
+class ProfileAvatar extends Notifier<String> {
+  @override
+  String build() => ref.watch(settingsServiceProvider).getProfileAvatarId();
+
+  Future<bool> setAvatar(String avatarId) async {
+    try {
+      await ref.read(settingsServiceProvider).setProfileAvatarId(avatarId);
+      state = avatarId;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final profileAvatarProvider =
+    NotifierProvider<ProfileAvatar, String>(ProfileAvatar.new);
+
 class PrivacyMode extends Notifier<bool> {
   @override
   bool build() => ref.watch(settingsServiceProvider).getPrivacyMode();

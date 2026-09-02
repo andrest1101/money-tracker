@@ -15,6 +15,7 @@ import 'help_center_sheet.dart';
 import 'settings_section_title.dart';
 import 'account_security_sheet.dart';
 import 'contact_us_entry.dart';
+import 'profile_avatar_sheet.dart';
 
 void _showSettingsSnackBar(
   BuildContext context, {
@@ -396,6 +397,8 @@ class _ProfileHeader extends ConsumerWidget {
     final cs = theme.colorScheme;
     final authUser = ref.watch(currentUserProvider);
     final isGuest = authUser?.isAnonymous ?? true;
+    final avatarId = ref.watch(profileAvatarProvider);
+    final avatar = presetAvatarFor(avatarId);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -418,14 +421,26 @@ class _ProfileHeader extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: cs.primary,
-                  child: Text(
-                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: cs.onPrimary,
-                      fontWeight: FontWeight.bold,
+                Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: () => ProfileAvatarSheet.show(context),
+                    customBorder: const CircleBorder(),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 280),
+                      switchInCurve: Curves.easeOutBack,
+                      switchOutCurve: Curves.easeIn,
+                      transitionBuilder: (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(scale: animation, child: child),
+                      ),
+                      child: CircleAvatar(
+                        key: ValueKey(avatar.id),
+                        radius: 32,
+                        backgroundColor: avatar.color,
+                        child: Icon(avatar.icon, color: Colors.white, size: 31),
+                      ),
                     ),
                   ),
                 ),
@@ -466,7 +481,7 @@ class _ProfileHeader extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '$profileType  •  Ketuk untuk melihat detail',
+                        '$profileType  •  Ketuk avatar untuk mengganti',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),
