@@ -8,7 +8,7 @@ import '../providers/savings_providers.dart';
 import 'edit_goal_sheet.dart';
 import 'edit_allocation_sheet.dart';
 
-enum _GoalAction { edit, favorite, archive, delete }
+enum _GoalAction { edit, archive, delete }
 
 class GoalCard extends ConsumerStatefulWidget {
   const GoalCard({
@@ -16,14 +16,12 @@ class GoalCard extends ConsumerStatefulWidget {
     required this.goal,
     required this.onAllocate,
     required this.onDelete,
-    required this.onFavorite,
     required this.onArchive,
   });
 
   final SavingsGoalEntity goal;
   final VoidCallback onAllocate;
   final VoidCallback onDelete;
-  final VoidCallback onFavorite;
   final VoidCallback onArchive;
 
   @override
@@ -253,8 +251,6 @@ class _GoalCardState extends ConsumerState<GoalCard>
                             switch (action) {
                               case _GoalAction.edit:
                                 _showEditGoalSheet(context);
-                              case _GoalAction.favorite:
-                                widget.onFavorite();
                               case _GoalAction.archive:
                                 widget.onArchive();
                               case _GoalAction.delete:
@@ -267,21 +263,6 @@ class _GoalCardState extends ConsumerState<GoalCard>
                               child: ListTile(
                                 leading: Icon(Icons.edit_outlined),
                                 title: Text('Edit target'),
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: _GoalAction.favorite,
-                              child: ListTile(
-                                leading: Icon(
-                                  widget.goal.isFavorite
-                                      ? Icons.star_rounded
-                                      : Icons.star_outline_rounded,
-                                ),
-                                title: Text(
-                                  widget.goal.isFavorite
-                                      ? 'Hapus dari favorit'
-                                      : 'Favoritkan target',
-                                ),
                               ),
                             ),
                             PopupMenuItem(

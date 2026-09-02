@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/local_storage/settings_providers.dart';
@@ -23,7 +24,9 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(monthlySummaryProvider);
     final transactionsAsync = ref.watch(transactionsStreamProvider);
-    final userName = ref.watch(userNameProvider);
+    final storedUserName = ref.watch(userNameProvider);
+    final authUser = ref.watch(currentUserProvider);
+    final userName = _resolveDisplayName(storedUserName, authUser);
 
     void openAddSheet() => showModalBottomSheet<void>(
       context: context,
@@ -95,6 +98,20 @@ class DashboardPage extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _resolveDisplayName(String storedName, User? user) {
+  final cleanStoredName = storedName.trim();
+  if (user != null && !user.isAnonymous) {
+    final googleName = user.displayName?.trim() ?? '';
+    if (googleName.isNotEmpty) return googleName;
+    final emailName = user.email?.split('@').first.trim() ?? '';
+    if (emailName.isNotEmpty) return emailName;
+  }
+  if (cleanStoredName.isNotEmpty && cleanStoredName != 'Pengguna') {
+    return cleanStoredName;
+  }
+  return cleanStoredName.isEmpty ? 'Pengguna' : cleanStoredName;
 }
 
 // ─────────────────────────────────────────────────────────────

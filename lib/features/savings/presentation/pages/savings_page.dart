@@ -124,22 +124,6 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
     );
   }
 
-  Future<void> _toggleFavorite(SavingsGoalEntity goal) async {
-    final value = !goal.isFavorite;
-    final success = await ref
-        .read(savingsActionsControllerProvider.notifier)
-        .setFavorite(goal, value);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? (value ? 'Target ditambahkan ke favorit.' : 'Target dihapus dari favorit.')
-              : 'Favorit target gagal diperbarui.',
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -234,7 +218,6 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                           : 'Tap "Target Baru" untuk mulai menabung\nuntuk impianmu!',
                   onAllocate: _showAllocateSheet,
                   onDelete: _confirmDeleteGoal,
-                  onFavorite: (goal) => _toggleFavorite(goal),
                   onArchive: (goal) => _toggleArchive(goal),
                 ),
                 // Tab 2: Selesai
@@ -250,7 +233,6 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                           : 'Target yang sudah mencapai 100% akan muncul di sini.',
                   onAllocate: _showAllocateSheet,
                   onDelete: _confirmDeleteGoal,
-                  onFavorite: (goal) => _toggleFavorite(goal),
                   onArchive: (goal) => _toggleArchive(goal),
                 ),
               ],
@@ -352,12 +334,12 @@ class _ArchiveButton extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         foregroundColor: selected ? colors.primary : colors.onSurfaceVariant,
         backgroundColor: selected
-            ? colors.primaryContainer
-            : colors.tertiaryContainer.withValues(alpha: .35),
+              ? colors.primaryContainer
+              : colors.surfaceContainerHighest.withValues(alpha: .55),
         side: BorderSide(
           color: selected
               ? colors.primary.withValues(alpha: .55)
-              : colors.tertiary.withValues(alpha: .4),
+              : colors.outlineVariant,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
@@ -403,7 +385,6 @@ class _GoalListView extends ConsumerWidget {
     required this.emptySubtitle,
     required this.onAllocate,
     required this.onDelete,
-    required this.onFavorite,
     required this.onArchive,
   });
 
@@ -413,7 +394,6 @@ class _GoalListView extends ConsumerWidget {
   final String emptySubtitle;
   final void Function(SavingsGoalEntity) onAllocate;
   final void Function(SavingsGoalEntity) onDelete;
-  final void Function(SavingsGoalEntity) onFavorite;
   final void Function(SavingsGoalEntity) onArchive;
 
   @override
@@ -501,7 +481,6 @@ class _GoalListView extends ConsumerWidget {
             goal: goals[index],
           onAllocate: () => onAllocate(goals[index]),
           onDelete: () => onDelete(goals[index]),
-          onFavorite: () => onFavorite(goals[index]),
           onArchive: () => onArchive(goals[index]),
           ),
         );

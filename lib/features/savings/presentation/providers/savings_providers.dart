@@ -167,9 +167,6 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
   Future<bool> setArchived(SavingsGoalEntity goal, bool value) =>
       updateGoal(goal.copyWith(isArchived: value));
 
-  Future<bool> setFavorite(SavingsGoalEntity goal, bool value) =>
-      updateGoal(goal.copyWith(isFavorite: value));
-
   Future<bool> deleteGoal(SavingsGoalEntity goal) async {
     state = const AsyncLoading();
     try {

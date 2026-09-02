@@ -11,7 +11,6 @@ class SavingsGoalModel extends SavingsGoalEntity {
     required super.deadline,
     required super.createdAt,
     super.isArchived = false,
-    super.isFavorite = false,
   });
 
   factory SavingsGoalModel.fromEntity(SavingsGoalEntity entity) {
@@ -23,7 +22,6 @@ class SavingsGoalModel extends SavingsGoalEntity {
       deadline: entity.deadline,
       createdAt: entity.createdAt,
       isArchived: entity.isArchived,
-      isFavorite: entity.isFavorite,
     );
   }
 
@@ -36,7 +34,6 @@ class SavingsGoalModel extends SavingsGoalEntity {
       deadline: _parseDate(map['deadline']),
       createdAt: _parseDate(map['createdAt']),
       isArchived: map['isArchived'] as bool? ?? false,
-      isFavorite: map['isFavorite'] as bool? ?? false,
     );
   }
 
@@ -48,7 +45,6 @@ class SavingsGoalModel extends SavingsGoalEntity {
       'deadline': Timestamp.fromDate(deadline),
       'createdAt': Timestamp.fromDate(createdAt),
       'isArchived': isArchived,
-      'isFavorite': isFavorite,
     };
   }
 
