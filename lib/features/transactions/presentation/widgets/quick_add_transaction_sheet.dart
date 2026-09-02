@@ -92,27 +92,45 @@ class _QuickAddTransactionSheetState
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Kategori Baru'),
-        content: TextField(
-          controller: _customCategoryController,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: 'Nama kategori',
-            hintText: 'Contoh: Kosmetik',
+        content: SingleChildScrollView(
+          child: TextField(
+            controller: _customCategoryController,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              labelText: 'Nama kategori',
+              hintText: 'Contoh: Kosmetik',
+            ),
+            onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
           ),
-          onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(_customCategoryController.text),
-            child: const Text('Tambah'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.of(dialogContext)
+                      .pop(_customCategoryController.text),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Tambah'),
+                ),
+              ),
+            ],
           ),
         ],
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       ),
     );
 
@@ -183,22 +201,41 @@ class _QuickAddTransactionSheetState
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Withdraw Semua Alokasi?'),
-          content: Text(
-            'Uang ${formatRupiah(widget.transaction!.amount)} akan kembali ke saldo utama dan riwayat alokasi ini akan dihapus.',
+          content: SingleChildScrollView(
+            child: Text(
+              'Uang ${formatRupiah(widget.transaction!.amount)} akan kembali ke saldo utama dan riwayat alokasi ini akan dihapus.',
+            ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.orange.shade700,
-              ),
-              child: const Text('Withdraw'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    child: const Text('Batal'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.orange.shade700,
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    child: const Text('Withdraw'),
+                  ),
+                ),
+              ],
             ),
           ],
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
         ),
       );
 

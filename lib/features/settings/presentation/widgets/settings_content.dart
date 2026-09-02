@@ -352,35 +352,57 @@ class _ProfileHeader extends ConsumerWidget {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                final name = nameController.text.trim();
-                if (name.isEmpty) return;
-                final nameSaved = await ref
-                    .read(userNameProvider.notifier)
-                    .setUserName(name);
-                final typeSaved = await ref
-                    .read(userProfileTypeProvider.notifier)
-                    .setProfileType(selectedType);
-                if (!context.mounted) return;
-                if (!nameSaved || !typeSaved) {
-                  _showSettingsSnackBar(
-                    context,
-                    message: 'Profil gagal disimpan.',
-                    isError: true,
-                  );
-                  return;
-                }
-                Navigator.pop(dialogContext);
-                _showSettingsSnackBar(context, message: 'Profil diperbarui.');
-              },
-              child: const Text('Simpan'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    child: const Text('Batal'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () async {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) return;
+                      final nameSaved = await ref
+                          .read(userNameProvider.notifier)
+                          .setUserName(name);
+                      final typeSaved = await ref
+                          .read(userProfileTypeProvider.notifier)
+                          .setProfileType(selectedType);
+                      if (!context.mounted) return;
+                      if (!nameSaved || !typeSaved) {
+                        _showSettingsSnackBar(
+                          context,
+                          message: 'Profil gagal disimpan.',
+                          isError: true,
+                        );
+                        return;
+                      }
+                      Navigator.pop(dialogContext);
+                      _showSettingsSnackBar(
+                        context,
+                        message: 'Profil diperbarui.',
+                      );
+                    },
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    child: const Text('Simpan'),
+                  ),
+                ),
+              ],
             ),
           ],
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
         ),
       ),
     ).whenComplete(nameController.dispose);
@@ -1017,49 +1039,69 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Batas Anggaran'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Atur batas pengeluaran bulanan agar aplikasi dapat memberikan peringatan sebelum kamu boros.',
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _controller,
-            keyboardType: TextInputType.number,
-            inputFormatters: [ThousandsSeparatorInputFormatter()],
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: 'Batas Nominal',
-              prefixText: 'Rp ',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              helperText: 'Isi 0 untuk mematikan peringatan',
-              errorText: _errorText,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Atur batas pengeluaran bulanan agar aplikasi dapat memberikan peringatan sebelum kamu boros.',
             ),
-            onSubmitted: (_) => _save(),
-          ),
-        ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              inputFormatters: [ThousandsSeparatorInputFormatter()],
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'Batas Nominal',
+                prefixText: 'Rp ',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                helperText: 'Isi 0 untuk mematikan peringatan',
+                helperMaxLines: 2,
+                errorText: _errorText,
+                errorMaxLines: 2,
+              ),
+              onSubmitted: (_) => _save(),
+            ),
+          ],
+        ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Batal'),
-        ),
-        FilledButton(
-          onPressed: _isSaving ? null : _save,
-          child: _isSaving
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Simpan'),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: _isSaving ? null : _save,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Simpan'),
+              ),
+            ),
+          ],
         ),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
   }
 }
@@ -1085,66 +1127,87 @@ class _SetCycleDialogState extends ConsumerState<_SetCycleDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Tanggal Siklus'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Kapan biasanya kamu menerima uang bulanan/gajian? Anggaran akan di-reset pada tanggal ini.',
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<int>(
-            value: _selectedDay,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Kapan biasanya kamu menerima uang bulanan/gajian? Anggaran akan di-reset pada tanggal ini.',
             ),
-            items: List.generate(28, (index) => index + 1)
-                .map(
-                  (day) =>
-                      DropdownMenuItem(value: day, child: Text('Tanggal $day')),
-                )
-                .toList(),
-            onChanged: (value) {
-              if (value != null) setState(() => _selectedDay = value);
-            },
-          ),
-        ],
+            const SizedBox(height: 16),
+            DropdownButtonFormField<int>(
+              value: _selectedDay,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              isExpanded: true,
+              items: List.generate(28, (index) => index + 1)
+                  .map(
+                    (day) => DropdownMenuItem(
+                      value: day,
+                      child: Text('Tanggal $day'),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) setState(() => _selectedDay = value);
+              },
+            ),
+          ],
+        ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Batal'),
-        ),
-        FilledButton(
-          onPressed: () async {
-            final saved = await ref
-                .read(budgetCycleDateProvider.notifier)
-                .setDate(_selectedDay);
-            if (!mounted) return;
-            if (!saved) {
-              _showSettingsSnackBar(
-                context,
-                message: 'Siklus anggaran gagal disimpan.',
-                isError: true,
-              );
-              return;
-            }
-            Navigator.of(context).pop();
-            _showSettingsSnackBar(
-              context,
-              message: 'Siklus anggaran diperbarui.',
-            );
-          },
-          child: const Text('Simpan'),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: () async {
+                  final saved = await ref
+                      .read(budgetCycleDateProvider.notifier)
+                      .setDate(_selectedDay);
+                  if (!mounted) return;
+                  if (!saved) {
+                    _showSettingsSnackBar(
+                      context,
+                      message: 'Siklus anggaran gagal disimpan.',
+                      isError: true,
+                    );
+                    return;
+                  }
+                  Navigator.of(context).pop();
+                  _showSettingsSnackBar(
+                    context,
+                    message: 'Siklus anggaran diperbarui.',
+                  );
+                },
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Simpan'),
+              ),
+            ),
+          ],
         ),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
   }
 }
@@ -1170,20 +1233,38 @@ class _DataManagementCard extends ConsumerWidget {
           color: Colors.red,
         ),
         title: const Text('Hapus Semua Data?'),
-        content: const Text(
-          'Tindakan ini akan menghapus SELURUH transaksi dan target tabungan secara permanen dari server. Tindakan ini tidak dapat dibatalkan.',
+        content: const SingleChildScrollView(
+          child: Text(
+            'Tindakan ini akan menghapus SELURUH transaksi dan target tabungan secara permanen dari server. Tindakan ini tidak dapat dibatalkan.',
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Ya, Hapus Semua'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Ya, Hapus Semua'),
+                ),
+              ),
+            ],
           ),
         ],
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       ),
     );
     if (firstConfirm != true || !context.mounted) return;
@@ -1303,38 +1384,58 @@ class _FinalDeleteConfirmationDialogState
     return AlertDialog(
       icon: const Icon(Icons.gpp_maybe_rounded, color: Colors.red, size: 44),
       title: const Text('Konfirmasi terakhir'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Data transaksi, alokasi, dan target tabungan akan dihapus permanen. Pastikan kamu benar-benar ingin melanjutkan.',
-          ),
-          const SizedBox(height: 12),
-          CheckboxListTile(
-            value: _hasConfirmed,
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: const Text(
-              'Saya mengerti bahwa tindakan ini tidak dapat dibatalkan.',
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Data transaksi, alokasi, dan target tabungan akan dihapus permanen. Pastikan kamu benar-benar ingin melanjutkan.',
             ),
-            onChanged: (value) {
-              setState(() => _hasConfirmed = value ?? false);
-            },
-          ),
-        ],
+            const SizedBox(height: 12),
+            CheckboxListTile(
+              value: _hasConfirmed,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text(
+                'Saya mengerti bahwa tindakan ini tidak dapat dibatalkan.',
+              ),
+              onChanged: (value) {
+                setState(() => _hasConfirmed = value ?? false);
+              },
+            ),
+          ],
+        ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Batal'),
-        ),
-        FilledButton(
-          onPressed: _hasConfirmed ? () => Navigator.pop(context, true) : null,
-          style: FilledButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('HAPUS SEMUA'),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: _hasConfirmed
+                    ? () => Navigator.pop(context, true)
+                    : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('HAPUS SEMUA'),
+              ),
+            ),
+          ],
         ),
       ],
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
   }
 }
