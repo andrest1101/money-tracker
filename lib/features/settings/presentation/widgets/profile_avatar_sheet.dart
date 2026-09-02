@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 
 enum PresetAvatarCategory { general, people }
+enum PresetAvatarGender { male, female }
 
 class PresetAvatar {
   const PresetAvatar({
@@ -12,6 +13,7 @@ class PresetAvatar {
     required this.color,
     required this.label,
     required this.category,
+    this.gender,
   });
 
   final String id;
@@ -19,6 +21,7 @@ class PresetAvatar {
   final Color color;
   final String label;
   final PresetAvatarCategory category;
+  final PresetAvatarGender? gender;
 }
 
 const presetAvatars = [
@@ -30,7 +33,6 @@ const presetAvatars = [
   PresetAvatar(id: 'coffee', icon: Icons.coffee_rounded, color: Color(0xFF92400E), label: 'Kopi', category: PresetAvatarCategory.general),
   PresetAvatar(id: 'bolt', icon: Icons.bolt_rounded, color: Color(0xFFEAB308), label: 'Energi', category: PresetAvatarCategory.general),
   PresetAvatar(id: 'favorite', icon: Icons.favorite_rounded, color: Color(0xFFEF4444), label: 'Peduli', category: PresetAvatarCategory.general),
-  PresetAvatar(id: 'music', icon: Icons.music_note_rounded, color: Color(0xFFEC4899), label: 'Ritme', category: PresetAvatarCategory.general),
   PresetAvatar(id: 'palette', icon: Icons.palette_rounded, color: Color(0xFF14B8A6), label: 'Kreatif', category: PresetAvatarCategory.general),
   PresetAvatar(id: 'sports', icon: Icons.sports_esports_rounded, color: Color(0xFF0EA5E9), label: 'Santai', category: PresetAvatarCategory.general),
   PresetAvatar(id: 'travel', icon: Icons.explore_rounded, color: Color(0xFF0891B2), label: 'Jelajah', category: PresetAvatarCategory.general),
@@ -39,21 +41,21 @@ const presetAvatars = [
   PresetAvatar(id: 'lightbulb', icon: Icons.lightbulb_rounded, color: Color(0xFFD97706), label: 'Ide', category: PresetAvatarCategory.general),
   PresetAvatar(id: 'pets', icon: Icons.pets_rounded, color: Color(0xFFDB2777), label: 'Ceria', category: PresetAvatarCategory.general),
   PresetAvatar(id: 'balance', icon: Icons.account_balance_rounded, color: Color(0xFF059669), label: 'Stabil', category: PresetAvatarCategory.general),
-  PresetAvatar(id: 'person_blue', icon: Icons.face_2_rounded, color: Color(0xFF2563EB), label: 'Arga', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_pink', icon: Icons.face_3_rounded, color: Color(0xFFDB2777), label: 'Naya', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_green', icon: Icons.face_4_rounded, color: Color(0xFF059669), label: 'Raka', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_orange', icon: Icons.face_5_rounded, color: Color(0xFFEA580C), label: 'Mira', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_purple', icon: Icons.face_6_rounded, color: Color(0xFF7C3AED), label: 'Dio', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_teal', icon: Icons.person_rounded, color: Color(0xFF0F766E), label: 'Sena', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_red', icon: Icons.face_rounded, color: Color(0xFFDC2626), label: 'Luna', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_cyan', icon: Icons.face_2_rounded, color: Color(0xFF0891B2), label: 'Bima', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_indigo', icon: Icons.face_3_rounded, color: Color(0xFF4F46E5), label: 'Tara', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_lime', icon: Icons.face_4_rounded, color: Color(0xFF65A30D), label: 'Jati', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_amber', icon: Icons.face_5_rounded, color: Color(0xFFD97706), label: 'Alya', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_violet', icon: Icons.face_6_rounded, color: Color(0xFF9333EA), label: 'Fajar', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_slate', icon: Icons.person_rounded, color: Color(0xFF475569), label: 'Kirana', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_rose', icon: Icons.face_rounded, color: Color(0xFFE11D48), label: 'Reno', category: PresetAvatarCategory.people),
-  PresetAvatar(id: 'person_mint', icon: Icons.face_2_rounded, color: Color(0xFF0D9488), label: 'Caca', category: PresetAvatarCategory.people),
+  PresetAvatar(id: 'person_blue', icon: Icons.face_2_rounded, color: Color(0xFF2563EB), label: 'Andre', category: PresetAvatarCategory.people, gender: PresetAvatarGender.male),
+  PresetAvatar(id: 'person_pink', icon: Icons.face_3_rounded, color: Color(0xFFDB2777), label: 'Chelsie', category: PresetAvatarCategory.people, gender: PresetAvatarGender.female),
+  PresetAvatar(id: 'person_green', icon: Icons.face_4_rounded, color: Color(0xFF059669), label: 'Melvin', category: PresetAvatarCategory.people, gender: PresetAvatarGender.male),
+  PresetAvatar(id: 'person_orange', icon: Icons.face_5_rounded, color: Color(0xFFEA580C), label: 'Aidil', category: PresetAvatarCategory.people, gender: PresetAvatarGender.male),
+  PresetAvatar(id: 'person_purple', icon: Icons.face_6_rounded, color: Color(0xFF7C3AED), label: 'Zaki', category: PresetAvatarCategory.people, gender: PresetAvatarGender.male),
+  PresetAvatar(id: 'person_teal', icon: Icons.person_rounded, color: Color(0xFF0F766E), label: 'Irvan', category: PresetAvatarCategory.people, gender: PresetAvatarGender.male),
+  PresetAvatar(id: 'person_red', icon: Icons.face_rounded, color: Color(0xFFDC2626), label: 'Faiz', category: PresetAvatarCategory.people, gender: PresetAvatarGender.male),
+  PresetAvatar(id: 'person_cyan', icon: Icons.face_2_rounded, color: Color(0xFF0891B2), label: 'Sultan', category: PresetAvatarCategory.people, gender: PresetAvatarGender.male),
+  PresetAvatar(id: 'person_indigo', icon: Icons.face_3_rounded, color: Color(0xFF4F46E5), label: 'Alberd', category: PresetAvatarCategory.people, gender: PresetAvatarGender.male),
+  PresetAvatar(id: 'person_lime', icon: Icons.face_4_rounded, color: Color(0xFF65A30D), label: 'Naya', category: PresetAvatarCategory.people, gender: PresetAvatarGender.female),
+  PresetAvatar(id: 'person_amber', icon: Icons.face_5_rounded, color: Color(0xFFD97706), label: 'Alya', category: PresetAvatarCategory.people, gender: PresetAvatarGender.female),
+  PresetAvatar(id: 'person_violet', icon: Icons.face_6_rounded, color: Color(0xFF9333EA), label: 'Kirana', category: PresetAvatarCategory.people, gender: PresetAvatarGender.female),
+  PresetAvatar(id: 'person_slate', icon: Icons.person_rounded, color: Color(0xFF475569), label: 'Caca', category: PresetAvatarCategory.people, gender: PresetAvatarGender.female),
+  PresetAvatar(id: 'person_rose', icon: Icons.face_rounded, color: Color(0xFFE11D48), label: 'Luna', category: PresetAvatarCategory.people, gender: PresetAvatarGender.female),
+  PresetAvatar(id: 'person_mint', icon: Icons.face_2_rounded, color: Color(0xFF0D9488), label: 'Mira', category: PresetAvatarCategory.people, gender: PresetAvatarGender.female),
 ];
 
 class ProfileAvatarSheet extends ConsumerStatefulWidget {
@@ -74,13 +76,19 @@ class ProfileAvatarSheet extends ConsumerStatefulWidget {
 
 class _ProfileAvatarSheetState extends ConsumerState<ProfileAvatarSheet> {
   var _category = PresetAvatarCategory.people;
+  PresetAvatarGender? _gender;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final selectedId = ref.watch(profileAvatarProvider);
-    final avatars = presetAvatars.where((avatar) => avatar.category == _category).toList();
+    final avatars = presetAvatars.where((avatar) {
+      return avatar.category == _category &&
+          (_category != PresetAvatarCategory.people ||
+              _gender == null ||
+              avatar.gender == _gender);
+    }).toList();
 
     return SafeArea(
       child: LayoutBuilder(
@@ -109,6 +117,13 @@ class _ProfileAvatarSheetState extends ConsumerState<ProfileAvatarSheet> {
                     category: _category,
                     onChanged: (category) => setState(() => _category = category),
                   ),
+                  if (_category == PresetAvatarCategory.people) ...[
+                    const SizedBox(height: 10),
+                    _GenderSelector(
+                      gender: _gender,
+                      onChanged: (gender) => setState(() => _gender = gender),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   LayoutBuilder(
                     builder: (context, gridConstraints) {
@@ -176,6 +191,40 @@ class _CategorySelector extends StatelessWidget {
         visualDensity: VisualDensity.compact,
         foregroundColor: WidgetStatePropertyAll(colors.onSurface),
       ),
+    );
+  }
+}
+
+class _GenderSelector extends StatelessWidget {
+  const _GenderSelector({required this.gender, required this.onChanged});
+
+  final PresetAvatarGender? gender;
+  final ValueChanged<PresetAvatarGender?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ChoiceChip(
+          label: const Text('Semua'),
+          selected: gender == null,
+          onSelected: (_) => onChanged(null),
+        ),
+        ChoiceChip(
+          label: const Text('Laki-laki'),
+          avatar: const Icon(Icons.face_rounded, size: 17),
+          selected: gender == PresetAvatarGender.male,
+          onSelected: (_) => onChanged(PresetAvatarGender.male),
+        ),
+        ChoiceChip(
+          label: const Text('Perempuan'),
+          avatar: const Icon(Icons.face_3_rounded, size: 17),
+          selected: gender == PresetAvatarGender.female,
+          onSelected: (_) => onChanged(PresetAvatarGender.female),
+        ),
+      ],
     );
   }
 }

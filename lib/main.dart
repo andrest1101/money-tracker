@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -167,6 +168,28 @@ class MoneyTrackerApp extends ConsumerWidget {
       themeMode: ref.watch(appThemeModeProvider),
       theme: MoneyTrackerTheme.light(),
       darkTheme: MoneyTrackerTheme.dark(),
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            systemNavigationBarColor: theme.colorScheme.surface,
+            systemNavigationBarDividerColor: theme.colorScheme.surface,
+            systemNavigationBarIconBrightness: isDark
+                ? Brightness.light
+                : Brightness.dark,
+            systemNavigationBarContrastEnforced: false,
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: isDark
+                ? Brightness.light
+                : Brightness.dark,
+            statusBarBrightness: isDark
+                ? Brightness.dark
+                : Brightness.light,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       home: const AppShell(),
     );
   }
