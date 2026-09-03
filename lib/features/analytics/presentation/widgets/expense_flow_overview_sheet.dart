@@ -196,16 +196,25 @@ class _Metric extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Use brighter, high-contrast colors so numbers stand out on card background
+    final displayColor = color == colors.error
+        ? (isDark ? const Color(0xFFFF6B6B) : const Color(0xFFE53935))
+        : color == colors.primary
+        ? (isDark ? const Color(0xFF5EEAD4) : const Color(0xFF0D9488))
+        : (isDark ? const Color(0xFF34D399) : const Color(0xFF059669));
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: .22)),
+        border: Border.all(color: displayColor.withValues(alpha: .3)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 19),
+          Icon(icon, color: displayColor, size: 19),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -219,6 +228,7 @@ class _Metric extends StatelessWidget {
                   child: Text(
                     value,
                     style: theme.textTheme.labelLarge?.copyWith(
+                      color: displayColor,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
