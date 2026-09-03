@@ -92,11 +92,11 @@ class SettingsContent extends ConsumerWidget {
         const SettingsSectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
         const _DataManagementCard(),
         const SizedBox(height: 24),
-         const SettingsSectionTitle(title: 'BANTUAN'),
-         HelpCenterEntry(onTap: () => _showHelpCenter(context)),
-         const SizedBox(height: 10),
-         const ContactUsEntry(),
-         const SizedBox(height: 32),
+        const SettingsSectionTitle(title: 'BANTUAN'),
+        HelpCenterEntry(onTap: () => _showHelpCenter(context)),
+        const SizedBox(height: 10),
+        const ContactUsEntry(),
+        const SizedBox(height: 32),
         const DeveloperCard(),
       ],
     );
@@ -162,7 +162,7 @@ class _AccountSessionCard extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Card(
         elevation: 0,
-        color: colors.surfaceContainerHighest.withValues(alpha: .38),
+        color: colors.surfaceContainerHigh,
         child: ListTile(
           leading: CircleAvatar(
             backgroundColor: isGuest
@@ -300,10 +300,8 @@ class _ProfileHeader extends ConsumerWidget {
   }) {
     showDialog<void>(
       context: context,
-      builder: (_) => _EditProfileDialog(
-        initialName: userName,
-        initialType: profileType,
-      ),
+      builder: (_) =>
+          _EditProfileDialog(initialName: userName, initialType: profileType),
     );
   }
 
@@ -316,6 +314,7 @@ class _ProfileHeader extends ConsumerWidget {
     final privacyMode = ref.watch(privacyModeProvider);
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final authUser = ref.watch(currentUserProvider);
     final isGuest = authUser?.isAnonymous ?? true;
     final avatarId = ref.watch(profileAvatarProvider);
@@ -325,7 +324,8 @@ class _ProfileHeader extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(
         elevation: 0,
-        color: cs.primaryContainer.withValues(alpha: 0.4),
+        color: isDark ? cs.surfaceContainerHigh : cs.primaryContainer,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: InkWell(
           onTap: () => _showProfileDetails(
@@ -348,20 +348,62 @@ class _ProfileHeader extends ConsumerWidget {
                   child: InkWell(
                     onTap: () => ProfileAvatarSheet.show(context),
                     customBorder: const CircleBorder(),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 280),
-                      switchInCurve: Curves.easeOutBack,
-                      switchOutCurve: Curves.easeIn,
-                      transitionBuilder: (child, animation) => FadeTransition(
-                        opacity: animation,
-                        child: ScaleTransition(scale: animation, child: child),
-                      ),
-                      child: CircleAvatar(
-                        key: ValueKey(avatar.id),
-                        radius: 32,
-                        backgroundColor: avatar.color,
-                        child: Icon(avatar.icon, color: Colors.white, size: 31),
-                      ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 280),
+                          switchInCurve: Curves.easeOutBack,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                                opacity: animation,
+                                child: ScaleTransition(
+                                  scale: animation,
+                                  child: child,
+                                ),
+                              ),
+                          child: CircleAvatar(
+                            key: ValueKey(avatar.id),
+                            radius: 32,
+                            backgroundColor: avatar.color,
+                            child: Icon(
+                              avatar.icon,
+                              color: Colors.white,
+                              size: 31,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: cs.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(
+                                  context,
+                                ).scaffoldBackgroundColor,
+                                width: 2.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              size: 14,
+                              color: cs.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -469,8 +511,7 @@ class _EditProfileDialog extends ConsumerStatefulWidget {
   final String initialType;
 
   @override
-  ConsumerState<_EditProfileDialog> createState() =>
-      _EditProfileDialogState();
+  ConsumerState<_EditProfileDialog> createState() => _EditProfileDialogState();
 }
 
 class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
@@ -756,7 +797,7 @@ class _ThemeSelectionCard extends ConsumerWidget {
       child: Card(
         elevation: 0,
         margin: const EdgeInsets.only(bottom: 12),
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: cs.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -851,7 +892,7 @@ class _ThemeChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected
                 ? cs.primary.withValues(alpha: 0.15)
-                : cs.surfaceContainerHighest.withValues(alpha: 0.3),
+                : cs.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: selected
@@ -899,7 +940,7 @@ class _PrivacyCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 0,
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: cs.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: SwitchListTile(
           value: isPrivacyMode,
@@ -986,7 +1027,7 @@ class _FinancialSettingsCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 0,
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: cs.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -1378,7 +1419,7 @@ class _DataManagementCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 0,
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: cs.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
         child: Column(

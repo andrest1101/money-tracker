@@ -64,9 +64,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
         title: const Text('Hapus Target?'),
         content: Text(
           '"${goal.title}" beserta semua riwayat alokasinya akan dihapus permanen. '
-          '${goal.isCompleted
-              ? 'Riwayat alokasi tetap dicatat sebagai transaksi historis agar saldo tidak berubah.'
-              : 'Dana yang sudah dialokasikan (${formatRupiah(goal.currentAmount)}) akan dikembalikan ke saldo utama.'}',
+          '${goal.isCompleted ? 'Riwayat alokasi tetap dicatat sebagai transaksi historis agar saldo tidak berubah.' : 'Dana yang sudah dialokasikan (${formatRupiah(goal.currentAmount)}) akan dikembalikan ke saldo utama.'}',
         ),
         actions: [
           TextButton(
@@ -117,13 +115,14 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
       SnackBar(
         content: Text(
           success
-              ? (value ? 'Target dipindahkan ke arsip.' : 'Target dikembalikan dari arsip.')
+              ? (value
+                    ? 'Target dipindahkan ke arsip.'
+                    : 'Target dikembalikan dari arsip.')
               : 'Arsip target gagal diperbarui.',
         ),
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +136,9 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
     final archivedCompletedAsync = ref.watch(archivedCompletedGoalsProvider);
 
     final activeList = archivedMode ? archivedActiveAsync : activeAsync;
-    final completedList = archivedMode ? archivedCompletedAsync : completedAsync;
+    final completedList = archivedMode
+        ? archivedCompletedAsync
+        : completedAsync;
     final activeCount = activeList.value?.length ?? 0;
     final completedCount = completedList.value?.length ?? 0;
 
@@ -212,10 +213,9 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                   emptyTitle: archivedMode
                       ? 'Belum ada target aktif di arsip'
                       : 'Belum ada target aktif',
-                  emptySubtitle:
-                      archivedMode
-                          ? 'Target aktif yang kamu arsipkan akan muncul di sini.'
-                          : 'Tap "Target Baru" untuk mulai menabung\nuntuk impianmu!',
+                  emptySubtitle: archivedMode
+                      ? 'Target aktif yang kamu arsipkan akan muncul di sini.'
+                      : 'Tap "Target Baru" untuk mulai menabung\nuntuk impianmu!',
                   onAllocate: _showAllocateSheet,
                   onDelete: _confirmDeleteGoal,
                   onArchive: (goal) => _toggleArchive(goal),
@@ -227,10 +227,9 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                   emptyTitle: archivedMode
                       ? 'Belum ada target selesai di arsip'
                       : 'Belum ada target selesai',
-                  emptySubtitle:
-                      archivedMode
-                          ? 'Target selesai yang kamu arsipkan akan muncul di sini.'
-                          : 'Target yang sudah mencapai 100% akan muncul di sini.',
+                  emptySubtitle: archivedMode
+                      ? 'Target selesai yang kamu arsipkan akan muncul di sini.'
+                      : 'Target yang sudah mencapai 100% akan muncul di sini.',
                   onAllocate: _showAllocateSheet,
                   onDelete: _confirmDeleteGoal,
                   onArchive: (goal) => _toggleArchive(goal),
@@ -258,18 +257,42 @@ class _SortFilterRow extends ConsumerWidget {
         children: [
           Icon(Icons.sort_rounded, size: 17, color: colors.onSurfaceVariant),
           const SizedBox(width: 7),
-          Text('Urutkan', style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12)),
+          Text(
+            'Urutkan',
+            style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _SortChip(label: 'Terbaru', icon: Icons.fiber_new_rounded, selected: currentSort == SavingsSortOption.newest, onTap: () => ref.read(savingsSortControllerProvider.notifier).setSortOption(SavingsSortOption.newest)),
+                  _SortChip(
+                    label: 'Terbaru',
+                    icon: Icons.fiber_new_rounded,
+                    selected: currentSort == SavingsSortOption.newest,
+                    onTap: () => ref
+                        .read(savingsSortControllerProvider.notifier)
+                        .setSortOption(SavingsSortOption.newest),
+                  ),
                   const SizedBox(width: 8),
-                  _SortChip(label: 'Terlama', icon: Icons.history_rounded, selected: currentSort == SavingsSortOption.oldest, onTap: () => ref.read(savingsSortControllerProvider.notifier).setSortOption(SavingsSortOption.oldest)),
+                  _SortChip(
+                    label: 'Terlama',
+                    icon: Icons.history_rounded,
+                    selected: currentSort == SavingsSortOption.oldest,
+                    onTap: () => ref
+                        .read(savingsSortControllerProvider.notifier)
+                        .setSortOption(SavingsSortOption.oldest),
+                  ),
                   const SizedBox(width: 8),
-                  _SortChip(label: 'Progress', icon: Icons.bar_chart_rounded, selected: currentSort == SavingsSortOption.progress, onTap: () => ref.read(savingsSortControllerProvider.notifier).setSortOption(SavingsSortOption.progress)),
+                  _SortChip(
+                    label: 'Progress',
+                    icon: Icons.bar_chart_rounded,
+                    selected: currentSort == SavingsSortOption.progress,
+                    onTap: () => ref
+                        .read(savingsSortControllerProvider.notifier)
+                        .setSortOption(SavingsSortOption.progress),
+                  ),
                 ],
               ),
             ),
@@ -281,7 +304,12 @@ class _SortFilterRow extends ConsumerWidget {
 }
 
 class _SortChip extends StatelessWidget {
-  const _SortChip({required this.label, required this.icon, required this.selected, required this.onTap});
+  const _SortChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final IconData icon;
@@ -298,16 +326,33 @@ class _SortChip extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? colors.primary.withValues(alpha: .12) : colors.surfaceContainerHighest.withValues(alpha: .45),
+          color: selected
+              ? colors.primary.withValues(alpha: .12)
+              : colors.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: selected ? colors.primary.withValues(alpha: .5) : colors.outlineVariant),
+          border: Border.all(
+            color: selected
+                ? colors.primary.withValues(alpha: .5)
+                : colors.outlineVariant,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: selected ? colors.primary : colors.onSurfaceVariant),
+            Icon(
+              icon,
+              size: 14,
+              color: selected ? colors.primary : colors.onSurfaceVariant,
+            ),
             const SizedBox(width: 5),
-            Text(label, style: TextStyle(fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500, color: selected ? colors.primary : colors.onSurfaceVariant)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected ? colors.primary : colors.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
       ),
@@ -323,7 +368,9 @@ class _ArchiveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return OutlinedButton.icon(
       onPressed: onPressed,
       icon: Icon(
@@ -333,9 +380,11 @@ class _ArchiveButton extends StatelessWidget {
       label: Text(selected ? 'Kembali' : 'Diarsipkan'),
       style: OutlinedButton.styleFrom(
         foregroundColor: selected ? colors.primary : colors.onSurfaceVariant,
-        backgroundColor: selected
-              ? colors.primaryContainer
-              : colors.surfaceContainerHighest.withValues(alpha: .55),
+        backgroundColor: isDark
+            ? colors.surfaceContainerHigh
+            : (selected
+                  ? colors.primaryContainer
+                  : colors.surfaceContainerHigh),
         side: BorderSide(
           color: selected
               ? colors.primary.withValues(alpha: .55)
@@ -479,9 +528,9 @@ class _GoalListView extends ConsumerWidget {
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) => GoalCard(
             goal: goals[index],
-          onAllocate: () => onAllocate(goals[index]),
-          onDelete: () => onDelete(goals[index]),
-          onArchive: () => onArchive(goals[index]),
+            onAllocate: () => onAllocate(goals[index]),
+            onDelete: () => onDelete(goals[index]),
+            onArchive: () => onArchive(goals[index]),
           ),
         );
       },
@@ -502,7 +551,7 @@ class _GoalListSkeleton extends StatelessWidget {
       itemBuilder: (_, __) => Container(
         height: 210,
         decoration: BoxDecoration(
-          color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
+          color: colors.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(24),
         ),
       ),

@@ -181,9 +181,7 @@ class _DashboardHeader extends ConsumerWidget {
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: colors.surfaceContainerHighest.withValues(
-                      alpha: .65,
-                    ),
+                    color: colors.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: colors.outlineVariant.withValues(alpha: .4),
@@ -239,6 +237,7 @@ class _BalanceHeroCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final isPrivacy = ref.watch(privacyModeProvider);
+    final isDark = theme.brightness == Brightness.dark;
     final isPositive = summary.balance >= 0;
 
     // Semantic colors from the theme (no hard-coded shade values).
@@ -254,16 +253,23 @@ class _BalanceHeroCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(28),
         child: Ink(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colors.primaryContainer,
-                colors.secondaryContainer.withValues(alpha: 0.7),
-              ],
-            ),
+            color: isDark ? colors.surfaceContainerHigh : null,
+            gradient: isDark
+                ? null
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colors.primaryContainer,
+                      colors.secondaryContainer.withValues(alpha: 0.7),
+                    ],
+                  ),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
+            border: Border.all(
+              color: isDark
+                  ? colors.outlineVariant
+                  : colors.primary.withValues(alpha: 0.15),
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(22),
@@ -277,9 +283,7 @@ class _BalanceHeroCard extends ConsumerWidget {
                       child: Text(
                         'Saldo Siklus Ini',
                         style: theme.textTheme.labelLarge?.copyWith(
-                          color: colors.onPrimaryContainer.withValues(
-                            alpha: 0.7,
-                          ),
+                          color: colors.onSurfaceVariant,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -305,7 +309,7 @@ class _BalanceHeroCard extends ConsumerWidget {
                         fontWeight: FontWeight.w900,
                         letterSpacing: -1,
                         color: isPrivacy
-                            ? colors.onPrimaryContainer.withValues(alpha: 0.6)
+                            ? colors.onSurfaceVariant
                             : balanceColor,
                       ),
                     ),
@@ -413,8 +417,13 @@ class _BalanceOverviewSheet extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: colors.primaryContainer,
+                  color: theme.brightness == Brightness.dark
+                      ? colors.surface
+                      : colors.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
+                  border: theme.brightness == Brightness.dark
+                      ? Border.all(color: colors.outlineVariant)
+                      : null,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,14 +431,16 @@ class _BalanceOverviewSheet extends StatelessWidget {
                     Text(
                       'Saldo bersih',
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: colors.onPrimaryContainer.withValues(alpha: .75),
+                        color: colors.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       amount(summary.balance),
                       style: theme.textTheme.headlineMedium?.copyWith(
-                        color: colors.onPrimaryContainer,
+                        color: summary.balance >= 0
+                            ? colors.primary
+                            : colors.error,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -535,7 +546,7 @@ class _BalanceOverviewMetric extends StatelessWidget {
       width: wide ? double.infinity : null,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: .48),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -594,7 +605,7 @@ class _PrivacyToggle extends StatelessWidget {
               isPrivacy
                   ? Icons.visibility_off_rounded
                   : Icons.visibility_rounded,
-              color: colors.onPrimaryContainer.withValues(alpha: 0.6),
+              color: colors.onSurfaceVariant,
               size: 20,
             ),
           ),
@@ -627,7 +638,7 @@ class _FlowTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: colors.surface.withValues(alpha: 0.55),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
@@ -829,8 +840,13 @@ class _BudgetInfoSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: colors.primaryContainer.withValues(alpha: .55),
+                color: theme.brightness == Brightness.dark
+                    ? colors.surface
+                    : colors.primaryContainer,
                 borderRadius: BorderRadius.circular(16),
+                border: theme.brightness == Brightness.dark
+                    ? Border.all(color: colors.outlineVariant)
+                    : null,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -880,7 +896,7 @@ class _BudgetInfoLevel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: .5),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -891,9 +907,19 @@ class _BudgetInfoLevel extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(description, style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant)),
+                Text(
+                  description,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -913,7 +939,7 @@ class _NoBudgetMessage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -1358,7 +1384,7 @@ class _BudgetMetric extends StatelessWidget {
       width: wide ? double.infinity : null,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.45),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -1501,7 +1527,7 @@ class _SkeletonBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(radius),
       ),
     );

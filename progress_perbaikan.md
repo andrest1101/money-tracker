@@ -16,6 +16,7 @@ Status yang digunakan: `Belum dimulai`, `Berjalan`, `Selesai`, `Ditunda`.
 | History | Redesign dasar dan filter | Selesai |
 | Navigation | Floating pill, center action, dan transisi | Selesai |
 | Quality | Test suite dan Windows allocation workaround | Berjalan |
+| Dark Theme | Rich navy surface system dan solid card audit | Selesai |
 
 ## A. Dashboard dan Interaksi Detail
 

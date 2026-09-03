@@ -165,7 +165,7 @@ class _ContactUsSheet extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: colors.surfaceContainerHighest.withValues(alpha: .45),
+                  color: colors.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: colors.outlineVariant.withValues(alpha: .35),
@@ -394,7 +394,7 @@ class _ContactChannelCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 0,
-      color: colors.surfaceContainerHighest.withValues(alpha: .42),
+      color: colors.surfaceContainerHigh,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(

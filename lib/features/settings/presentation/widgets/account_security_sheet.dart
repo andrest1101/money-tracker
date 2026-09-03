@@ -71,7 +71,9 @@ class _AccountSecuritySheetState extends ConsumerState<AccountSecuritySheet> {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
     final error = authState.hasError ? authState.error.toString() : null;
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -87,19 +89,27 @@ class _AccountSecuritySheetState extends ConsumerState<AccountSecuritySheet> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: colors.primaryContainer,
+                color: isDark ? colors.surface : colors.primaryContainer,
                 borderRadius: BorderRadius.circular(18),
+                border: isDark
+                    ? Border.all(color: colors.outlineVariant)
+                    : null,
               ),
               child: Row(
                 children: [
-                  Icon(Icons.shield_outlined, color: colors.onPrimaryContainer),
+                  Icon(
+                    Icons.shield_outlined,
+                    color: isDark ? colors.primary : colors.onPrimaryContainer,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Amankan catatan keuanganmu',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: colors.onPrimaryContainer,
+                        color: isDark
+                            ? colors.onSurface
+                            : colors.onPrimaryContainer,
                       ),
                     ),
                   ),

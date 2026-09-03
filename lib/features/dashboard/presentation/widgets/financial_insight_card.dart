@@ -13,6 +13,7 @@ class FinancialInsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final improving = insight.expenseChangeRatio <= 0;
     final trendColor = improving ? colors.tertiary : colors.error;
     final trend = insight.previousExpense == 0
@@ -22,7 +23,8 @@ class FinancialInsightCard extends StatelessWidget {
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
-      color: colors.primaryContainer.withValues(alpha: .42),
+      color: isDark ? colors.surfaceContainerHigh : colors.primaryContainer,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       child: InkWell(
         onTap: onTap,
@@ -98,7 +100,7 @@ class FinancialInsightCard extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.surface.withValues(alpha: .65),
+                  color: colors.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(

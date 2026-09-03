@@ -523,9 +523,7 @@ class _DetailMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.45,
-        ),
+        color: theme.colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -567,7 +565,7 @@ class _EmptyExpenseCard extends StatelessWidget {
     final colors = theme.colorScheme;
     return Card(
       elevation: 0,
-      color: colors.surfaceContainerHighest.withValues(alpha: 0.35),
+      color: colors.surfaceContainerHigh,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(22),

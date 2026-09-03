@@ -390,9 +390,7 @@ class _QuickAddTransactionSheetState
                 const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.3,
-                    ),
+                    color: theme.colorScheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(4),

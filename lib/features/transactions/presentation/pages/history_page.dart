@@ -294,9 +294,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   borderRadius: BorderRadius.circular(18),
                 ),
                 filled: true,
-                fillColor: theme.colorScheme.surfaceContainerLow.withValues(
-                  alpha: .9,
-                ),
+                fillColor: theme.colorScheme.surfaceContainerHigh,
               ),
             ),
           ),
@@ -304,9 +302,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: Card(
-              color: theme.colorScheme.surfaceContainerLow.withValues(
-                alpha: .78,
-              ),
+              color: theme.colorScheme.surface,
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Row(
@@ -540,8 +536,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                         child: Card(
                           elevation: 0,
-                          color: theme.colorScheme.surfaceContainerLow
-                              .withValues(alpha: .92),
+                          color: theme.colorScheme.surface,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
@@ -901,9 +896,7 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? chipColor.withValues(alpha: 0.15)
-              : theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.3,
-                ),
+              : theme.colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected

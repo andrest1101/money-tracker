@@ -35,6 +35,7 @@ class HelpCenterSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return SafeArea(
       child: FractionallySizedBox(
         heightFactor: 0.88,
@@ -44,10 +45,19 @@ class HelpCenterSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [colors.primaryContainer, colors.secondaryContainer],
-                ),
+                color: isDark ? colors.surfaceContainerHigh : null,
+                gradient: isDark
+                    ? null
+                    : LinearGradient(
+                        colors: [
+                          colors.primaryContainer,
+                          colors.secondaryContainer,
+                        ],
+                      ),
                 borderRadius: BorderRadius.circular(22),
+                border: isDark
+                    ? Border.all(color: colors.outlineVariant)
+                    : null,
               ),
               child: Row(
                 children: [
@@ -67,8 +77,8 @@ class HelpCenterSheet extends StatelessWidget {
                         Text(
                           'Pusat Bantuan',
                           style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -85,15 +95,15 @@ class HelpCenterSheet extends StatelessWidget {
             Text(
               'Pertanyaan umum',
               style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Card(
               margin: EdgeInsets.zero,
               elevation: 0,
               clipBehavior: Clip.antiAlias,
-              color: colors.surfaceContainerHighest.withValues(alpha: 0.35),
+              color: colors.surfaceContainerHigh,
               child: Column(
                 children: [
                   for (var i = 0; i < _faqs.length; i++) ...[
@@ -102,8 +112,8 @@ class HelpCenterSheet extends StatelessWidget {
                       title: Text(
                         _faqs[i].$1,
                         style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                       expandedCrossAxisAlignment: CrossAxisAlignment.start,
@@ -111,8 +121,8 @@ class HelpCenterSheet extends StatelessWidget {
                         Text(
                           _faqs[i].$2,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colors.onSurfaceVariant,
-                              ),
+                            color: colors.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -127,8 +137,8 @@ class HelpCenterSheet extends StatelessWidget {
               child: Text(
                 'Masih membutuhkan bantuan? Hubungi Andre.',
                 style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                  color: colors.onSurfaceVariant,
+                ),
               ),
             ),
           ],

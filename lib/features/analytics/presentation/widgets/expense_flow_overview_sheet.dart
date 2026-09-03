@@ -12,6 +12,7 @@ class ExpenseFlowOverviewSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final colors = theme.colorScheme;
     return SafeArea(
       child: FractionallySizedBox(
@@ -90,22 +91,31 @@ class ExpenseFlowOverviewSheet extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colors.primaryContainer,
+                  color: isDark
+                      ? colors.surfaceContainerHigh
+                      : colors.primaryContainer,
                   borderRadius: BorderRadius.circular(18),
+                  border: isDark
+                      ? Border.all(color: colors.outlineVariant)
+                      : null,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.lightbulb_outline_rounded,
-                      color: colors.onPrimaryContainer,
+                      color: isDark
+                          ? colors.primary
+                          : colors.onPrimaryContainer,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         insight.recommendation,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onPrimaryContainer,
+                          color: isDark
+                              ? colors.onSurface
+                              : colors.onPrimaryContainer,
                           height: 1.45,
                           fontWeight: FontWeight.w600,
                         ),

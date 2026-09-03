@@ -267,6 +267,7 @@ class _ExpenseFlowSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final peakLabel = insight.peakDay == null
         ? 'Belum ada puncak pengeluaran'
         : '${formatDateShort(insight.peakDay!)} • ${formatRupiah(insight.peakAmount)}';
@@ -300,8 +301,9 @@ class _ExpenseFlowSummary extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: colors.primaryContainer,
+            color: isDark ? colors.surface : colors.primaryContainer,
             borderRadius: BorderRadius.circular(16),
+            border: isDark ? Border.all(color: colors.outlineVariant) : null,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,7 +336,7 @@ class _ExpenseFlowSummary extends StatelessWidget {
                     Text(
                       peakLabel,
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onPrimaryContainer.withValues(alpha: .75),
+                        color: colors.onSurfaceVariant,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -485,64 +487,65 @@ class _CashFlowChartState extends State<_CashFlowChart> {
           height: 180,
           child: BarChart(
             BarChartData(
-        maxY: maxValue == 0 ? 1 : maxValue * 1.2,
-        gridData: const FlGridData(show: false),
-        borderData: FlBorderData(show: false),
-        barTouchData: BarTouchData(
-          enabled: true,
-          touchCallback: (event, response) {
-            if (event is! FlTapUpEvent) return;
-            final index = response?.spot?.touchedBarGroupIndex;
-            if (index == null || index < 0 || index >= values.length) return;
-            setState(() => _selectedIndex = index);
-          },
-          touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (_) => colors.inverseSurface,
-            getTooltipItem: (group, groupIndex, rod, rodIndex) =>
-                BarTooltipItem(
-                  formatRupiah(rod.toY),
-                  TextStyle(
-                    color: colors.onInverseSurface,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
+              maxY: maxValue == 0 ? 1 : maxValue * 1.2,
+              gridData: const FlGridData(show: false),
+              borderData: FlBorderData(show: false),
+              barTouchData: BarTouchData(
+                enabled: true,
+                touchCallback: (event, response) {
+                  if (event is! FlTapUpEvent) return;
+                  final index = response?.spot?.touchedBarGroupIndex;
+                  if (index == null || index < 0 || index >= values.length)
+                    return;
+                  setState(() => _selectedIndex = index);
+                },
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipColor: (_) => colors.inverseSurface,
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                      BarTooltipItem(
+                        formatRupiah(rod.toY),
+                        TextStyle(
+                          color: colors.onInverseSurface,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                ),
+              ),
+              titlesData: FlTitlesData(
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                leftTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) => Text(
+                      '${days[value.toInt().clamp(0, 6)].day}',
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                   ),
                 ),
-          ),
-        ),
-        titlesData: FlTitlesData(
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          leftTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) => Text(
-                '${days[value.toInt().clamp(0, 6)].day}',
-                style: Theme.of(context).textTheme.labelSmall,
               ),
-            ),
-          ),
-        ),
-        barGroups: [
-          for (var index = 0; index < values.length; index++)
-            BarChartGroupData(
-              x: index,
-              barRods: [
-                BarChartRodData(
-                  toY: values[index],
-                  width: 18,
-                  borderRadius: BorderRadius.circular(5),
-                  color: colors.error,
-                ),
+              barGroups: [
+                for (var index = 0; index < values.length; index++)
+                  BarChartGroupData(
+                    x: index,
+                    barRods: [
+                      BarChartRodData(
+                        toY: values[index],
+                        width: 18,
+                        borderRadius: BorderRadius.circular(5),
+                        color: colors.error,
+                      ),
+                    ],
+                  ),
               ],
-            ),
-        ],
             ),
           ),
         ),
@@ -570,7 +573,7 @@ class _SelectedExpenseDay extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(12, 9, 6, 9),
       decoration: BoxDecoration(
-        color: colors.errorContainer.withValues(alpha: .55),
+        color: colors.errorContainer,
         borderRadius: BorderRadius.circular(13),
         border: Border.all(color: colors.error.withValues(alpha: .2)),
       ),
