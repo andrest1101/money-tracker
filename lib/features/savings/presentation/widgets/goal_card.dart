@@ -466,7 +466,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
               sizeFactor: _expandAnimation,
               child: Container(
                 decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest.withValues(alpha: 0.15),
+                  color: cs.surfaceContainerLow,
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
@@ -556,9 +556,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: cs.surfaceContainerHighest.withValues(
-                                  alpha: 0.6,
-                                ),
+                                color: cs.surfaceContainerHigh,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(

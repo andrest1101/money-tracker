@@ -108,7 +108,7 @@ class _RangeSelector extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: range == item.$1
                         ? colors.primaryContainer
-                        : colors.surfaceContainerHighest.withValues(alpha: .42),
+                        : colors.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -297,7 +297,7 @@ class _SelectedCashFlow extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 11, 8, 11),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: .6),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: colors.outlineVariant.withValues(alpha: .45)),
       ),

@@ -211,7 +211,7 @@ class _AvatarChoice extends StatelessWidget {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
           decoration: BoxDecoration(
-            color: selected ? avatar.color.withValues(alpha: .13) : colors.surfaceContainerHighest.withValues(alpha: .35),
+            color: selected ? avatar.color.withValues(alpha: .13) : colors.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
               color: selected ? avatar.color : colors.outlineVariant.withValues(alpha: .35),

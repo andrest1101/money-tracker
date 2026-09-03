@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 class DashboardEmptyState extends StatelessWidget {
-  const DashboardEmptyState({super.key, required this.userName, required this.onAdd});
+  const DashboardEmptyState({
+    super.key,
+    required this.userName,
+    required this.onAdd,
+  });
 
   final String userName;
   final VoidCallback onAdd;
@@ -10,6 +14,7 @@ class DashboardEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final greeting = userName.trim().isEmpty ? 'Halo!' : 'Halo, $userName!';
 
     return Card(
@@ -19,11 +24,15 @@ class DashboardEmptyState extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [colors.primaryContainer, colors.secondaryContainer],
-          ),
+          color: isDark ? colors.surfaceContainerHigh : null,
+          gradient: isDark
+              ? null
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [colors.primaryContainer, colors.secondaryContainer],
+                ),
+          border: isDark ? Border.all(color: colors.outlineVariant) : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,13 +45,13 @@ class DashboardEmptyState extends StatelessWidget {
                     color: colors.primary,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(Icons.auto_graph_rounded, color: colors.onPrimary),
+                  child: Icon(
+                    Icons.auto_graph_rounded,
+                    color: colors.onPrimary,
+                  ),
                 ),
                 const Spacer(),
-                Icon(
-                  Icons.wb_sunny_outlined,
-                  color: colors.onPrimaryContainer.withValues(alpha: 0.65),
-                ),
+                Icon(Icons.wb_sunny_outlined, color: colors.onSurfaceVariant),
               ],
             ),
             const SizedBox(height: 18),
@@ -67,7 +76,7 @@ class DashboardEmptyState extends StatelessWidget {
             Text(
               'Catat transaksi pertamamu untuk melihat saldo, pola pengeluaran, dan insight keuangan secara otomatis.',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onPrimaryContainer.withValues(alpha: 0.78),
+                color: colors.onSurfaceVariant,
                 height: 1.45,
               ),
             ),

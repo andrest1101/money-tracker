@@ -122,11 +122,9 @@ class FloatingPillNavigation extends StatelessWidget {
         height: 72,
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: colors.surface.withValues(alpha: .97),
+          color: colors.surface,
           borderRadius: BorderRadius.circular(38),
-          border: Border.all(
-            color: colors.outlineVariant.withValues(alpha: .5),
-          ),
+          border: Border.all(color: colors.outlineVariant),
           boxShadow: [
             BoxShadow(
               color: colors.shadow.withValues(alpha: .16),
@@ -358,6 +356,7 @@ class _FloatingPillDestination extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = selected
         ? colors.onPrimaryContainer
         : colors.onSurfaceVariant;
@@ -376,7 +375,11 @@ class _FloatingPillDestination extends StatelessWidget {
             curve: Curves.easeOutCubic,
             margin: const EdgeInsets.symmetric(horizontal: 2),
             decoration: BoxDecoration(
-              color: selected ? colors.primaryContainer : Colors.transparent,
+              color: selected
+                   ? (isDark
+                        ? colors.primaryContainer
+                        : colors.primaryContainer)
+                   : Colors.transparent,
               borderRadius: BorderRadius.circular(30),
             ),
             child: Column(

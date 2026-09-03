@@ -78,61 +78,61 @@ class _TrendContentState extends State<_TrendContent> {
     final spread = maxValue - minValue;
     final padding = spread == 0 ? 100000.0 : spread * .18;
     final chart = LineChartData(
-          minY: minValue - padding,
-          maxY: maxValue + padding,
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            getDrawingHorizontalLine: (_) => FlLine(
-              color: colors.outlineVariant.withValues(alpha: .3),
-              strokeWidth: 1,
-            ),
-          ),
-          borderData: FlBorderData(show: false),
-          lineTouchData: LineTouchData(
-            touchCallback: (event, response) {
-              if (event is! FlTapUpEvent) return;
-              final spot = response?.lineBarSpots?.firstOrNull;
-              if (spot == null) return;
-              final index = spot.x.toInt();
-              if (index >= 0 && index < points.length) {
-                setState(() => _selectedIndex = index);
-              }
-            },
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (_) => colors.inverseSurface,
-              getTooltipItems: (spots) => spots
-                  .map(
-                    (spot) => LineTooltipItem(
-                      formatRupiah(spot.y),
-                      TextStyle(
-                        color: colors.onInverseSurface,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-          titlesData: const FlTitlesData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: [
-                for (var i = 0; i < values.length; i++)
-                  FlSpot(i.toDouble(), values[i]),
-              ],
-              isCurved: true,
-              barWidth: 3,
-              color: colors.primary,
-              dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                color: colors.primary.withValues(alpha: .1),
-              ),
-            ),
+      minY: minValue - padding,
+      maxY: maxValue + padding,
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: false,
+        getDrawingHorizontalLine: (_) => FlLine(
+          color: colors.outlineVariant.withValues(alpha: .3),
+          strokeWidth: 1,
+        ),
+      ),
+      borderData: FlBorderData(show: false),
+      lineTouchData: LineTouchData(
+        touchCallback: (event, response) {
+          if (event is! FlTapUpEvent) return;
+          final spot = response?.lineBarSpots?.firstOrNull;
+          if (spot == null) return;
+          final index = spot.x.toInt();
+          if (index >= 0 && index < points.length) {
+            setState(() => _selectedIndex = index);
+          }
+        },
+        touchTooltipData: LineTouchTooltipData(
+          getTooltipColor: (_) => colors.inverseSurface,
+          getTooltipItems: (spots) => spots
+              .map(
+                (spot) => LineTooltipItem(
+                  formatRupiah(spot.y),
+                  TextStyle(
+                    color: colors.onInverseSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+      titlesData: const FlTitlesData(show: false),
+      lineBarsData: [
+        LineChartBarData(
+          spots: [
+            for (var i = 0; i < values.length; i++)
+              FlSpot(i.toDouble(), values[i]),
           ],
-        );
+          isCurved: true,
+          barWidth: 3,
+          color: colors.primary,
+          dotData: const FlDotData(show: false),
+          belowBarData: BarAreaData(
+            show: true,
+            color: colors.primary.withValues(alpha: .1),
+          ),
+        ),
+      ],
+    );
     return Column(
       children: [
         if (_selectedIndex case final index?) ...[
@@ -158,13 +158,18 @@ class _SelectedBalancePoint extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 11, 8, 11),
       decoration: BoxDecoration(
-        color: colors.primaryContainer.withValues(alpha: .55),
+        color: isDark ? colors.surfaceContainerHigh : colors.primaryContainer,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colors.primary.withValues(alpha: .18)),
+        border: Border.all(
+          color: isDark
+              ? colors.outlineVariant
+              : colors.primary.withValues(alpha: .18),
+        ),
       ),
       child: Row(
         children: [
