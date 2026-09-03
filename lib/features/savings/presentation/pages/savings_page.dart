@@ -185,7 +185,12 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                   const Text('Selesai'),
                   if (completedCount > 0) ...[
                     const SizedBox(width: 6),
-                    _TabBadge(count: completedCount, color: cs.tertiary),
+                    _TabBadge(
+                      count: completedCount,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF4ADE80)
+                          : const Color(0xFF10B981),
+                    ),
                   ],
                 ],
               ),

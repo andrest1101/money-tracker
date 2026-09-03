@@ -83,11 +83,17 @@ class _GoalCardState extends ConsumerState<GoalCard>
     );
   }
 
-  Color _progressColor(double progress, ColorScheme cs) {
-    if (progress >= 1.0) return cs.tertiary; // completed
-    if (progress >= 0.7) return cs.primary; // near completion
-    if (progress >= 0.4) return cs.secondary; // midway
-    return cs.primary.withValues(alpha: 0.8); // early stage
+  Color _progressColor(double progress, ColorScheme cs, bool isDark) {
+    if (progress >= 1.0) {
+      // 100% (Selesai): Hijau Terang yang Menandakan Target Selesai
+      return isDark ? const Color(0xFF4ADE80) : const Color(0xFF10B981);
+    }
+    if (progress >= 0.5) {
+      // >= 50% (Mencapai 50% ke atas): Biru Terang yang Tebal
+      return isDark ? const Color(0xFF38BDF8) : const Color(0xFF2563EB);
+    }
+    // < 50%: Accent Primary
+    return cs.primary;
   }
 
   ({String label, Color color, IconData icon}) _deadlineStatus(
@@ -119,12 +125,13 @@ class _GoalCardState extends ConsumerState<GoalCard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final goal = widget.goal;
     final isCompleted = goal.isCompleted;
     final allocations = ref.watch(allocationTransactionsProvider(goal.id));
     final allocationSummary = ref.watch(allocationSummaryProvider(goal.id));
     final progress = goal.progress;
-    final progressColor = _progressColor(progress, cs);
+    final progressColor = _progressColor(progress, cs, isDark);
     final deadlineStatus = _deadlineStatus(goal, cs);
 
     return Card(
@@ -133,10 +140,18 @@ class _GoalCardState extends ConsumerState<GoalCard>
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: isCompleted
-            ? BorderSide(color: cs.tertiary.withValues(alpha: 0.4), width: 1.5)
-            : BorderSide.none,
+            ? BorderSide(
+                color: progressColor.withValues(alpha: 0.4),
+                width: 1.5,
+              )
+            : BorderSide(
+                color: progress >= 0.5
+                    ? progressColor.withValues(alpha: 0.3)
+                    : cs.outlineVariant.withValues(alpha: 0.3),
+                width: progress >= 0.5 ? 1.2 : 1,
+              ),
       ),
-      color: isCompleted ? cs.tertiary.withValues(alpha: 0.05) : cs.surface,
+      color: isCompleted ? progressColor.withValues(alpha: 0.05) : cs.surface,
       child: Column(
         children: [
           // ── Main Card Content ──────────────────────────────────────
@@ -179,7 +194,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: isCompleted
-                                        ? cs.tertiary
+                                        ? progressColor
                                         : cs.onSurface,
                                   ),
                                   maxLines: 1,
@@ -189,7 +204,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                   Text(
                                     'Target tercapai!',
                                     style: theme.textTheme.bodySmall?.copyWith(
-                                      color: cs.tertiary,
+                                      color: progressColor,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   )
@@ -352,30 +367,62 @@ class _GoalCardState extends ConsumerState<GoalCard>
                 ),
                 const SizedBox(height: 14),
 
-                // Allocate button
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: widget.onAllocate,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: progressColor,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                // Action area: Completion badge for finished target or Allocate button for active target
+                if (isCompleted)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: progressColor.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: progressColor.withValues(alpha: 0.4),
                       ),
                     ),
-                    icon: Icon(
-                      isCompleted
-                          ? Icons.add_circle_outline_rounded
-                          : Icons.account_balance_wallet_rounded,
-                      size: 18,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.verified_rounded,
+                          color: progressColor,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Target Selesai 🎉',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: progressColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    label: Text(
-                      isCompleted ? 'Tambah Lagi' : 'Alokasikan Dana',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: widget.onAllocate,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: progressColor,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(
+                        Icons.account_balance_wallet_rounded,
+                        size: 18,
+                      ),
+                      label: const Text(
+                        'Alokasikan Dana',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
