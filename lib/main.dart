@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,7 @@ import 'core/navigation/app_shell.dart';
 import 'core/theme/savu_theme.dart';
 import 'features/auth/presentation/pages/auth_landing_page.dart';
 import 'features/auth/presentation/pages/email_verification_page.dart';
+import 'features/onboarding/presentation/pages/onboarding_page.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -122,35 +124,57 @@ class _AuthGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final onboardingCompleted = ref.watch(onboardingCompletedProvider);
     final auth = ref.watch(authStateChangesProvider);
+    return MaterialApp(
+      title: 'Savu',
+      debugShowCheckedModeBanner: false,
+      themeMode: ref.watch(appThemeModeProvider),
+      theme: SavuTheme.light(),
+      darkTheme: SavuTheme.dark(),
+      home: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 420),
+        reverseDuration: const Duration(milliseconds: 280),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, .025),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        ),
+        child: onboardingCompleted
+            ? _AuthContent(key: const ValueKey('auth'), auth: auth)
+            : const OnboardingPage(key: ValueKey('onboarding')),
+      ),
+    );
+  }
+}
+
+class _AuthContent extends StatelessWidget {
+  const _AuthContent({super.key, required this.auth});
+
+  final AsyncValue<User?> auth;
+
+  @override
+  Widget build(BuildContext context) {
     return auth.when(
-      loading: () => const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
-      ),
-      error: (error, _) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: const AuthLandingPage(),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (_, __) => const AuthLandingPage(),
       data: (user) {
-        if (user == null) {
-          return const MaterialApp(
-            debugShowCheckedModeBanner: false,
-            home: AuthLandingPage(),
-          );
-        }
+        if (user == null) return const AuthLandingPage();
         final needsVerification =
             !user.isAnonymous &&
             user.providerData.any(
               (provider) => provider.providerId == 'password',
             ) &&
             !user.emailVerified;
-        if (needsVerification) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            home: EmailVerificationPage(user: user),
-          );
-        }
+        if (needsVerification) return EmailVerificationPage(user: user);
         return const SavuApp();
       },
     );
@@ -183,9 +207,7 @@ class SavuApp extends ConsumerWidget {
             statusBarIconBrightness: isDark
                 ? Brightness.light
                 : Brightness.dark,
-            statusBarBrightness: isDark
-                ? Brightness.dark
-                : Brightness.light,
+            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
           ),
           child: child ?? const SizedBox.shrink(),
         );
