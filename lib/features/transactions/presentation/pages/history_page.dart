@@ -156,16 +156,29 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               : 'Transaksi ${transaction.category} sebesar ${formatRupiah(transaction.amount)} akan dihapus permanen.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Hapus'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Hapus'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
