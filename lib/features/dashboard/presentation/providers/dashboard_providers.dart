@@ -106,6 +106,7 @@ const _defaultExpenseCategories = [
   'Transportasi',
   'Bensin',
   'Pulsa & Kuota',
+  'Kesehatan & Perawatan',
   'Hiburan',
   'Kos & Tagihan',
   'Belanja',

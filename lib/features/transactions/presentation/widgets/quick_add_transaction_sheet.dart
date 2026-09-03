@@ -71,7 +71,11 @@ class _QuickAddTransactionSheetState
     final base = _selectedType == TransactionType.expense
         ? ref.watch(expenseCategoriesProvider)
         : ref.watch(incomeCategoriesProvider);
-    return [...base, ..._extraCategories];
+    final all = [...base, ..._extraCategories];
+    if (widget.transaction?.isAllocation == true) {
+      return all;
+    }
+    return all.where((c) => c != 'Alokasi Tabungan').toList();
   }
 
   Future<void> _pickDate() async {
@@ -119,8 +123,9 @@ class _QuickAddTransactionSheetState
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton(
-                  onPressed: () => Navigator.of(dialogContext)
-                      .pop(_customCategoryController.text),
+                  onPressed: () => Navigator.of(
+                    dialogContext,
+                  ).pop(_customCategoryController.text),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                   ),
@@ -308,31 +313,18 @@ class _QuickAddTransactionSheetState
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurfaceVariant.withValues(
-                        alpha: 0.4,
-                      ),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: typeColor.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
@@ -340,10 +332,10 @@ class _QuickAddTransactionSheetState
                       child: Icon(
                         isEdit ? Icons.edit : Icons.add,
                         color: typeColor,
-                        size: 22,
+                        size: 20,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Text(
                       isEdit ? 'Edit Transaksi' : 'Tambah Transaksi',
                       style: theme.textTheme.titleLarge?.copyWith(
@@ -352,7 +344,7 @@ class _QuickAddTransactionSheetState
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 14),
                 TextFormField(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
@@ -372,6 +364,10 @@ class _QuickAddTransactionSheetState
                       fontWeight: FontWeight.w600,
                       color: typeColor,
                     ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -387,7 +383,7 @@ class _QuickAddTransactionSheetState
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHigh,
@@ -416,23 +412,25 @@ class _QuickAddTransactionSheetState
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 Text(
                   'Kategori',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 6,
+                  runSpacing: 4,
                   children: [
                     for (final category in categories)
                       ChoiceChip(
                         label: Text(category),
                         selected: _selectedCategory == category,
                         selectedColor: typeColor.withValues(alpha: 0.15),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         side: _selectedCategory == category
                             ? BorderSide(
                                 color: typeColor.withValues(alpha: 0.5),
@@ -442,27 +440,29 @@ class _QuickAddTransactionSheetState
                             setState(() => _selectedCategory = category),
                       ),
                     ActionChip(
-                      avatar: Icon(Icons.add, size: 18, color: typeColor),
+                      avatar: Icon(Icons.add, size: 16, color: typeColor),
                       label: Text('Baru', style: TextStyle(color: typeColor)),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       onPressed: _addCustomCategory,
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 Text(
                   'Tanggal',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 InkWell(
                   onTap: _pickDate,
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
+                      horizontal: 14,
+                      vertical: 11,
                     ),
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -472,37 +472,42 @@ class _QuickAddTransactionSheetState
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.calendar_today, size: 20, color: typeColor),
-                        const SizedBox(width: 12),
+                        Icon(Icons.calendar_today, size: 18, color: typeColor),
+                        const SizedBox(width: 10),
                         Text(
                           '${_selectedDate.day} ${_monthNames[_selectedDate.month - 1]} ${_selectedDate.year}',
-                          style: theme.textTheme.bodyLarge?.copyWith(
+                          style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         const Spacer(),
                         Icon(
                           Icons.chevron_right,
+                          size: 20,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 Text(
                   'Catatan',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 TextFormField(
                   controller: _noteController,
                   maxLines: 2,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     hintText: 'Contoh: makan siang di warteg',
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -518,12 +523,12 @@ class _QuickAddTransactionSheetState
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 18),
                 FilledButton.icon(
                   onPressed: isSaving ? null : _submit,
                   style: FilledButton.styleFrom(
                     backgroundColor: typeColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
