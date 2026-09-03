@@ -67,16 +67,29 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
           '${goal.isCompleted ? 'Riwayat alokasi tetap dicatat sebagai transaksi historis agar saldo tidak berubah.' : 'Dana yang sudah dialokasikan (${formatRupiah(goal.currentAmount)}) akan dikembalikan ke saldo utama.'}',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: theme.colorScheme.error,
-            ),
-            child: const Text('Hapus'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: theme.colorScheme.error,
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Hapus'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -172,7 +185,12 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                   const Text('Selesai'),
                   if (completedCount > 0) ...[
                     const SizedBox(width: 6),
-                    _TabBadge(count: completedCount, color: cs.tertiary),
+                    _TabBadge(
+                      count: completedCount,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF4ADE80)
+                          : const Color(0xFF10B981),
+                    ),
                   ],
                 ],
               ),

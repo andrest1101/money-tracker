@@ -752,10 +752,14 @@ class _BudgetStatusSection extends ConsumerWidget {
   }
 
   void _showBudgetInfo(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final warningColor =
+        isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706);
+
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (_) => const _BudgetInfoSheet(),
+      builder: (_) => _BudgetInfoSheet(warningColor: warningColor),
     );
   }
 
@@ -789,7 +793,9 @@ class _BudgetStatusSection extends ConsumerWidget {
 }
 
 class _BudgetInfoSheet extends StatelessWidget {
-  const _BudgetInfoSheet();
+  const _BudgetInfoSheet({required this.warningColor});
+
+  final Color warningColor;
 
   @override
   Widget build(BuildContext context) {
@@ -818,22 +824,25 @@ class _BudgetInfoSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            const _BudgetInfoLevel(
+            _BudgetInfoLevel(
               icon: Icons.check_circle_outline_rounded,
               title: 'Aman',
               description: 'Pengeluaran masih di bawah 80% anggaran.',
+              color: colors.primary,
             ),
             const SizedBox(height: 10),
-            const _BudgetInfoLevel(
+            _BudgetInfoLevel(
               icon: Icons.warning_amber_rounded,
               title: 'Perlu diperhatikan',
               description: 'Pengeluaran sudah mencapai 80% atau lebih.',
+              color: warningColor,
             ),
             const SizedBox(height: 10),
-            const _BudgetInfoLevel(
+            _BudgetInfoLevel(
               icon: Icons.error_outline_rounded,
               title: 'Terlampaui',
               description: 'Total pengeluaran sudah melewati batas anggaran.',
+              color: colors.error,
             ),
             const SizedBox(height: 18),
             Container(
@@ -882,11 +891,13 @@ class _BudgetInfoLevel extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.description,
+    required this.color,
   });
 
   final IconData icon;
   final String title;
   final String description;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -901,7 +912,7 @@ class _BudgetInfoLevel extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: colors.primary),
+          Icon(icon, color: color),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -911,6 +922,7 @@ class _BudgetInfoLevel extends StatelessWidget {
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
+                    color: color,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -996,11 +1008,15 @@ class _BudgetAlertBody extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    // Use semantic theme colors instead of hard-coded shades.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final warningColor = isDark
+        ? const Color(0xFFFBBF24)
+        : const Color(0xFFD97706);
+
     final statusColor = overview.isExceeded
         ? colors.error
         : overview.isWarning
-        ? colors.tertiary
+        ? warningColor
         : colors.primary;
 
     final statusLabel = overview.isExceeded
@@ -1148,10 +1164,14 @@ class _BudgetOverviewSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final warningColor = isDark
+        ? const Color(0xFFFBBF24)
+        : const Color(0xFFD97706);
     final statusColor = overview.isExceeded
         ? colors.error
         : overview.isWarning
-        ? colors.tertiary
+        ? warningColor
         : colors.primary;
 
     return SafeArea(

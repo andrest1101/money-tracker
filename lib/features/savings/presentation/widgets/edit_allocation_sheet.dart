@@ -30,8 +30,9 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
   @override
   void initState() {
     super.initState();
-    _amountController.text =
-        formatRupiah(widget.transaction.amount).replaceFirst('Rp ', '');
+    _amountController.text = formatRupiah(
+      widget.transaction.amount,
+    ).replaceFirst('Rp ', '');
     _noteController.text = widget.transaction.note;
   }
 
@@ -84,16 +85,29 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
             'akan dicabut dan uang kembali ke saldo utama.',
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.orange.shade700,
-              ),
-              child: const Text('Tarik'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    child: const Text('Batal'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                      backgroundColor: Colors.orange.shade700,
+                    ),
+                    child: const Text('Tarik'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -144,7 +158,10 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            error?.toString().replaceFirst('InvalidAllocationException: ', '') ??
+            error?.toString().replaceFirst(
+                  'InvalidAllocationException: ',
+                  '',
+                ) ??
                 'Gagal memperbarui alokasi. Coba lagi ya.',
           ),
           backgroundColor: Theme.of(context).colorScheme.error,
@@ -194,8 +211,9 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                         children: [
                           Text(
                             'Edit Alokasi',
-                            style: theme.textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.bold),
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Text(
                             'Target: ${widget.goal.title}',
@@ -276,8 +294,10 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          const BorderSide(color: accentColor, width: 2),
+                      borderSide: const BorderSide(
+                        color: accentColor,
+                        width: 2,
+                      ),
                     ),
                   ),
                 ),
@@ -304,39 +324,54 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          const BorderSide(color: accentColor, width: 2),
+                      borderSide: const BorderSide(
+                        color: accentColor,
+                        width: 2,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 28),
 
-                FilledButton.icon(
-                  onPressed: isSaving ? null : _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: accentColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                        child: const Text('Batal'),
+                      ),
                     ),
-                  ),
-                  icon: isSaving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: isSaving ? null : _submit,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: accentColor,
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                        icon: isSaving
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.check_rounded),
+                        label: Text(
+                          isSaving ? 'Menyimpan...' : 'Perbarui',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
-                        )
-                      : const Icon(Icons.check_rounded),
-                  label: Text(
-                    isSaving ? 'Menyimpan...' : 'Perbarui Alokasi',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
