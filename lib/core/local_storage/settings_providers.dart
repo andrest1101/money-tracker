@@ -185,3 +185,63 @@ class OnboardingCompleted extends Notifier<bool> {
 final onboardingCompletedProvider = NotifierProvider<OnboardingCompleted, bool>(
   OnboardingCompleted.new,
 );
+
+class HiddenExpenseCategories extends Notifier<List<String>> {
+  @override
+  List<String> build() => ref
+      .watch(settingsServiceProvider)
+      .getHiddenExpenseCategories();
+
+  Future<bool> toggle(String category) async {
+    final updated = [...state];
+    if (updated.contains(category)) {
+      updated.remove(category);
+    } else {
+      updated.add(category);
+    }
+    try {
+      await ref
+          .read(settingsServiceProvider)
+          .setHiddenExpenseCategories(updated);
+      state = updated;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final hiddenExpenseCategoriesProvider =
+    NotifierProvider<HiddenExpenseCategories, List<String>>(
+      HiddenExpenseCategories.new,
+    );
+
+class HiddenIncomeCategories extends Notifier<List<String>> {
+  @override
+  List<String> build() => ref
+      .watch(settingsServiceProvider)
+      .getHiddenIncomeCategories();
+
+  Future<bool> toggle(String category) async {
+    final updated = [...state];
+    if (updated.contains(category)) {
+      updated.remove(category);
+    } else {
+      updated.add(category);
+    }
+    try {
+      await ref
+          .read(settingsServiceProvider)
+          .setHiddenIncomeCategories(updated);
+      state = updated;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final hiddenIncomeCategoriesProvider =
+    NotifierProvider<HiddenIncomeCategories, List<String>>(
+      HiddenIncomeCategories.new,
+    );

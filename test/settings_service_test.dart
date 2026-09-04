@@ -69,5 +69,16 @@ void main() {
 
       expect(service.getLastSuccessfulSync(), syncedAt);
     });
+
+    test('kategori tersembunyi pengeluaran dan pemasukan tersimpan terpisah',
+        () async {
+      final service = await createService({});
+
+      await service.setHiddenExpenseCategories(['Kosmetik']);
+      await service.setHiddenIncomeCategories(['Bonus']);
+
+      expect(service.getHiddenExpenseCategories(), ['Kosmetik']);
+      expect(service.getHiddenIncomeCategories(), ['Bonus']);
+    });
   });
 }

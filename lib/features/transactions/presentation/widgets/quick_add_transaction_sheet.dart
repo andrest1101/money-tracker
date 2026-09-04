@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../providers/quick_add_controller.dart';
+import 'manage_categories_sheet.dart';
 
 const _monthNames = [
   'Jan',
@@ -84,14 +86,32 @@ class _QuickAddTransactionSheetState
     final base = _selectedType == TransactionType.expense
         ? ref.watch(expenseCategoriesProvider)
         : ref.watch(incomeCategoriesProvider);
+    final hidden = _selectedType == TransactionType.expense
+        ? ref.watch(hiddenExpenseCategoriesProvider)
+        : ref.watch(hiddenIncomeCategoriesProvider);
     final all = <String>[
       ...base,
-      ...(_extraCategoriesByType[_selectedType] ?? const <String>[]),
+      ...(_extraCategoriesByType[_selectedType] ?? const <String>[])
+          .where((category) => !hidden.contains(category)),
     ];
     if (widget.transaction?.isAllocation == true) {
       return all;
     }
     return all.where((c) => c != 'Alokasi Tabungan').toList();
+  }
+
+  List<String> get _allCategoriesForManagement {
+    final base = _selectedType == TransactionType.expense
+        ? ref.watch(expenseCategoriesProvider)
+        : ref.watch(incomeCategoriesProvider);
+    final hidden = _selectedType == TransactionType.expense
+        ? ref.watch(hiddenExpenseCategoriesProvider)
+        : ref.watch(hiddenIncomeCategoriesProvider);
+    return {
+      ...base,
+      ...hidden,
+      ...(_extraCategoriesByType[_selectedType] ?? const <String>[]),
+    }.toList();
   }
 
   String get _noteHint {
@@ -492,6 +512,24 @@ class _QuickAddTransactionSheetState
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       onPressed: _addCustomCategory,
+                    ),
+                    ActionChip(
+                      avatar: Icon(
+                        Icons.tune_rounded,
+                        size: 16,
+                        color: typeColor,
+                      ),
+                      label: Text(
+                        'Kelola',
+                        style: TextStyle(color: typeColor),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      onPressed: () => ManageCategoriesSheet.show(
+                        context,
+                        type: _selectedType,
+                        categories: _allCategoriesForManagement,
+                      ),
                     ),
                   ],
                 ),
