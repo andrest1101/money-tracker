@@ -67,4 +67,77 @@ void main() {
     expect(find.text('Buat Catatan Baru'), findsOneWidget);
     expect(find.text('Buat Target Tabungan Baru'), findsOneWidget);
   });
+
+  testWidgets('placeholder catatan mengikuti kategori yang dipilih', (
+    tester,
+  ) async {
+    await tester.pumpWidget(await buildApp());
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Buat Catatan Baru'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Makanan'));
+    await tester.pump();
+    expect(find.text('Contoh: makan siang di warung'), findsOneWidget);
+
+    await tester.tap(find.text('Bensin'));
+    await tester.pump();
+    expect(find.text('Contoh: isi bensin motor'), findsOneWidget);
+
+    await tester.tap(find.text('Hiburan'));
+    await tester.pump();
+    expect(find.text('Contoh: nonton film bioskop'), findsOneWidget);
+  });
+
+  testWidgets('placeholder kategori custom memakai nama kategori', (
+    tester,
+  ) async {
+    await tester.pumpWidget(await buildApp());
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Buat Catatan Baru'));
+    await tester.pumpAndSettle();
+    final newCategoryChip = find.widgetWithText(ActionChip, 'Baru');
+    await tester.scrollUntilVisible(
+      newCategoryChip,
+      120,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(newCategoryChip);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).last, 'Perbaikan kendaraan');
+    await tester.tap(find.text('Tambah'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Contoh: detail Perbaikan kendaraan'), findsOneWidget);
+  });
+
+  testWidgets('kategori custom pengeluaran tidak muncul di pemasukan', (
+    tester,
+  ) async {
+    await tester.pumpWidget(await buildApp());
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Buat Catatan Baru'));
+    await tester.pumpAndSettle();
+    final newCategoryChip = find.widgetWithText(ActionChip, 'Baru');
+    await tester.ensureVisible(newCategoryChip);
+    await tester.tap(newCategoryChip);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).last, 'Kosmetik');
+    await tester.tap(find.text('Tambah'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kosmetik'), findsOneWidget);
+    await tester.tap(find.text('Pemasukan'));
+    await tester.pump();
+
+    expect(find.text('Kosmetik'), findsNothing);
+  });
 }

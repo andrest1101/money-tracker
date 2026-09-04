@@ -43,7 +43,10 @@ class _QuickAddTransactionSheetState
 
   TransactionType _selectedType = TransactionType.expense;
   String? _selectedCategory;
-  List<String> _extraCategories = const [];
+  final Map<TransactionType, List<String>> _extraCategoriesByType = {
+    TransactionType.expense: const [],
+    TransactionType.income: const [],
+  };
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -60,6 +63,16 @@ class _QuickAddTransactionSheetState
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_selectedCategory != null) return;
+    final categories = _categories;
+    if (categories.isNotEmpty) {
+      _selectedCategory = categories.first;
+    }
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
@@ -71,11 +84,40 @@ class _QuickAddTransactionSheetState
     final base = _selectedType == TransactionType.expense
         ? ref.watch(expenseCategoriesProvider)
         : ref.watch(incomeCategoriesProvider);
-    final all = [...base, ..._extraCategories];
+    final all = <String>[
+      ...base,
+      ...(_extraCategoriesByType[_selectedType] ?? const <String>[]),
+    ];
     if (widget.transaction?.isAllocation == true) {
       return all;
     }
     return all.where((c) => c != 'Alokasi Tabungan').toList();
+  }
+
+  String get _noteHint {
+    const examples = {
+      'Makanan': 'makan siang di warung',
+      'Transportasi': 'ongkos ojek ke kampus',
+      'Bensin': 'isi bensin motor',
+      'Pulsa & Kuota': 'beli paket internet',
+      'Kesehatan & Perawatan': 'beli vitamin',
+      'Hiburan': 'nonton film bioskop',
+      'Kos & Tagihan': 'bayar listrik kos',
+      'Belanja': 'beli kebutuhan harian',
+      'Lainnya': 'kebutuhan lainnya',
+      'Uang Kiriman': 'kiriman dari orang tua',
+      'Beasiswa': 'beasiswa bulan ini',
+      'Gaji Part-time': 'gaji kerja part-time',
+      'Alokasi Tabungan': 'alokasi dana ke target tabungan',
+    };
+    final example = examples[_selectedCategory];
+    if (example != null) return 'Contoh: $example';
+
+    final category = _selectedCategory?.trim();
+    if (category == null || category.isEmpty) {
+      return 'Contoh: tulis detail transaksi';
+    }
+    return 'Contoh: detail $category';
   }
 
   Future<void> _pickDate() async {
@@ -143,14 +185,19 @@ class _QuickAddTransactionSheetState
     if (trimmed == null || trimmed.isEmpty) return;
 
     setState(() {
+      final customCategories =
+          _extraCategoriesByType[_selectedType] ?? const <String>[];
       final alreadyExists =
-          _extraCategories.contains(trimmed) ||
+          customCategories.contains(trimmed) ||
           (_selectedType == TransactionType.expense
                   ? ref.read(expenseCategoriesProvider)
                   : ref.read(incomeCategoriesProvider))
               .contains(trimmed);
       if (!alreadyExists) {
-        _extraCategories = [..._extraCategories, trimmed];
+        _extraCategoriesByType[_selectedType] = [
+          ...customCategories,
+          trimmed,
+        ];
       }
       _selectedCategory = trimmed;
     });
@@ -503,7 +550,7 @@ class _QuickAddTransactionSheetState
                   maxLines: 2,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    hintText: 'Contoh: makan siang di warteg',
+                    hintText: _noteHint,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 10,
