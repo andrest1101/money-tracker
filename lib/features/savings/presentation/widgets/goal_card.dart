@@ -85,8 +85,8 @@ class _GoalCardState extends ConsumerState<GoalCard>
 
   Color _progressColor(double progress, ColorScheme cs, bool isDark) {
     if (progress >= 1.0) {
-      // 100% (Selesai): Hijau Terang yang Menandakan Target Selesai
-      return isDark ? const Color(0xFF4ADE80) : const Color(0xFF10B981);
+      // Keep completion green readable without tinting the entire card.
+      return isDark ? const Color(0xFF34D399) : const Color(0xFF047857);
     }
     if (progress >= 0.5) {
       // >= 50% (Mencapai 50% ke atas): Biru Terang yang Tebal
@@ -141,8 +141,8 @@ class _GoalCardState extends ConsumerState<GoalCard>
         borderRadius: BorderRadius.circular(20),
         side: isCompleted
             ? BorderSide(
-                color: progressColor.withValues(alpha: 0.4),
-                width: 1.5,
+                color: progressColor.withValues(alpha: 0.28),
+                width: 1.2,
               )
             : BorderSide(
                 color: progress >= 0.5
@@ -151,7 +151,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                 width: progress >= 0.5 ? 1.2 : 1,
               ),
       ),
-      color: isCompleted ? progressColor.withValues(alpha: 0.05) : cs.surface,
+      color: cs.surface,
       child: Column(
         children: [
           // ── Main Card Content ──────────────────────────────────────
@@ -193,9 +193,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                   goal.title,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: isCompleted
-                                        ? progressColor
-                                        : cs.onSurface,
+                                    color: cs.onSurface,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -376,10 +374,10 @@ class _GoalCardState extends ConsumerState<GoalCard>
                       horizontal: 16,
                     ),
                     decoration: BoxDecoration(
-                      color: progressColor.withValues(alpha: 0.14),
+                      color: progressColor.withValues(alpha: 0.09),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: progressColor.withValues(alpha: 0.4),
+                        color: progressColor.withValues(alpha: 0.24),
                       ),
                     ),
                     child: Row(

@@ -188,8 +188,8 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                     _TabBadge(
                       count: completedCount,
                       color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF4ADE80)
-                          : const Color(0xFF10B981),
+                          ? const Color(0xFF34D399)
+                          : const Color(0xFF047857),
                     ),
                   ],
                 ],
