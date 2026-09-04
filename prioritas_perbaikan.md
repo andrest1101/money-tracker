@@ -3,17 +3,22 @@
 Dokumen ini menjadi catatan lanjutan ketika sesi AI terputus, laptop di-refresh,
 atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
 
+> **Update 2026-09-03:** dokumen ini disinkronkan dengan 30 commit terakhir branch
+> `develop_dua`. Prioritas 8-12 ditambahkan untuk menampung pekerjaan rebrand,
+> onboarding, avatar, dark theme, dan arsip target. Bagian "Log Perubahan Status"
+> diperpanjang dengan entri September.
+
 ## Status Prioritas 1-7
 
 | No. | Prioritas | Status | Catatan |
 | --- | --- | --- | --- |
 | 1 | Firestore Transaction untuk operasi alokasi | Selesai | Tambah, edit, dan hapus alokasi kini membaca data terbaru di dalam `runTransaction`. |
-| 2 | Hapus target dengan banyak riwayat alokasi | Selesai | Transaksi alokasi dihapus dalam chunk 450 dokumen, lalu target dihapus pada batch terpisah. |
-| 3 | Test lengkap filter History dan ringkasan | Selesai | Step 14 dibuat dengan use case filter dan test kombinasi dasar. |
+| 2 | Hapus target dengan banyak riwayat alokasi | Selesai | Transaksi alokasi dihapus dalam chunk 450 dokumen, lalu target dihapus pada batch terpisah. Target selesai kini memakai jalur khusus: hanya dokumen target yang dihapus, transaksi alokasi dipertahankan sebagai ledger. |
+| 3 | Test lengkap filter History dan ringkasan | Selesai | Step 14 dibuat dengan use case filter dan test kombinasi dasar. Suite kini berisi 69 test. |
 | 4 | Modularisasi halaman Settings | Selesai | Entry page dan komposisi content Settings sudah dipisah; section reusable sebelumnya juga berada di file widget terdedikasi. |
 | 5 | Empty state Dashboard yang lebih informatif | Selesai | Hero onboarding, empty chart, dan empty insight sudah memiliki copy, visual, serta CTA/informasi yang jelas. |
 | 6 | Status sinkronisasi yang lebih detail | Selesai | Loading, sukses, gagal, retry, dan waktu pembaruan terakhir sudah tersedia; offline queue bukan bagian scope saat ini. |
-| 7 | Firebase Authentication dan isolasi data user | Selesai sebagian | Auth dan path `users/{uid}` sudah aktif; deployment Firebase, migrasi data lama, dan validasi lintas platform masih perlu diselesaikan. |
+| 7 | Firebase Authentication dan isolasi data user | Selesai sebagian | Auth dan path `users/{uid}` sudah aktif; OAuth client Android sudah tersedia di `google-services.json`; deployment Firebase, SHA release, dan validasi lintas platform masih perlu diselesaikan. |
 
 ## Fitur yang Sudah Selesai Sebelumnya
 
@@ -35,7 +40,18 @@ atau model AI berganti. Status mencerminkan kondisi implementasi terakhir.
 
 ## Step Berikutnya
 
-Prioritas aktif berikutnya adalah **validasi deployment Firebase, migrasi data lama, dan security rules**.
+Prioritas aktif berikutnya adalah **membersihkan 5 info `flutter analyze`**, lalu
+**validasi deployment Firebase, migrasi data lama, dan security rules**.
+
+## Status Prioritas 8-12 (baru, dari commit 2026-09-02 s/d 2026-09-03)
+
+| No. | Prioritas | Status | Catatan |
+| --- | --- | --- | --- |
+| 8 | Rebrand MoneyTracker menjadi Savu | Selesai | Package `com.example.savu`, launcher icon lintas platform, metadata web/desktop, dan seluruh judul aplikasi. |
+| 9 | Onboarding page | Selesai | 3 slide dengan `PageController`, ilustrasi custom, dan flag `onboarding_completed` di SharedPreferences. Perlu validasi terhadap user lama. |
+| 10 | Katalog avatar profil preset | Selesai | 30 avatar (15 general + 15 people), tersimpan di SharedPreferences, sheet picker responsif. Filter gender dihapus. |
+| 11 | Rombak dark theme | Selesai | Palet charcoal `#121417` + surface solid `#1C2026` + aksen teal `#2DD4BF`, diterapkan ke 25 file. |
+| 12 | Arsip target tabungan | Selesai | `isArchived`, mode toggle, provider terpisah, dan pemisahan perilaku hapus target selesai vs aktif. Fitur favorit dicabut dari UI. |
 
 ## Step 20
 
@@ -99,12 +115,15 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 
 ### P0.1 Firebase Email Link dan Android App Links
 
-- Status: `Berjalan`
+- Status: `Selesai`
 - Tujuan: link Gmail membuka aplikasi Android dan login otomatis tanpa paste.
 - Cakupan: intent-filter `/finishSignIn` dan `/__/auth/action`, parsing
   `continueUrl`, initial link, runtime link, dan validasi fingerprint APK.
 - Kriteria selesai: APK debug dan release dapat membuka aplikasi, menyelesaikan
   login, serta tetap memiliki fallback paste link.
+- Catatan 2026-09-03: OAuth client Android sudah tersedia di `google-services.json`
+  dengan package `com.example.savu`. Yang tersisa: SHA-1/SHA-256 keystore release
+  di Firebase Console dan `web/.well-known/assetlinks.json`.
 
 ### P0.2 Kendali Resend Email Link
 
@@ -119,6 +138,37 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 - Status: `Belum dimulai`
 - Audit semua provider Firestore, loading/error/empty state, retry action, dan
   logging development yang tidak membocorkan data sensitif.
+
+### P0.4 Hutang Analyzer
+
+- Status: `Berjalan`
+- Tujuan: `flutter analyze` kembali ke 0 issue sebelum fitur baru dimulai.
+- Cakupan: 5 info tersisa per 2026-09-03.
+  - `lib/features/settings/presentation/widgets/settings_content.dart` baris
+    1306, 1312, 1314 — `use_build_context_synchronously` (3 info).
+  - `lib/features/dashboard/presentation/widgets/financial_insight_overview_sheet.dart`
+    baris 499 — `curly_braces_in_flow_control_structures`.
+  - `lib/features/auth/presentation/pages/auth_landing_page.dart` baris 604 —
+    `unnecessary_brace_in_string_interps`.
+- Kriteria selesai: `flutter analyze` melaporkan "No issues found". Terpenuhi pada 2026-09-04.
+
+### P0.5 Validasi Onboarding Terhadap User Lama
+
+- Status: `Belum dimulai`
+- Tujuan: memastikan pengguna yang sudah memiliki data Firestore tidak terjebak atau
+  kehilangan akses karena flag `onboarding_completed` belum pernah diset.
+- Cakupan: urutan `_AuthGate`, persistensi flag, dan transisi `AnimatedSwitcher`.
+- Kriteria selesai: user lama langsung masuk ke `AuthLandingPage` atau `SavuApp`
+  sesuai status auth; onboarding hanya muncul untuk instalasi baru.
+
+### P0.6 Regresi Kategori Alokasi Tabungan
+
+- Status: `Belum dimulai`
+- Tujuan: memastikan penggantian kategori default tidak merusak data lama.
+- Cakupan: transaksi tersimpan dengan kategori "Alokasi Tabungan", chip pilihan
+  kategori, agregasi pie chart, dan filter History.
+- Kriteria selesai: transaksi lama tetap tampil, tidak bisa dipilih ulang sebagai
+  kategori manual, dan alokasi otomatis tetap berfungsi.
 
 ### P1.1 Sistem Theme dan Visual Identity
 
@@ -154,10 +204,16 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 
 ### P1.4 Redesign Dashboard
 
-- Status: `Belum dimulai`
+- Status: `Berjalan`
 - Tambahkan header personal, balance hero card, income/expense tiles, budget
   progress visual, insight accent color, chart card, skeleton, dan empty state.
 - Selesai jika saldo, arus uang, dan status budget mudah dipahami sekali lihat.
+- Sudah dikerjakan: header dan greeting tersinkron dengan nama Settings
+  (`7b1dcf1`), sheet edukasi status anggaran (`02f16f5`), warna status anggaran
+  eksplisit per tema (`7171105`), teks pengeluaran lebih terang (`c5e99e3`),
+  chart insight responsif terhadap tap (`73a4f07`), dan navigasi floating action
+  beranimasi (`33745eb`).
+- Belum selesai: audit hierarchy/spacing menyeluruh dan skeleton loading.
 
 ### P1.5 Redesign Savings
 
@@ -178,15 +234,24 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 
 ### P1.7 Redesign Settings
 
-- Status: `Belum dimulai`
+- Status: `Berjalan`
 - Kelompokkan profile, tampilan, budget, privacy, sinkronisasi, bantuan, dan
   manajemen data; pisahkan danger zone secara visual.
+- Sudah dikerjakan: avatar profil dapat diketuk dengan sheet picker 30 preset
+  (`a992904`, `402f04c`, `70bf265`, `cb8dab4`), kontak founder membuka aplikasi
+  native (`4a546bf`, `05de391`), aksi dialog diseragamkan dan overflow dicegah
+  (`1ec64b1`, `d23212c`, `9cf2bd8`), serta sinkronisasi greeting dengan dialog
+  edit profil (`7b1dcf1`).
+- Belum selesai: pengelompokan ulang section dan pemisahan visual danger zone.
 
 ### P1.8 Polish Authentication UI
 
 - Status: `Belum dimulai`
 - Perjelas hierarchy Google, password, email link, guest, loading, success,
   error, rate limit, resend, fallback paste, dan layout responsif.
+- Catatan: onboarding page kini menjadi lapisan pertama sebelum auth landing
+  (`f7b773f`), sehingga hierarki perlu mempertimbangkan urutan
+  Onboarding → Auth → Verifikasi → App.
 
 ### P2.1 Accessibility dan Responsiveness
 
@@ -208,12 +273,16 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
 
 ## Urutan Eksekusi Berikutnya
 
-1. Selesaikan P0.1 dan P0.2, lalu validasi manual Email Link di Android.
-2. Kerjakan P0.3 untuk menutup celah error dan state kosong.
-3. Kerjakan P1.1, P1.2, dan P1.3 sebagai fondasi UI bersama.
-4. Kerjakan P1.4 Dashboard terlebih dahulu.
-5. Lanjutkan P1.5 Savings, P1.6 History, dan P1.7 Settings.
-6. Tutup dengan P1.8 Authentication, P2.1, P2.2, dan P2.3.
+1. **Kerjakan P0.4 (hutang analyzer) terlebih dahulu** agar baseline kode kembali
+   bersih sebelum perubahan fitur.
+2. Validasi P0.5 onboarding dan P0.6 regresi kategori — keduanya berpotensi
+   merusak pengalaman user lama.
+3. Selesaikan P0.1 dan P0.2, lalu validasi manual Email Link di Android.
+4. Kerjakan P0.3 untuk menutup celah error dan state kosong.
+5. Kerjakan P1.1, P1.2, dan P1.3 sebagai fondasi UI bersama.
+6. Kerjakan P1.4 Dashboard terlebih dahulu.
+7. Lanjutkan P1.5 Savings, P1.6 History, dan P1.7 Settings.
+8. Tutup dengan P1.8 Authentication, P2.1, P2.2, dan P2.3.
 
 ## Log Perubahan Status
 
@@ -221,3 +290,26 @@ Dokumen ini juga menjadi backlog aktif. Perbarui status task setelah implementas
   terbungkus, cooldown resend 60 detik, dan pesan rate limit Firebase.
 - 2026-08-29: Menambahkan UI foundation global berupa theme light/dark,
   reusable page background, dan baseline style untuk komponen Material.
+- 2026-08-30 s/d 2026-08-31: Membangun fondasi UI (background, dashboard,
+  savings, history), menambahkan navigasi floating action beranimasi, target
+  tabungan yang dapat diedit, cash flow chart, balance trend, expense flow
+  overview, filter rentang tanggal custom, penyelarasan perhitungan dengan siklus
+  anggaran, serta penanganan error Firestore terpusat.
+- 2026-09-01: Memperbarui menu dan sistem pada menu goals — menambahkan
+  `isArchived` dan `isFavorite` pada entity, mode arsip, serta pemisahan perilaku
+  hapus target selesai dan aktif. Widget `savings_overview.dart` dihapus.
+- 2026-09-02: Menambahkan Contact Us, sheet edukasi status anggaran, perbaikan
+  interaksi chart mobile, dukungan foto profil custom, katalog avatar preset,
+  tombol batal pada ganti akun, penyelarasan greeting, dan penyederhanaan
+  Financial Insight Card.
+- 2026-09-02: Rebrand MoneyTracker menjadi Savu beserta konfigurasi launcher
+  icon lintas platform; menghapus logo ganda.
+- 2026-09-03: Merombak seluruh warna dark theme menjadi palet charcoal dan teal
+  solid; mengubah warna teks pengeluaran pada Financial Insight agar lebih terang;
+  mengubah warna progres card target berdasarkan ambang 50% dan 100%; memperbaiki
+  spacing form catatan baru; mengganti kategori default "Alokasi Tabungan"
+  menjadi "Kesehatan & Perawatan"; menambahkan onboarding page; memperbesar tombol
+  batal pada dialog hapus target dan menu riwayat; serta menambahkan widget foto
+  pada avatar.
+- 2026-09-03: Verifikasi ulang oleh AI — `flutter test` 69/69 lulus,
+  `flutter analyze` menyisakan 5 info. Seluruh file md progres disinkronkan.
