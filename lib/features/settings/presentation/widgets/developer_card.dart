@@ -20,16 +20,16 @@ class DeveloperCard extends StatelessWidget {
           Text(
             'Savu v1.0.0',
             style: theme.textTheme.titleSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontWeight: FontWeight.bold,
-                ),
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Product by Andre Robert',
             style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
+              color: colors.onSurfaceVariant,
+            ),
           ),
         ],
       ),

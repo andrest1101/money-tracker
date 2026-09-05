@@ -1,10 +1,7 @@
 enum BudgetLevel { safe, warning, exceeded }
 
 class BudgetStatusEntity {
-  const BudgetStatusEntity({
-    required this.spentRatio,
-    required this.level,
-  });
+  const BudgetStatusEntity({required this.spentRatio, required this.level});
 
   final double spentRatio;
   final BudgetLevel level;
