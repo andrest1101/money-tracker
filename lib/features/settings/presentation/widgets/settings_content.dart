@@ -77,7 +77,8 @@ class SettingsContent extends ConsumerWidget {
     });
     final syncState = ref.watch(transactionsStreamProvider);
     return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
+      // Beri ruang ekstra agar footer tidak tertutup floating navigation bar.
+      padding: const EdgeInsets.only(bottom: 120),
       children: [
         _ProfileHeader(syncState: syncState),
         const _AccountSessionCard(),
