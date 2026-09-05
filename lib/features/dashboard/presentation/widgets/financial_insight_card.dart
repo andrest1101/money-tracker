@@ -13,7 +13,6 @@ class FinancialInsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final improving = insight.expenseChangeRatio <= 0;
     final trendColor = improving ? colors.tertiary : colors.error;
     final trend = insight.previousExpense == 0
@@ -23,131 +22,148 @@ class FinancialInsightCard extends StatelessWidget {
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
-      color: isDark ? colors.surfaceContainerHigh : colors.primaryContainer,
+      color: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        hoverColor: colors.primary.withValues(alpha: .06),
-        splashColor: colors.primary.withValues(alpha: .1),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: .14),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      Icons.auto_graph_rounded,
-                      color: colors.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Insight keuangan',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          insight.periodLabel,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.lightbulb_outline_rounded, color: colors.tertiary),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: _InsightMetric(
-                      label: 'Pengeluaran',
-                      value: formatRupiah(insight.expense),
-                      color: colors.error,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _InsightMetric(
-                      label: 'Rata-rata / hari',
-                      value: formatRupiah(insight.averageDailyExpense),
-                      color: colors.primary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              colors.primaryContainer,
+              colors.secondaryContainer.withValues(alpha: .72),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: colors.primary.withValues(alpha: .16)),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          hoverColor: colors.primary.withValues(alpha: .06),
+          splashColor: colors.primary.withValues(alpha: .1),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Icon(
-                      improving
-                          ? Icons.trending_down_rounded
-                          : Icons.trending_up_rounded,
-                      color: trendColor,
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: colors.primary.withValues(alpha: .14),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.auto_graph_rounded,
+                        color: colors.primary,
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Insight keuangan',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            insight.periodLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.lightbulb_outline_rounded,
+                      color: colors.tertiary,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _InsightMetric(
+                        label: 'Pengeluaran',
+                        value: formatRupiah(insight.expense),
+                        color: colors.error,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _InsightMetric(
+                        label: 'Rata-rata / hari',
+                        value: formatRupiah(insight.averageDailyExpense),
+                        color: colors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        improving
+                            ? Icons.trending_down_rounded
+                            : Icons.trending_up_rounded,
+                        color: trendColor,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '$trend dibanding periode sebelumnya',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: trendColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
                     Expanded(
                       child: Text(
-                        '$trend dibanding periode sebelumnya',
+                        insight.topCategory == null
+                            ? 'Belum ada kategori pengeluaran pada periode ini.'
+                            : 'Kategori terbesar: ${insight.topCategory} • ${insight.transactionCount} transaksi',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: trendColor,
-                          fontWeight: FontWeight.w600,
+                          color: colors.onSurfaceVariant,
                         ),
                       ),
                     ),
+                    if (onTap != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 18,
+                        color: colors.primary,
+                      ),
+                    ],
                   ],
                 ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      insight.topCategory == null
-                          ? 'Belum ada kategori pengeluaran pada periode ini.'
-                          : 'Kategori terbesar: ${insight.topCategory} • ${insight.transactionCount} transaksi',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  if (onTap != null) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 18,
-                      color: colors.primary,
-                    ),
-                  ],
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
