@@ -15,7 +15,7 @@ class SettingsServiceException implements Exception {
 
 class SettingsService {
   SettingsService({required SharedPreferences sharedPreferences})
-      : _sharedPreferences = sharedPreferences;
+    : _sharedPreferences = sharedPreferences;
 
   final SharedPreferences _sharedPreferences;
 
@@ -27,6 +27,11 @@ class SettingsService {
   static const String _privacyModeKey = 'privacy_mode';
   static const String _budgetCycleDateKey = 'budget_cycle_date';
   static const String _lastSyncKey = 'last_successful_sync';
+  static const String _profileAvatarKey = 'profile_avatar_id';
+  static const String _onboardingCompletedKey = 'onboarding_completed';
+  static const String _hiddenExpenseCategoriesKey =
+      'hidden_expense_categories';
+  static const String _hiddenIncomeCategoriesKey = 'hidden_income_categories';
 
   double? getBudgetLimit() {
     try {
@@ -73,7 +78,10 @@ class SettingsService {
     try {
       return _sharedPreferences.getString(_savingsSortKey) ?? 'newest';
     } catch (e) {
-      throw SettingsServiceException('Gagal memuat preferensi urutan target', e);
+      throw SettingsServiceException(
+        'Gagal memuat preferensi urutan target',
+        e,
+      );
     }
   }
 
@@ -81,7 +89,10 @@ class SettingsService {
     try {
       await _sharedPreferences.setString(_savingsSortKey, option);
     } catch (e) {
-      throw SettingsServiceException('Gagal menyimpan preferensi urutan target', e);
+      throw SettingsServiceException(
+        'Gagal menyimpan preferensi urutan target',
+        e,
+      );
     }
   }
 
@@ -117,6 +128,22 @@ class SettingsService {
     }
   }
 
+  String getProfileAvatarId() {
+    try {
+      return _sharedPreferences.getString(_profileAvatarKey) ?? 'sunrise';
+    } catch (e) {
+      throw SettingsServiceException('Gagal memuat avatar profil', e);
+    }
+  }
+
+  Future<void> setProfileAvatarId(String avatarId) async {
+    try {
+      await _sharedPreferences.setString(_profileAvatarKey, avatarId);
+    } catch (e) {
+      throw SettingsServiceException('Gagal menyimpan avatar profil', e);
+    }
+  }
+
   bool getPrivacyMode() {
     try {
       return _sharedPreferences.getBool(_privacyModeKey) ?? false;
@@ -145,7 +172,10 @@ class SettingsService {
     try {
       await _sharedPreferences.setInt(_budgetCycleDateKey, day);
     } catch (e) {
-      throw SettingsServiceException('Gagal menyimpan tanggal siklus anggaran', e);
+      throw SettingsServiceException(
+        'Gagal menyimpan tanggal siklus anggaran',
+        e,
+      );
     }
   }
 
@@ -163,6 +193,86 @@ class SettingsService {
       await _sharedPreferences.setString(_lastSyncKey, value.toIso8601String());
     } catch (e) {
       throw SettingsServiceException('Gagal menyimpan waktu sinkronisasi', e);
+    }
+  }
+
+  bool getOnboardingCompleted() {
+    try {
+      final stored = _sharedPreferences.getBool(_onboardingCompletedKey);
+      if (stored != null) return stored;
+
+      // Existing installs already have local preferences from the old app.
+      final isExistingInstall = [
+        _themeModeKey,
+        _budgetLimitKey,
+        _userNameKey,
+        _privacyModeKey,
+        _budgetCycleDateKey,
+        _lastSyncKey,
+      ].any(_sharedPreferences.containsKey);
+      return isExistingInstall;
+    } catch (e) {
+      throw SettingsServiceException('Gagal memuat status onboarding', e);
+    }
+  }
+
+  Future<void> setOnboardingCompleted() async {
+    try {
+      await _sharedPreferences.setBool(_onboardingCompletedKey, true);
+    } catch (e) {
+      throw SettingsServiceException('Gagal menyimpan status onboarding', e);
+    }
+  }
+
+  List<String> getHiddenExpenseCategories() {
+    try {
+      return _sharedPreferences.getStringList(_hiddenExpenseCategoriesKey) ??
+          const [];
+    } catch (e) {
+      throw SettingsServiceException(
+        'Gagal memuat kategori pengeluaran tersembunyi',
+        e,
+      );
+    }
+  }
+
+  Future<void> setHiddenExpenseCategories(List<String> categories) async {
+    try {
+      await _sharedPreferences.setStringList(
+        _hiddenExpenseCategoriesKey,
+        categories,
+      );
+    } catch (e) {
+      throw SettingsServiceException(
+        'Gagal menyimpan kategori pengeluaran tersembunyi',
+        e,
+      );
+    }
+  }
+
+  List<String> getHiddenIncomeCategories() {
+    try {
+      return _sharedPreferences.getStringList(_hiddenIncomeCategoriesKey) ??
+          const [];
+    } catch (e) {
+      throw SettingsServiceException(
+        'Gagal memuat kategori pemasukan tersembunyi',
+        e,
+      );
+    }
+  }
+
+  Future<void> setHiddenIncomeCategories(List<String> categories) async {
+    try {
+      await _sharedPreferences.setStringList(
+        _hiddenIncomeCategoriesKey,
+        categories,
+      );
+    } catch (e) {
+      throw SettingsServiceException(
+        'Gagal menyimpan kategori pemasukan tersembunyi',
+        e,
+      );
     }
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/features/transactions/presentation/providers/history_providers.dart';
+import 'package:savu/features/transactions/presentation/providers/history_providers.dart';
 
 void main() {
   test('accepts a range of up to 31 inclusive days', () {

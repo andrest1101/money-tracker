@@ -35,6 +35,11 @@ class _GoalCelebrationDialogState extends State<GoalCelebrationDialog> {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
+    final isDark = theme.brightness == Brightness.dark;
+    final greenColor = isDark
+        ? const Color(0xFF34D399)
+        : const Color(0xFF047857);
+
     return Stack(
       alignment: Alignment.topCenter,
       children: [
@@ -42,13 +47,13 @@ class _GoalCelebrationDialogState extends State<GoalCelebrationDialog> {
           icon: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colors.tertiaryContainer,
+              color: greenColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.emoji_events_rounded,
               size: 42,
-              color: colors.onTertiaryContainer,
+              color: greenColor,
             ),
           ),
           title: const Text('Yeay! Target Tercapai!'),

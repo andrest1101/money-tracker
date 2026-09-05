@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:money_tracker/features/transactions/domain/entities/transaction_entity.dart';
-import 'package:money_tracker/features/transactions/domain/usecases/generate_transactions_csv_usecase.dart';
+import 'package:savu/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:savu/features/transactions/domain/usecases/generate_transactions_csv_usecase.dart';
 
 void main() {
   test('generates CSV with header and escaped values', () {

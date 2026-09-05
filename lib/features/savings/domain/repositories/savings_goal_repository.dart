@@ -10,6 +10,9 @@ abstract interface class SavingsGoalRepository {
 
   Future<void> deleteGoal(String id);
 
+  /// Removes a completed goal card while preserving allocation ledger entries.
+  Future<void> deleteCompletedGoal(String id);
+
   /// Hapus goal beserta semua transaksi alokasi-nya dalam satu batch atomik.
   Future<void> deleteGoalWithAllocations(String goalId);
 

@@ -10,6 +10,7 @@ class SavingsGoalModel extends SavingsGoalEntity {
     required super.currentAmount,
     required super.deadline,
     required super.createdAt,
+    super.isArchived = false,
   });
 
   factory SavingsGoalModel.fromEntity(SavingsGoalEntity entity) {
@@ -20,6 +21,7 @@ class SavingsGoalModel extends SavingsGoalEntity {
       currentAmount: entity.currentAmount,
       deadline: entity.deadline,
       createdAt: entity.createdAt,
+      isArchived: entity.isArchived,
     );
   }
 
@@ -31,6 +33,7 @@ class SavingsGoalModel extends SavingsGoalEntity {
       currentAmount: _parseAmount(map['currentAmount']),
       deadline: _parseDate(map['deadline']),
       createdAt: _parseDate(map['createdAt']),
+      isArchived: map['isArchived'] as bool? ?? false,
     );
   }
 
@@ -41,6 +44,7 @@ class SavingsGoalModel extends SavingsGoalEntity {
       'currentAmount': currentAmount,
       'deadline': Timestamp.fromDate(deadline),
       'createdAt': Timestamp.fromDate(createdAt),
+      'isArchived': isArchived,
     };
   }
 

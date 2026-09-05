@@ -1,6 +1,6 @@
 # PRODUCT REQUIREMENTS DOCUMENT (PRD) - MONEYTRACKER APP
 
-**Project Name:** MoneyTracker App  
+**Project Name:** Savu App  
 **Platform:** Mobile (Android & iOS)  
 **Target User:** Mahasiswa & anak kos Indonesia (fokus pencegahan "bocor halus" & pencatatan cepat).
 

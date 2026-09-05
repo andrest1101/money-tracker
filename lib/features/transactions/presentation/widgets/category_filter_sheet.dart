@@ -104,9 +104,7 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                           icon: const Icon(Icons.clear_rounded),
                         ),
                   filled: true,
-                  fillColor: colors.surfaceContainerHighest.withValues(
-                    alpha: 0.45,
-                  ),
+                  fillColor: colors.surfaceContainerHigh,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,
@@ -174,10 +172,10 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                         final category = filteredCategories[index - 1];
                         return _CategoryOption(
                           title: category,
-                          subtitle:
-                              '${widget.counts[category] ?? 0} transaksi',
+                          subtitle: '${widget.counts[category] ?? 0} transaksi',
                           category: category,
-                          type: widget.types[category] ?? TransactionType.expense,
+                          type:
+                              widget.types[category] ?? TransactionType.expense,
                           selected: widget.selectedCategory == category,
                           onTap: () => Navigator.pop(context, category),
                         );
@@ -216,9 +214,7 @@ class _CategoryOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Material(
-      color: selected
-          ? colors.primaryContainer.withValues(alpha: 0.55)
-          : colors.surface,
+      color: selected ? colors.surfaceContainerHigh : colors.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -228,11 +224,7 @@ class _CategoryOption extends StatelessWidget {
           child: Row(
             children: [
               category != null
-                  ? CategoryIcon(
-                      category: category!,
-                      type: type!,
-                      size: 42,
-                    )
+                  ? CategoryIcon(category: category!, type: type!, size: 42)
                   : Container(
                       width: 42,
                       height: 42,

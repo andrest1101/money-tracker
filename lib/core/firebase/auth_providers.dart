@@ -167,7 +167,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
             'email': email.trim(),
           }).toString(),
           handleCodeInApp: true,
-          androidPackageName: 'com.example.money_tracker',
+          androidPackageName: 'com.example.savu',
           androidInstallApp: true,
           androidMinimumVersion: '23',
         ),

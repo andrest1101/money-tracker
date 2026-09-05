@@ -90,7 +90,9 @@ final activeGoalsProvider = Provider<AsyncValue<List<SavingsGoalEntity>>>((
 ) {
   return ref
       .watch(sortedSavingsGoalsProvider)
-      .whenData((goals) => goals.where((g) => !g.isCompleted).toList());
+      .whenData(
+        (goals) => goals.where((g) => !g.isArchived && !g.isCompleted).toList(),
+      );
 });
 
 final completedGoalsProvider = Provider<AsyncValue<List<SavingsGoalEntity>>>((
@@ -98,7 +100,34 @@ final completedGoalsProvider = Provider<AsyncValue<List<SavingsGoalEntity>>>((
 ) {
   return ref
       .watch(sortedSavingsGoalsProvider)
-      .whenData((goals) => goals.where((g) => g.isCompleted).toList());
+      .whenData(
+        (goals) => goals.where((g) => !g.isArchived && g.isCompleted).toList(),
+      );
+});
+
+final archivedModeProvider = NotifierProvider<ArchivedModeController, bool>(
+  ArchivedModeController.new,
+);
+
+class ArchivedModeController extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+}
+
+final archivedActiveGoalsProvider =
+    Provider<AsyncValue<List<SavingsGoalEntity>>>((ref) {
+  return ref.watch(sortedSavingsGoalsProvider).whenData(
+    (goals) => goals.where((goal) => goal.isArchived && !goal.isCompleted).toList(),
+  );
+});
+
+final archivedCompletedGoalsProvider =
+    Provider<AsyncValue<List<SavingsGoalEntity>>>((ref) {
+  return ref.watch(sortedSavingsGoalsProvider).whenData(
+    (goals) => goals.where((goal) => goal.isArchived && goal.isCompleted).toList(),
+  );
 });
 
 class SavingsActionsController extends Notifier<AsyncValue<void>> {
@@ -135,12 +164,18 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
     }
   }
 
+  Future<bool> setArchived(SavingsGoalEntity goal, bool value) =>
+      updateGoal(goal.copyWith(isArchived: value));
+
   Future<bool> deleteGoal(SavingsGoalEntity goal) async {
     state = const AsyncLoading();
     try {
-      await ref
-          .read(savingsGoalRepositoryProvider)
-          .deleteGoalWithAllocations(goal.id);
+      final repository = ref.read(savingsGoalRepositoryProvider);
+      if (goal.isCompleted) {
+        await repository.deleteCompletedGoal(goal.id);
+      } else {
+        await repository.deleteGoalWithAllocations(goal.id);
+      }
       state = const AsyncData(null);
       return true;
     } catch (e, stackTrace) {

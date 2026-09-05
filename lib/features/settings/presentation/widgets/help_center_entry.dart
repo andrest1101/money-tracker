@@ -9,6 +9,7 @@ class HelpCenterEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
@@ -21,12 +22,16 @@ class HelpCenterEntry extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  colors.primaryContainer.withValues(alpha: 0.75),
-                  colors.surfaceContainerHighest.withValues(alpha: 0.45),
-                ],
-              ),
+              color: isDark ? colors.surfaceContainerHigh : null,
+              gradient: isDark
+                  ? null
+                  : LinearGradient(
+                      colors: [
+                        colors.primaryContainer,
+                        colors.surfaceContainerHigh,
+                      ],
+                    ),
+              border: isDark ? Border.all(color: colors.outlineVariant) : null,
             ),
             child: Row(
               children: [
@@ -43,15 +48,15 @@ class HelpCenterEntry extends StatelessWidget {
                       Text(
                         'Pusat Bantuan',
                         style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 3),
                       Text(
                         'Temukan jawaban dari pertanyaan umum',
                         style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurfaceVariant,
-                            ),
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),

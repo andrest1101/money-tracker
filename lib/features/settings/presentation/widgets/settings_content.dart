@@ -14,6 +14,8 @@ import 'help_center_entry.dart';
 import 'help_center_sheet.dart';
 import 'settings_section_title.dart';
 import 'account_security_sheet.dart';
+import 'contact_us_entry.dart';
+import 'profile_avatar_sheet.dart';
 
 void _showSettingsSnackBar(
   BuildContext context, {
@@ -92,6 +94,8 @@ class SettingsContent extends ConsumerWidget {
         const SizedBox(height: 24),
         const SettingsSectionTitle(title: 'BANTUAN'),
         HelpCenterEntry(onTap: () => _showHelpCenter(context)),
+        const SizedBox(height: 10),
+        const ContactUsEntry(),
         const SizedBox(height: 32),
         const DeveloperCard(),
       ],
@@ -119,13 +123,28 @@ class _AccountSessionCard extends ConsumerWidget {
               : 'Kamu bisa masuk kembali menggunakan metode login yang sama atau akun lain.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Keluar'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Keluar'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -143,7 +162,7 @@ class _AccountSessionCard extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Card(
         elevation: 0,
-        color: colors.surfaceContainerHighest.withValues(alpha: .38),
+        color: colors.surfaceContainerHigh,
         child: ListTile(
           leading: CircleAvatar(
             backgroundColor: isGuest
@@ -187,14 +206,6 @@ class _ProfileHeader extends ConsumerWidget {
 
   final AsyncValue<List<TransactionEntity>> syncState;
 
-  static const _profileTypes = [
-    'Mahasiswa',
-    'Karyawan',
-    'Freelancer',
-    'Wirausaha',
-    'Lainnya',
-  ];
-
   void _showProfileDetails(
     BuildContext context,
     WidgetRef ref, {
@@ -227,7 +238,7 @@ class _ProfileHeader extends ConsumerWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Informasi ini tersimpan di perangkatmu dan membantu menyesuaikan pengalaman MoneyTracker.',
+                'Informasi ini tersimpan di perangkatmu dan membantu menyesuaikan pengalaman Savu.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -287,84 +298,11 @@ class _ProfileHeader extends ConsumerWidget {
     required String userName,
     required String profileType,
   }) {
-    final nameController = TextEditingController(text: userName);
-    var selectedType = profileType;
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Edit profil'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  autofocus: true,
-                  maxLength: 60,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    labelText: 'Nama lengkap atau panggilan',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: selectedType,
-                  decoration: InputDecoration(
-                    labelText: 'Kamu seorang',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  items: _profileTypes
-                      .map(
-                        (type) =>
-                            DropdownMenuItem(value: type, child: Text(type)),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) setState(() => selectedType = value);
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                final name = nameController.text.trim();
-                if (name.isEmpty) return;
-                final nameSaved = await ref
-                    .read(userNameProvider.notifier)
-                    .setUserName(name);
-                final typeSaved = await ref
-                    .read(userProfileTypeProvider.notifier)
-                    .setProfileType(selectedType);
-                if (!context.mounted) return;
-                if (!nameSaved || !typeSaved) {
-                  _showSettingsSnackBar(
-                    context,
-                    message: 'Profil gagal disimpan.',
-                    isError: true,
-                  );
-                  return;
-                }
-                Navigator.pop(dialogContext);
-                _showSettingsSnackBar(context, message: 'Profil diperbarui.');
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        ),
-      ),
-    ).whenComplete(nameController.dispose);
+      builder: (_) =>
+          _EditProfileDialog(initialName: userName, initialType: profileType),
+    );
   }
 
   @override
@@ -376,14 +314,18 @@ class _ProfileHeader extends ConsumerWidget {
     final privacyMode = ref.watch(privacyModeProvider);
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final authUser = ref.watch(currentUserProvider);
     final isGuest = authUser?.isAnonymous ?? true;
+    final avatarId = ref.watch(profileAvatarProvider);
+    final avatar = presetAvatarFor(avatarId);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(
         elevation: 0,
-        color: cs.primaryContainer.withValues(alpha: 0.4),
+        color: isDark ? cs.surfaceContainerHigh : cs.primaryContainer,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: InkWell(
           onTap: () => _showProfileDetails(
@@ -400,14 +342,68 @@ class _ProfileHeader extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: cs.primary,
-                  child: Text(
-                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: cs.onPrimary,
-                      fontWeight: FontWeight.bold,
+                Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: () => ProfileAvatarSheet.show(context),
+                    customBorder: const CircleBorder(),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 280),
+                          switchInCurve: Curves.easeOutBack,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                                opacity: animation,
+                                child: ScaleTransition(
+                                  scale: animation,
+                                  child: child,
+                                ),
+                              ),
+                          child: CircleAvatar(
+                            key: ValueKey(avatar.id),
+                            radius: 32,
+                            backgroundColor: avatar.color,
+                            child: Icon(
+                              avatar.icon,
+                              color: Colors.white,
+                              size: 31,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: cs.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(
+                                  context,
+                                ).scaffoldBackgroundColor,
+                                width: 2.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              size: 14,
+                              color: cs.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -448,7 +444,7 @@ class _ProfileHeader extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '$profileType  •  Ketuk untuk melihat detail',
+                        '$profileType  •  Ketuk avatar untuk mengganti',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),
@@ -501,6 +497,183 @@ class _ProfileHeader extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _EditProfileDialog extends ConsumerStatefulWidget {
+  const _EditProfileDialog({
+    required this.initialName,
+    required this.initialType,
+  });
+
+  final String initialName;
+  final String initialType;
+
+  @override
+  ConsumerState<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
+  static const _profileTypes = [
+    'Mahasiswa',
+    'Karyawan',
+    'Freelancer',
+    'Wirausaha',
+    'Lainnya',
+  ];
+
+  late final TextEditingController _nameController;
+  late String _selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+    _selectedType = widget.initialType;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+    // Capture messenger/nav before async gap to avoid using a disposed context.
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final nameSaved = await ref
+        .read(userNameProvider.notifier)
+        .setUserName(name);
+    final typeSaved = await ref
+        .read(userProfileTypeProvider.notifier)
+        .setProfileType(_selectedType);
+    if (!mounted) return;
+    if (!nameSaved || !typeSaved) {
+      messenger.showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.error,
+          content: Row(
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                color: Theme.of(context).colorScheme.onError,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Profil gagal disimpan.',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onError,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
+    navigator.pop();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Theme.of(context).colorScheme.inverseSurface,
+        content: Row(
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              color: Theme.of(context).colorScheme.onInverseSurface,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Profil diperbarui.',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onInverseSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit profil'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              maxLength: 60,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: 'Nama lengkap atau panggilan',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _selectedType,
+              decoration: InputDecoration(
+                labelText: 'Kamu seorang',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              isExpanded: true,
+              items: _profileTypes
+                  .map(
+                    (type) => DropdownMenuItem(value: type, child: Text(type)),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) setState(() => _selectedType = value);
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: _save,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Simpan'),
+              ),
+            ),
+          ],
+        ),
+      ],
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
   }
 }
@@ -624,7 +797,7 @@ class _ThemeSelectionCard extends ConsumerWidget {
       child: Card(
         elevation: 0,
         margin: const EdgeInsets.only(bottom: 12),
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: cs.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -719,7 +892,7 @@ class _ThemeChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected
                 ? cs.primary.withValues(alpha: 0.15)
-                : cs.surfaceContainerHighest.withValues(alpha: 0.3),
+                : cs.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: selected
@@ -767,7 +940,7 @@ class _PrivacyCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 0,
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: cs.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: SwitchListTile(
           value: isPrivacyMode,
@@ -854,7 +1027,7 @@ class _FinancialSettingsCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 0,
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: cs.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -984,49 +1157,69 @@ class _SetBudgetDialogState extends ConsumerState<_SetBudgetDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Batas Anggaran'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Atur batas pengeluaran bulanan agar aplikasi dapat memberikan peringatan sebelum kamu boros.',
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _controller,
-            keyboardType: TextInputType.number,
-            inputFormatters: [ThousandsSeparatorInputFormatter()],
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: 'Batas Nominal',
-              prefixText: 'Rp ',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              helperText: 'Isi 0 untuk mematikan peringatan',
-              errorText: _errorText,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Atur batas pengeluaran bulanan agar aplikasi dapat memberikan peringatan sebelum kamu boros.',
             ),
-            onSubmitted: (_) => _save(),
-          ),
-        ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              inputFormatters: [ThousandsSeparatorInputFormatter()],
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'Batas Nominal',
+                prefixText: 'Rp ',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                helperText: 'Isi 0 untuk mematikan peringatan',
+                helperMaxLines: 2,
+                errorText: _errorText,
+                errorMaxLines: 2,
+              ),
+              onSubmitted: (_) => _save(),
+            ),
+          ],
+        ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Batal'),
-        ),
-        FilledButton(
-          onPressed: _isSaving ? null : _save,
-          child: _isSaving
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Simpan'),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: _isSaving ? null : _save,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Simpan'),
+              ),
+            ),
+          ],
         ),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
   }
 }
@@ -1052,66 +1245,87 @@ class _SetCycleDialogState extends ConsumerState<_SetCycleDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Tanggal Siklus'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Kapan biasanya kamu menerima uang bulanan/gajian? Anggaran akan di-reset pada tanggal ini.',
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<int>(
-            value: _selectedDay,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Kapan biasanya kamu menerima uang bulanan/gajian? Anggaran akan di-reset pada tanggal ini.',
             ),
-            items: List.generate(28, (index) => index + 1)
-                .map(
-                  (day) =>
-                      DropdownMenuItem(value: day, child: Text('Tanggal $day')),
-                )
-                .toList(),
-            onChanged: (value) {
-              if (value != null) setState(() => _selectedDay = value);
-            },
-          ),
-        ],
+            const SizedBox(height: 16),
+            DropdownButtonFormField<int>(
+              value: _selectedDay,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              isExpanded: true,
+              items: List.generate(28, (index) => index + 1)
+                  .map(
+                    (day) => DropdownMenuItem(
+                      value: day,
+                      child: Text('Tanggal $day'),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) setState(() => _selectedDay = value);
+              },
+            ),
+          ],
+        ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Batal'),
-        ),
-        FilledButton(
-          onPressed: () async {
-            final saved = await ref
-                .read(budgetCycleDateProvider.notifier)
-                .setDate(_selectedDay);
-            if (!mounted) return;
-            if (!saved) {
-              _showSettingsSnackBar(
-                context,
-                message: 'Siklus anggaran gagal disimpan.',
-                isError: true,
-              );
-              return;
-            }
-            Navigator.of(context).pop();
-            _showSettingsSnackBar(
-              context,
-              message: 'Siklus anggaran diperbarui.',
-            );
-          },
-          child: const Text('Simpan'),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: () async {
+                  final saved = await ref
+                      .read(budgetCycleDateProvider.notifier)
+                      .setDate(_selectedDay);
+                  if (!context.mounted) return;
+                  if (!saved) {
+                    _showSettingsSnackBar(
+                      context,
+                      message: 'Siklus anggaran gagal disimpan.',
+                      isError: true,
+                    );
+                    return;
+                  }
+                  Navigator.of(context).pop();
+                  _showSettingsSnackBar(
+                    context,
+                    message: 'Siklus anggaran diperbarui.',
+                  );
+                },
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Simpan'),
+              ),
+            ),
+          ],
         ),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
   }
 }
@@ -1137,20 +1351,38 @@ class _DataManagementCard extends ConsumerWidget {
           color: Colors.red,
         ),
         title: const Text('Hapus Semua Data?'),
-        content: const Text(
-          'Tindakan ini akan menghapus SELURUH transaksi dan target tabungan secara permanen dari server. Tindakan ini tidak dapat dibatalkan.',
+        content: const SingleChildScrollView(
+          child: Text(
+            'Tindakan ini akan menghapus SELURUH transaksi dan target tabungan secara permanen dari server. Tindakan ini tidak dapat dibatalkan.',
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Ya, Hapus Semua'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Ya, Hapus Semua'),
+                ),
+              ),
+            ],
           ),
         ],
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       ),
     );
     if (firstConfirm != true || !context.mounted) return;
@@ -1187,7 +1419,7 @@ class _DataManagementCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 0,
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: cs.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -1270,38 +1502,58 @@ class _FinalDeleteConfirmationDialogState
     return AlertDialog(
       icon: const Icon(Icons.gpp_maybe_rounded, color: Colors.red, size: 44),
       title: const Text('Konfirmasi terakhir'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Data transaksi, alokasi, dan target tabungan akan dihapus permanen. Pastikan kamu benar-benar ingin melanjutkan.',
-          ),
-          const SizedBox(height: 12),
-          CheckboxListTile(
-            value: _hasConfirmed,
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: const Text(
-              'Saya mengerti bahwa tindakan ini tidak dapat dibatalkan.',
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Data transaksi, alokasi, dan target tabungan akan dihapus permanen. Pastikan kamu benar-benar ingin melanjutkan.',
             ),
-            onChanged: (value) {
-              setState(() => _hasConfirmed = value ?? false);
-            },
-          ),
-        ],
+            const SizedBox(height: 12),
+            CheckboxListTile(
+              value: _hasConfirmed,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text(
+                'Saya mengerti bahwa tindakan ini tidak dapat dibatalkan.',
+              ),
+              onChanged: (value) {
+                setState(() => _hasConfirmed = value ?? false);
+              },
+            ),
+          ],
+        ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Batal'),
-        ),
-        FilledButton(
-          onPressed: _hasConfirmed ? () => Navigator.pop(context, true) : null,
-          style: FilledButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('HAPUS SEMUA'),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: _hasConfirmed
+                    ? () => Navigator.pop(context, true)
+                    : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('HAPUS SEMUA'),
+              ),
+            ),
+          ],
         ),
       ],
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
   }
 }

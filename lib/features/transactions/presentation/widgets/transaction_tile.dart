@@ -71,7 +71,7 @@ class TransactionTile extends StatelessWidget {
       child: Card(
         elevation: 0,
         margin: EdgeInsets.zero,
-        color: theme.colorScheme.surfaceContainerLow.withValues(alpha: 0.84),
+        color: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: InkWell(
           onTap: onTap,

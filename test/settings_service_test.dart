@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_tracker/core/local_storage/settings_service.dart';
+import 'package:savu/core/local_storage/settings_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -68,6 +68,17 @@ void main() {
       await service.setLastSuccessfulSync(syncedAt);
 
       expect(service.getLastSuccessfulSync(), syncedAt);
+    });
+
+    test('kategori tersembunyi pengeluaran dan pemasukan tersimpan terpisah',
+        () async {
+      final service = await createService({});
+
+      await service.setHiddenExpenseCategories(['Kosmetik']);
+      await service.setHiddenIncomeCategories(['Bonus']);
+
+      expect(service.getHiddenExpenseCategories(), ['Kosmetik']);
+      expect(service.getHiddenIncomeCategories(), ['Bonus']);
     });
   });
 }

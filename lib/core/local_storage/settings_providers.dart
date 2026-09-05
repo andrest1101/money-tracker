@@ -11,7 +11,9 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 });
 
 final settingsServiceProvider = Provider<SettingsService>((ref) {
-  return SettingsService(sharedPreferences: ref.watch(sharedPreferencesProvider));
+  return SettingsService(
+    sharedPreferences: ref.watch(sharedPreferencesProvider),
+  );
 });
 
 class BudgetLimit extends Notifier<double?> {
@@ -29,8 +31,9 @@ class BudgetLimit extends Notifier<double?> {
   }
 }
 
-final budgetLimitProvider =
-    NotifierProvider<BudgetLimit, double?>(BudgetLimit.new);
+final budgetLimitProvider = NotifierProvider<BudgetLimit, double?>(
+  BudgetLimit.new,
+);
 
 class AppThemeMode extends Notifier<ThemeMode> {
   @override
@@ -47,8 +50,9 @@ class AppThemeMode extends Notifier<ThemeMode> {
   }
 }
 
-final appThemeModeProvider =
-    NotifierProvider<AppThemeMode, ThemeMode>(AppThemeMode.new);
+final appThemeModeProvider = NotifierProvider<AppThemeMode, ThemeMode>(
+  AppThemeMode.new,
+);
 
 class UserName extends Notifier<String> {
   @override
@@ -82,8 +86,28 @@ class UserProfileType extends Notifier<String> {
   }
 }
 
-final userProfileTypeProvider =
-    NotifierProvider<UserProfileType, String>(UserProfileType.new);
+final userProfileTypeProvider = NotifierProvider<UserProfileType, String>(
+  UserProfileType.new,
+);
+
+class ProfileAvatar extends Notifier<String> {
+  @override
+  String build() => ref.watch(settingsServiceProvider).getProfileAvatarId();
+
+  Future<bool> setAvatar(String avatarId) async {
+    try {
+      await ref.read(settingsServiceProvider).setProfileAvatarId(avatarId);
+      state = avatarId;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final profileAvatarProvider = NotifierProvider<ProfileAvatar, String>(
+  ProfileAvatar.new,
+);
 
 class PrivacyMode extends Notifier<bool> {
   @override
@@ -101,7 +125,9 @@ class PrivacyMode extends Notifier<bool> {
   }
 }
 
-final privacyModeProvider = NotifierProvider<PrivacyMode, bool>(PrivacyMode.new);
+final privacyModeProvider = NotifierProvider<PrivacyMode, bool>(
+  PrivacyMode.new,
+);
 
 class BudgetCycleDate extends Notifier<int> {
   @override
@@ -118,11 +144,14 @@ class BudgetCycleDate extends Notifier<int> {
   }
 }
 
-final budgetCycleDateProvider = NotifierProvider<BudgetCycleDate, int>(BudgetCycleDate.new);
+final budgetCycleDateProvider = NotifierProvider<BudgetCycleDate, int>(
+  BudgetCycleDate.new,
+);
 
 class LastSuccessfulSync extends Notifier<DateTime?> {
   @override
-  DateTime? build() => ref.watch(settingsServiceProvider).getLastSuccessfulSync();
+  DateTime? build() =>
+      ref.watch(settingsServiceProvider).getLastSuccessfulSync();
 
   Future<void> markNow() async {
     final now = DateTime.now();
@@ -137,3 +166,82 @@ class LastSuccessfulSync extends Notifier<DateTime?> {
 
 final lastSuccessfulSyncProvider =
     NotifierProvider<LastSuccessfulSync, DateTime?>(LastSuccessfulSync.new);
+
+class OnboardingCompleted extends Notifier<bool> {
+  @override
+  bool build() => ref.watch(settingsServiceProvider).getOnboardingCompleted();
+
+  Future<bool> complete() async {
+    try {
+      await ref.read(settingsServiceProvider).setOnboardingCompleted();
+      state = true;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final onboardingCompletedProvider = NotifierProvider<OnboardingCompleted, bool>(
+  OnboardingCompleted.new,
+);
+
+class HiddenExpenseCategories extends Notifier<List<String>> {
+  @override
+  List<String> build() => ref
+      .watch(settingsServiceProvider)
+      .getHiddenExpenseCategories();
+
+  Future<bool> toggle(String category) async {
+    final updated = [...state];
+    if (updated.contains(category)) {
+      updated.remove(category);
+    } else {
+      updated.add(category);
+    }
+    try {
+      await ref
+          .read(settingsServiceProvider)
+          .setHiddenExpenseCategories(updated);
+      state = updated;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final hiddenExpenseCategoriesProvider =
+    NotifierProvider<HiddenExpenseCategories, List<String>>(
+      HiddenExpenseCategories.new,
+    );
+
+class HiddenIncomeCategories extends Notifier<List<String>> {
+  @override
+  List<String> build() => ref
+      .watch(settingsServiceProvider)
+      .getHiddenIncomeCategories();
+
+  Future<bool> toggle(String category) async {
+    final updated = [...state];
+    if (updated.contains(category)) {
+      updated.remove(category);
+    } else {
+      updated.add(category);
+    }
+    try {
+      await ref
+          .read(settingsServiceProvider)
+          .setHiddenIncomeCategories(updated);
+      state = updated;
+      return true;
+    } on SettingsServiceException {
+      return false;
+    }
+  }
+}
+
+final hiddenIncomeCategoriesProvider =
+    NotifierProvider<HiddenIncomeCategories, List<String>>(
+      HiddenIncomeCategories.new,
+    );

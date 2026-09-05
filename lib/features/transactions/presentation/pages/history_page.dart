@@ -34,22 +34,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   void _showTransactionOptions(TransactionEntity transaction) {
     showModalBottomSheet<void>(
       context: context,
+      showDragHandle: true,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: 12),
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -156,16 +145,29 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               : 'Transaksi ${transaction.category} sebesar ${formatRupiah(transaction.amount)} akan dihapus permanen.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Hapus'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('Hapus'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -294,9 +296,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   borderRadius: BorderRadius.circular(18),
                 ),
                 filled: true,
-                fillColor: theme.colorScheme.surfaceContainerLow.withValues(
-                  alpha: .9,
-                ),
+                fillColor: theme.colorScheme.surfaceContainerHigh,
               ),
             ),
           ),
@@ -304,9 +304,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: Card(
-              color: theme.colorScheme.surfaceContainerLow.withValues(
-                alpha: .78,
-              ),
+              color: theme.colorScheme.surface,
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Row(
@@ -540,8 +538,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                         child: Card(
                           elevation: 0,
-                          color: theme.colorScheme.surfaceContainerLow
-                              .withValues(alpha: .92),
+                          color: theme.colorScheme.surface,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
@@ -901,9 +898,7 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? chipColor.withValues(alpha: 0.15)
-              : theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.3,
-                ),
+              : theme.colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected

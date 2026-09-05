@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:money_tracker/features/dashboard/domain/usecases/calculate_financial_insight_usecase.dart';
-import 'package:money_tracker/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:savu/features/dashboard/domain/usecases/calculate_financial_insight_usecase.dart';
+import 'package:savu/features/transactions/domain/entities/transaction_entity.dart';
 
 void main() {
   test('calculates monthly insight and compares previous cycle', () {

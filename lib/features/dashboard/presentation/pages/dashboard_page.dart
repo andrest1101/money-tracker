@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/local_storage/settings_providers.dart';
@@ -23,7 +24,9 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(monthlySummaryProvider);
     final transactionsAsync = ref.watch(transactionsStreamProvider);
-    final userName = ref.watch(userNameProvider);
+    final storedUserName = ref.watch(userNameProvider);
+    final authUser = ref.watch(currentUserProvider);
+    final userName = _resolveDisplayName(storedUserName, authUser);
 
     void openAddSheet() => showModalBottomSheet<void>(
       context: context,
@@ -97,6 +100,20 @@ class DashboardPage extends ConsumerWidget {
   }
 }
 
+String _resolveDisplayName(String storedName, User? user) {
+  final cleanStoredName = storedName.trim();
+  if (cleanStoredName.isNotEmpty) return cleanStoredName;
+  // Fallback lama untuk data sebelum ada pengaturan nama; sekarang default di
+  // SettingsService sudah "Pengguna", jadi ini hanya untuk migrasi.
+  if (user != null && !user.isAnonymous) {
+    final googleName = user.displayName?.trim() ?? '';
+    if (googleName.isNotEmpty) return googleName;
+    final emailName = user.email?.split('@').first.trim() ?? '';
+    if (emailName.isNotEmpty) return emailName;
+  }
+  return 'Pengguna';
+}
+
 // ─────────────────────────────────────────────────────────────
 // App Bar (SliverAppBar with greeting)
 // ─────────────────────────────────────────────────────────────
@@ -164,9 +181,7 @@ class _DashboardHeader extends ConsumerWidget {
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: colors.surfaceContainerHighest.withValues(
-                      alpha: .65,
-                    ),
+                    color: colors.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: colors.outlineVariant.withValues(alpha: .4),
@@ -222,6 +237,7 @@ class _BalanceHeroCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final isPrivacy = ref.watch(privacyModeProvider);
+    final isDark = theme.brightness == Brightness.dark;
     final isPositive = summary.balance >= 0;
 
     // Semantic colors from the theme (no hard-coded shade values).
@@ -237,16 +253,23 @@ class _BalanceHeroCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(28),
         child: Ink(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colors.primaryContainer,
-                colors.secondaryContainer.withValues(alpha: 0.7),
-              ],
-            ),
+            color: isDark ? colors.surfaceContainerHigh : null,
+            gradient: isDark
+                ? null
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colors.primaryContainer,
+                      colors.secondaryContainer.withValues(alpha: 0.7),
+                    ],
+                  ),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
+            border: Border.all(
+              color: isDark
+                  ? colors.outlineVariant
+                  : colors.primary.withValues(alpha: 0.15),
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(22),
@@ -260,9 +283,7 @@ class _BalanceHeroCard extends ConsumerWidget {
                       child: Text(
                         'Saldo Siklus Ini',
                         style: theme.textTheme.labelLarge?.copyWith(
-                          color: colors.onPrimaryContainer.withValues(
-                            alpha: 0.7,
-                          ),
+                          color: colors.onSurfaceVariant,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -288,7 +309,7 @@ class _BalanceHeroCard extends ConsumerWidget {
                         fontWeight: FontWeight.w900,
                         letterSpacing: -1,
                         color: isPrivacy
-                            ? colors.onPrimaryContainer.withValues(alpha: 0.6)
+                            ? colors.onSurfaceVariant
                             : balanceColor,
                       ),
                     ),
@@ -396,8 +417,13 @@ class _BalanceOverviewSheet extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: colors.primaryContainer,
+                  color: theme.brightness == Brightness.dark
+                      ? colors.surface
+                      : colors.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
+                  border: theme.brightness == Brightness.dark
+                      ? Border.all(color: colors.outlineVariant)
+                      : null,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,14 +431,16 @@ class _BalanceOverviewSheet extends StatelessWidget {
                     Text(
                       'Saldo bersih',
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: colors.onPrimaryContainer.withValues(alpha: .75),
+                        color: colors.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       amount(summary.balance),
                       style: theme.textTheme.headlineMedium?.copyWith(
-                        color: colors.onPrimaryContainer,
+                        color: summary.balance >= 0
+                            ? colors.primary
+                            : colors.error,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -518,7 +546,7 @@ class _BalanceOverviewMetric extends StatelessWidget {
       width: wide ? double.infinity : null,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: .48),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -577,7 +605,7 @@ class _PrivacyToggle extends StatelessWidget {
               isPrivacy
                   ? Icons.visibility_off_rounded
                   : Icons.visibility_rounded,
-              color: colors.onPrimaryContainer.withValues(alpha: 0.6),
+              color: colors.onSurfaceVariant,
               size: 20,
             ),
           ),
@@ -610,7 +638,7 @@ class _FlowTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: colors.surface.withValues(alpha: 0.55),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
@@ -691,10 +719,20 @@ class _BudgetStatusSection extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  Icon(
-                    Icons.info_outline_rounded,
-                    size: 18,
-                    color: colors.onSurfaceVariant,
+                  IconButton(
+                    onPressed: () => _showBudgetInfo(context),
+                    tooltip: 'Apa itu status anggaran?',
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                    icon: Icon(
+                      Icons.info_outline_rounded,
+                      size: 20,
+                      color: colors.primary,
+                    ),
                   ),
                 ],
               ),
@@ -710,6 +748,18 @@ class _BudgetStatusSection extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showBudgetInfo(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final warningColor =
+        isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706);
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => _BudgetInfoSheet(warningColor: warningColor),
     );
   }
 
@@ -742,6 +792,155 @@ class _BudgetStatusSection extends ConsumerWidget {
   }
 }
 
+class _BudgetInfoSheet extends StatelessWidget {
+  const _BudgetInfoSheet({required this.warningColor});
+
+  final Color warningColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Tentang Status Anggaran', style: theme.textTheme.labelLarge),
+            const SizedBox(height: 4),
+            Text(
+              'Lampu lalu lintas untuk pengeluaranmu',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Status ini membandingkan total pengeluaran dalam siklus aktif dengan batas anggaran yang kamu atur. Gunakan sebagai pengingat sebelum pengeluaran mulai berlebihan.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 18),
+            _BudgetInfoLevel(
+              icon: Icons.check_circle_outline_rounded,
+              title: 'Aman',
+              description: 'Pengeluaran masih di bawah 80% anggaran.',
+              color: colors.primary,
+            ),
+            const SizedBox(height: 10),
+            _BudgetInfoLevel(
+              icon: Icons.warning_amber_rounded,
+              title: 'Perlu diperhatikan',
+              description: 'Pengeluaran sudah mencapai 80% atau lebih.',
+              color: warningColor,
+            ),
+            const SizedBox(height: 10),
+            _BudgetInfoLevel(
+              icon: Icons.error_outline_rounded,
+              title: 'Terlampaui',
+              description: 'Total pengeluaran sudah melewati batas anggaran.',
+              color: colors.error,
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: theme.brightness == Brightness.dark
+                    ? colors.surface
+                    : colors.primaryContainer,
+                borderRadius: BorderRadius.circular(16),
+                border: theme.brightness == Brightness.dark
+                    ? Border.all(color: colors.outlineVariant)
+                    : null,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lightbulb_outline_rounded, color: colors.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Tips: catat semua pengeluaran kecil. Pengeluaran kecil yang sering dilakukan bisa menjadi penyebab “bocor halus”.',
+                      style: theme.textTheme.bodySmall?.copyWith(height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => Navigator.pop(context),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+              child: const Text('Mengerti'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BudgetInfoLevel extends StatelessWidget {
+  const _BudgetInfoLevel({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _NoBudgetMessage extends StatelessWidget {
   const _NoBudgetMessage({required this.colors, required this.theme});
   final ColorScheme colors;
@@ -752,7 +951,7 @@ class _NoBudgetMessage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -809,11 +1008,15 @@ class _BudgetAlertBody extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    // Use semantic theme colors instead of hard-coded shades.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final warningColor = isDark
+        ? const Color(0xFFFBBF24)
+        : const Color(0xFFD97706);
+
     final statusColor = overview.isExceeded
         ? colors.error
         : overview.isWarning
-        ? colors.tertiary
+        ? warningColor
         : colors.primary;
 
     final statusLabel = overview.isExceeded
@@ -961,10 +1164,14 @@ class _BudgetOverviewSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final warningColor = isDark
+        ? const Color(0xFFFBBF24)
+        : const Color(0xFFD97706);
     final statusColor = overview.isExceeded
         ? colors.error
         : overview.isWarning
-        ? colors.tertiary
+        ? warningColor
         : colors.primary;
 
     return SafeArea(
@@ -1151,20 +1358,20 @@ class _BudgetOverviewSheet extends StatelessWidget {
   }) {
     showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(title),
         content: Text(message),
         actions: [
           if (onAction != null)
             FilledButton.tonal(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 onAction();
               },
               child: Text(actionLabel ?? 'Lihat detail'),
             ),
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Mengerti'),
           ),
         ],
@@ -1197,7 +1404,7 @@ class _BudgetMetric extends StatelessWidget {
       width: wide ? double.infinity : null,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.45),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -1340,7 +1547,7 @@ class _SkeletonBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(radius),
       ),
     );

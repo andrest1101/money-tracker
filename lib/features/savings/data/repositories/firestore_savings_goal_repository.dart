@@ -117,6 +117,15 @@ class FirestoreSavingsGoalRepository implements SavingsGoalRepository {
   }
 
   @override
+  Future<void> deleteCompletedGoal(String id) async {
+    try {
+      await _goalsRef.doc(id).delete();
+    } catch (e) {
+      throw SavingsGoalRepositoryException('Gagal menghapus target selesai', e);
+    }
+  }
+
+  @override
   Future<void> deleteGoalWithAllocations(String goalId) async {
     try {
       final allocationDocs = await _transactionsRef

@@ -106,6 +106,7 @@ const _defaultExpenseCategories = [
   'Transportasi',
   'Bensin',
   'Pulsa & Kuota',
+  'Kesehatan & Perawatan',
   'Hiburan',
   'Kos & Tagihan',
   'Belanja',
@@ -115,19 +116,23 @@ const _defaultExpenseCategories = [
 const _defaultIncomeCategories = ['Uang Kiriman', 'Beasiswa', 'Gaji Part-time'];
 
 final expenseCategoriesProvider = Provider<List<String>>((ref) {
-  return _mergeCategories(
+  final categories = _mergeCategories(
     defaults: _defaultExpenseCategories,
     transactions: ref.watch(transactionsStreamProvider).value ?? const [],
     type: TransactionType.expense,
   );
+  final hidden = ref.watch(hiddenExpenseCategoriesProvider);
+  return categories.where((category) => !hidden.contains(category)).toList();
 });
 
 final incomeCategoriesProvider = Provider<List<String>>((ref) {
-  return _mergeCategories(
+  final categories = _mergeCategories(
     defaults: _defaultIncomeCategories,
     transactions: ref.watch(transactionsStreamProvider).value ?? const [],
     type: TransactionType.income,
   );
+  final hidden = ref.watch(hiddenIncomeCategoriesProvider);
+  return categories.where((category) => !hidden.contains(category)).toList();
 });
 
 List<String> _mergeCategories({

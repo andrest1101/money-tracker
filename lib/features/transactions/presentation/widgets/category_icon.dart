@@ -7,6 +7,10 @@ const Map<String, _CategoryStyle> _categoryStyles = {
   'Transportasi': _CategoryStyle(Icons.directions_car, Color(0xFF4ECDC4)),
   'Bensin': _CategoryStyle(Icons.local_gas_station, Color(0xFFFF8C42)),
   'Pulsa & Kuota': _CategoryStyle(Icons.phone_android, Color(0xFF6C5CE7)),
+  'Kesehatan & Perawatan': _CategoryStyle(
+    Icons.health_and_safety,
+    Color(0xFFE84393),
+  ),
   'Hiburan': _CategoryStyle(Icons.sports_esports, Color(0xFFFF6B9D)),
   'Kos & Tagihan': _CategoryStyle(Icons.home, Color(0xFF00B894)),
   'Belanja': _CategoryStyle(Icons.shopping_bag, Color(0xFFE17055)),
@@ -39,14 +43,14 @@ class CategoryIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = _categoryStyles[category];
-    final color = style?.color ??
+    final color =
+        style?.color ??
         (type == TransactionType.expense
             ? Colors.red.shade400
             : Colors.green.shade400);
-    final icon = style?.icon ??
-        (type == TransactionType.expense
-            ? Icons.north_east
-            : Icons.south_west);
+    final icon =
+        style?.icon ??
+        (type == TransactionType.expense ? Icons.north_east : Icons.south_west);
 
     return Container(
       width: size,

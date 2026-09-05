@@ -57,16 +57,21 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
       body: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [colors.primaryContainer, colors.surface],
-            stops: const [0, .62],
-          ),
+          color: isDark ? colors.surface : null,
+          gradient: isDark
+              ? null
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [colors.primaryContainer, colors.surface],
+                  stops: const [0, .62],
+                ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -215,7 +220,7 @@ class _BenefitRow extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 21,
-            backgroundColor: colors.surface.withValues(alpha: .75),
+            backgroundColor: colors.surfaceContainerHigh,
             child: Icon(icon, color: colors.primary),
           ),
           const SizedBox(width: 12),
@@ -317,7 +322,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
     if (ref.read(authControllerProvider).hasValue &&
         (_mode != _EmailMode.link || _linkSent)) {
       final message = _mode == _EmailMode.register
-          ? 'Akun berhasil dibuat. Selamat datang di MoneyTracker.'
+          ? 'Akun berhasil dibuat. Selamat datang di Savu.'
           : _mode == _EmailMode.login
           ? 'Login berhasil. Selamat datang kembali.'
           : 'Link login berhasil diverifikasi.';
@@ -379,10 +384,11 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isLink = _mode == _EmailMode.link;
     final title = switch (_mode) {
       _EmailMode.login => 'Selamat datang kembali',
-      _EmailMode.register => 'Buat akun MoneyTracker',
+      _EmailMode.register => 'Buat akun Savu',
       _EmailMode.link =>
         _linkSent ? 'Masukkan link login' : 'Login tanpa password',
     };
@@ -519,8 +525,13 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                 margin: const EdgeInsets.only(bottom: 14),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: colors.primaryContainer,
+                  color: isDark
+                      ? colors.surfaceContainerHigh
+                      : colors.primaryContainer,
                   borderRadius: BorderRadius.circular(16),
+                  border: isDark
+                      ? Border.all(color: colors.outlineVariant)
+                      : null,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,7 +601,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                       : _resendLink,
                   child: Text(
                     _resendSeconds > 0
-                        ? 'Kirim ulang dalam ${_resendSeconds} detik'
+                        ? 'Kirim ulang dalam $_resendSeconds detik'
                         : 'Kirim ulang link',
                   ),
                 ),

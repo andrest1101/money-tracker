@@ -108,7 +108,7 @@ class _RangeSelector extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: range == item.$1
                         ? colors.primaryContainer
-                        : colors.surfaceContainerHighest.withValues(alpha: .42),
+                        : colors.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -130,14 +130,22 @@ class _RangeSelector extends ConsumerWidget {
   }
 }
 
-class _ChartContent extends StatelessWidget {
+class _ChartContent extends StatefulWidget {
   const _ChartContent({required this.points});
 
   final List<CashFlowPointEntity> points;
 
   @override
+  State<_ChartContent> createState() => _ChartContentState();
+}
+
+class _ChartContentState extends State<_ChartContent> {
+  int? _selectedIndex;
+
+  @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final points = widget.points;
     final income = points.fold<double>(0, (sum, point) => sum + point.income);
     final expense = points.fold<double>(0, (sum, point) => sum + point.expense);
     final maxValue = points.fold<double>(0, (max, point) {
@@ -163,6 +171,13 @@ class _ChartContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 14),
+        if (_selectedIndex case final index?) ...[
+          _SelectedCashFlow(
+            point: points[index],
+            onClear: () => setState(() => _selectedIndex = null),
+          ),
+          const SizedBox(height: 12),
+        ],
         SizedBox(
           height: 210,
           child: BarChart(
@@ -182,6 +197,14 @@ class _ChartContent extends StatelessWidget {
               borderData: FlBorderData(show: false),
               barTouchData: BarTouchData(
                 enabled: true,
+                touchCallback: (event, response) {
+                  if (event is! FlTapUpEvent) return;
+                  final index = response?.spot?.touchedBarGroupIndex;
+                  if (index == null || index < 0 || index >= points.length) {
+                    return;
+                  }
+                  setState(() => _selectedIndex = index);
+                },
                 touchTooltipData: BarTouchTooltipData(
                   getTooltipColor: (_) => colors.inverseSurface,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) =>
@@ -256,6 +279,60 @@ class _ChartContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SelectedCashFlow extends StatelessWidget {
+  const _SelectedCashFlow({required this.point, required this.onClear});
+
+  final CashFlowPointEntity point;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 11, 8, 11),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: .45)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.touch_app_rounded, size: 18, color: colors.primary),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${point.date.day}/${point.date.month}/${point.date.year}',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Masuk ${formatRupiah(point.income)}  •  Keluar ${formatRupiah(point.expense)}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onClear,
+            tooltip: 'Sembunyikan detail',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.close_rounded, size: 18),
+          ),
+        ],
+      ),
     );
   }
 }

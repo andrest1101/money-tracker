@@ -8,17 +8,21 @@ import '../providers/savings_providers.dart';
 import 'edit_goal_sheet.dart';
 import 'edit_allocation_sheet.dart';
 
+enum _GoalAction { edit, archive, delete }
+
 class GoalCard extends ConsumerStatefulWidget {
   const GoalCard({
     super.key,
     required this.goal,
     required this.onAllocate,
     required this.onDelete,
+    required this.onArchive,
   });
 
   final SavingsGoalEntity goal;
   final VoidCallback onAllocate;
   final VoidCallback onDelete;
+  final VoidCallback onArchive;
 
   @override
   ConsumerState<GoalCard> createState() => _GoalCardState();
@@ -63,6 +67,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      showDragHandle: true,
       builder: (_) =>
           EditAllocationSheet(transaction: allocation, goal: widget.goal),
     );
@@ -73,15 +78,22 @@ class _GoalCardState extends ConsumerState<GoalCard>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      showDragHandle: true,
       builder: (_) => EditGoalSheet(goal: widget.goal),
     );
   }
 
-  Color _progressColor(double progress, ColorScheme cs) {
-    if (progress >= 1.0) return cs.tertiary; // completed
-    if (progress >= 0.7) return cs.primary; // near completion
-    if (progress >= 0.4) return cs.secondary; // midway
-    return cs.primary.withValues(alpha: 0.8); // early stage
+  Color _progressColor(double progress, ColorScheme cs, bool isDark) {
+    if (progress >= 1.0) {
+      // Keep completion green readable without tinting the entire card.
+      return isDark ? const Color(0xFF34D399) : const Color(0xFF047857);
+    }
+    if (progress >= 0.5) {
+      // >= 50% (Mencapai 50% ke atas): Biru Terang yang Tebal
+      return isDark ? const Color(0xFF38BDF8) : const Color(0xFF2563EB);
+    }
+    // < 50%: Accent Primary
+    return cs.primary;
   }
 
   ({String label, Color color, IconData icon}) _deadlineStatus(
@@ -113,12 +125,13 @@ class _GoalCardState extends ConsumerState<GoalCard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final goal = widget.goal;
     final isCompleted = goal.isCompleted;
     final allocations = ref.watch(allocationTransactionsProvider(goal.id));
     final allocationSummary = ref.watch(allocationSummaryProvider(goal.id));
     final progress = goal.progress;
-    final progressColor = _progressColor(progress, cs);
+    final progressColor = _progressColor(progress, cs, isDark);
     final deadlineStatus = _deadlineStatus(goal, cs);
 
     return Card(
@@ -127,10 +140,18 @@ class _GoalCardState extends ConsumerState<GoalCard>
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: isCompleted
-            ? BorderSide(color: cs.tertiary.withValues(alpha: 0.4), width: 1.5)
-            : BorderSide.none,
+            ? BorderSide(
+                color: progressColor.withValues(alpha: 0.28),
+                width: 1.2,
+              )
+            : BorderSide(
+                color: progress >= 0.5
+                    ? progressColor.withValues(alpha: 0.3)
+                    : cs.outlineVariant.withValues(alpha: 0.3),
+                width: progress >= 0.5 ? 1.2 : 1,
+              ),
       ),
-      color: isCompleted ? cs.tertiary.withValues(alpha: 0.05) : cs.surface,
+      color: cs.surface,
       child: Column(
         children: [
           // ── Main Card Content ──────────────────────────────────────
@@ -172,9 +193,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                   goal.title,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: isCompleted
-                                        ? cs.tertiary
-                                        : cs.onSurface,
+                                    color: cs.onSurface,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -183,7 +202,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                   Text(
                                     'Target tercapai!',
                                     style: theme.textTheme.bodySmall?.copyWith(
-                                      color: cs.tertiary,
+                                      color: progressColor,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   )
@@ -238,37 +257,47 @@ class _GoalCardState extends ConsumerState<GoalCard>
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 34,
-                              height: 34,
-                              child: IconButton(
-                                onPressed: () => _showEditGoalSheet(context),
-                                padding: EdgeInsets.zero,
-                                iconSize: 18,
-                                icon: Icon(
-                                  Icons.edit_outlined,
-                                  color: cs.primary,
-                                ),
-                                tooltip: 'Edit target',
+                        PopupMenuButton<_GoalAction>(
+                          tooltip: 'Aksi target',
+                          icon: const Icon(Icons.more_horiz_rounded),
+                          onSelected: (action) {
+                            switch (action) {
+                              case _GoalAction.edit:
+                                _showEditGoalSheet(context);
+                              case _GoalAction.archive:
+                                widget.onArchive();
+                              case _GoalAction.delete:
+                                widget.onDelete();
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            const PopupMenuItem(
+                              value: _GoalAction.edit,
+                              child: ListTile(
+                                leading: Icon(Icons.edit_outlined),
+                                title: Text('Edit target'),
                               ),
                             ),
-                            SizedBox(
-                              width: 34,
-                              height: 34,
-                              child: IconButton(
-                                onPressed: widget.onDelete,
-                                padding: EdgeInsets.zero,
-                                iconSize: 18,
-                                icon: Icon(
-                                  Icons.delete_outline_rounded,
-                                  color: cs.onSurfaceVariant.withValues(
-                                    alpha: 0.6,
-                                  ),
+                            PopupMenuItem(
+                              value: _GoalAction.archive,
+                              child: ListTile(
+                                leading: Icon(
+                                  widget.goal.isArchived
+                                      ? Icons.unarchive_outlined
+                                      : Icons.archive_outlined,
                                 ),
-                                tooltip: 'Hapus target',
+                                title: Text(
+                                  widget.goal.isArchived
+                                      ? 'Kembalikan dari arsip'
+                                      : 'Arsipkan target',
+                                ),
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: _GoalAction.delete,
+                              child: ListTile(
+                                leading: Icon(Icons.delete_outline_rounded),
+                                title: Text('Hapus target'),
                               ),
                             ),
                           ],
@@ -336,30 +365,62 @@ class _GoalCardState extends ConsumerState<GoalCard>
                 ),
                 const SizedBox(height: 14),
 
-                // Allocate button
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: widget.onAllocate,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: progressColor,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                // Action area: Completion badge for finished target or Allocate button for active target
+                if (isCompleted)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: progressColor.withValues(alpha: 0.09),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: progressColor.withValues(alpha: 0.24),
                       ),
                     ),
-                    icon: Icon(
-                      isCompleted
-                          ? Icons.add_circle_outline_rounded
-                          : Icons.account_balance_wallet_rounded,
-                      size: 18,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.verified_rounded,
+                          color: progressColor,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Target Selesai 🎉',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: progressColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    label: Text(
-                      isCompleted ? 'Tambah Lagi' : 'Alokasikan Dana',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: widget.onAllocate,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: progressColor,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(
+                        Icons.account_balance_wallet_rounded,
+                        size: 18,
+                      ),
+                      label: const Text(
+                        'Alokasikan Dana',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -450,7 +511,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
               sizeFactor: _expandAnimation,
               child: Container(
                 decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest.withValues(alpha: 0.15),
+                  color: cs.surfaceContainerLow,
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
@@ -540,9 +601,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: cs.surfaceContainerHighest.withValues(
-                                  alpha: 0.6,
-                                ),
+                                color: cs.surfaceContainerHigh,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(

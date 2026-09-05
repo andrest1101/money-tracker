@@ -13,6 +13,7 @@ class FinancialInsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final improving = insight.expenseChangeRatio <= 0;
     final trendColor = improving ? colors.tertiary : colors.error;
     final trend = insight.previousExpense == 0
@@ -22,7 +23,8 @@ class FinancialInsightCard extends StatelessWidget {
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
-      color: colors.primaryContainer.withValues(alpha: .42),
+      color: isDark ? colors.surfaceContainerHigh : colors.primaryContainer,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       child: InkWell(
         onTap: onTap,
@@ -98,7 +100,7 @@ class FinancialInsightCard extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.surface.withValues(alpha: .65),
+                  color: colors.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
@@ -167,10 +169,17 @@ class _InsightMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Use brighter, high-contrast colors so numbers stand out on card background
+    final displayColor = color == theme.colorScheme.error
+        ? (isDark ? const Color(0xFFFF6B6B) : const Color(0xFFE53935))
+        : (isDark ? const Color(0xFF5EEAD4) : const Color(0xFF0D9488));
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .1),
+        color: displayColor.withValues(alpha: .12),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -184,7 +193,7 @@ class _InsightMetric extends StatelessWidget {
             child: Text(
               value,
               style: theme.textTheme.titleSmall?.copyWith(
-                color: color,
+                color: displayColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
