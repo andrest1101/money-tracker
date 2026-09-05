@@ -16,13 +16,13 @@
 
 ---
 
-## 📍 POSISI SAAT INI (update terakhir: 2026-08-28)
+## 📍 POSISI SAAT INI (update terakhir: 2026-09-03)
 
-- Branch aktif: `develop` (dibuat dari `feature/fase2-anggaran-tabungan`)
+- Branch aktif: **`develop_dua`** (tracking `origin/develop_dua`, ahead 0 / behind 0, working tree bersih)
 - **FASE 1 TUNTAS** — semua Task 1–6 ter-merge ke `main` via PR #3 + commit `54724a4`
 - Bonus terselamatkan: fix minSdk 23 untuk Firestore (`feeac7e`)
 - Pre-Task 7 ter-merge: `a3f265c` (bugfix overflow legenda + formatter titik ribuan)
-- Kode sehat terakhir: `flutter analyze` bersih, **34/34 test passed**
+- Kode sehat terakhir (2026-09-04): `flutter test` **69/69 lulus**, `flutter analyze` **No issues found**
 - **Task 7 SELESAI** — SettingsService persisten + tema tersambung (dibuat ulang, lihat log insiden)
 - **Task 8 SELESAI** — Overspending Alert 3 tingkat; Task 7+8 ter-push sebagai commit gabungan `83b13fe`
 - **Task 9 SELESAI — FASE 2 TUNTAS! 🎉** Halaman Target + alokasi dana atomik (WriteBatch) + form target baru
@@ -32,7 +32,15 @@
 - **Task 12 SELESAI — FASE 3 TUNTAS! 🎉** Hapus Transaksi: Dismissible swipe + button + dialog konfirmasi + handle delete alokasi atomik
 - **Task 13 SELESAI — FASE 4 TUNTAS! 🎉** Halaman Pengaturan (Tema, Batas Anggaran) + **Redesign Premium UI** (Profil, Privacy Mode, Siklus Anggaran, Ekspor/Hapus Data).
 - **Enhancement UI selesai:** History interaktif, pie chart kategori interaktif, dan overview Status Anggaran berbasis siklus
-- **NEXT: User commit manual perubahan terbaru di branch `develop`, deploy rules/hosting, lalu validasi auth dan UI di Windows/Android**
+- **Rebrand TUNTAS:** aplikasi bernama **Savu** sejak `6dab288`. Package Android
+  `com.example.savu`, launcher icon lintas platform, metadata web/desktop.
+- **NEXT:** Step 30 selesai. Lanjutkan Step 31: SHA release, deployment Firebase,
+  validasi Google Sign-In, dan deep link APK release. Lalu validasi onboarding terhadap
+  user lama dan regresi kategori "Alokasi Tabungan".
+
+⚠️ **Catatan sinkronisasi:** file `task.md` ini terakhir disentuh commit `6dab288`.
+Tiga puluh commit terakhir tidak tercatat di sini. Rincian lengkap ada di
+`progress.md` bagian "PERUBAHAN PASCA-HANDOFF".
 
 ### Step 18 — Modularisasi Settings
 
@@ -40,6 +48,47 @@
 - [x] Section title, Help Center, FAQ sheet, dan developer branding memakai widget terpisah.
 - [x] Provider, dialog, feedback, dan tampilan premium tetap dipertahankan.
 - [ ] Pemecahan lanjutan komponen kompleks Settings menjadi file khusus jika ada kebutuhan perubahan fitur per section.
+
+### Step 22-29 — Pekerjaan Pasca-Handoff (2026-09-02 s/d 2026-09-03)
+
+- [x] **Step 22** — Rombak dark theme: `SavuTheme` dipecah menjadi `_buildLight()`
+      (fromSeed) dan `_buildDark()` (palet charcoal `#121417` + surface solid
+      `#1C2026` + aksen teal `#2DD4BF`). Diterapkan ke 25 file. (`28f2ba1`)
+- [x] **Step 23** — Avatar profil preset: 30 avatar (15 general + 15 people),
+      tersimpan di SharedPreferences, sheet picker responsif 3/4 kolom.
+      Filter gender dihapus. (`a992904`, `402f04c`, `70bf265`, `6340933`, `cb8dab4`)
+- [x] **Step 24** — Kontak founder: Gmail/WhatsApp/GitHub dibuka melalui intent
+      native dengan fallback `url_launcher`. (`4a546bf`, `d23212c`, `05de391`)
+- [x] **Step 25** — Onboarding page: 3 slide, `PageController`, ilustrasi custom,
+      flag `onboarding_completed`, `AnimatedSwitcher` pada `_AuthGate`. (`f7b773f`)
+- [x] **Step 26** — Warna progres target bertingkat (hijau 100%, biru >=50%,
+      primary <50%) dan warna peringatan budget eksplisit per tema
+      (`#FBBF24` dark / `#D97706` light). (`bb468d0`, `7171105`, `c5e99e3`)
+- [x] **Step 27** — Arsip target tabungan: field `isArchived`, mode toggle,
+      provider terpisah, pemisahan `deleteCompletedGoal()` dan
+      `deleteGoalWithAllocations()`. Fitur favorit dicabut dari UI.
+      (`9530cd5`, `2904310`, `e0803c1`)
+- [x] **Step 28** — Rebrand menyeluruh ke Savu: package name, launcher icon lintas
+      platform, judul aplikasi, dan metadata web/desktop.
+      (`6dab288`, `a1ecb71`, `34a7d21`)
+- [x] **Step 29** — Kategori default "Alokasi Tabungan" diganti menjadi
+      "Kesehatan & Perawatan" lengkap dengan ikon dan warna baru. (`96a246a`)
+
+### Step 30-34 — Pekerjaan Berikutnya
+
+- [x] **Step 30** — Bersihkan 5 info `flutter analyze`: `settings_content.dart`
+      (baris 1306, 1312, 1314), `financial_insight_overview_sheet.dart` (baris 499),
+      `auth_landing_page.dart` (baris 604). Verifikasi 2026-09-04: `flutter analyze`
+      No issues found, `flutter test` 69/69 lulus.
+- [ ] **Step 31** — Daftarkan SHA-1/SHA-256 keystore release ke Firebase Console dan
+      `web/.well-known/assetlinks.json`; validasi Google Sign-In dan deep link pada
+      APK release.
+- [ ] **Step 32** — Bersihkan field `isFavorite` yang tidak terpakai di
+      `SavingsGoalEntity` dan model, atau pulihkan fitur favorit di UI.
+- [ ] **Step 33** — Validasi regresi: pastikan transaksi lama berkategori
+      "Alokasi Tabungan" tetap tampil benar pada pie chart dan filter History.
+- [ ] **Step 34** — Konfigurasi Google Sign-In iOS (butuh Mac/Xcode,
+      `GoogleService-Info.plist`, dan `REVERSED_CLIENT_ID`).
 
 ---
 
@@ -146,68 +195,58 @@
 
 ---
 
-## 🗂️ Struktur Folder Saat Ini (yang relevan)
+## 🗂️ Struktur Folder Saat Ini (update 2026-09-03)
+
+Pohon di bawah sudah mencakup seluruh fitur yang ditambahkan setelah Task 13.
 
 ```
 lib/
-├── main.dart                        ✅ rewritten (Task 3): ProviderScope + tema M3 hijau
-│                                      ✅ (Task 7): preload prefs + override + watch appThemeModeProvider
-├── firebase_options.dart            ← config Firebase (generated)
+├── main.dart                      _AuthLinkHandler → _AuthGate → SavuApp
+├── firebase_options.dart          config Firebase (generated)
 ├── core/
-│   ├── firebase/firebase_providers.dart
+│   ├── errors/app_error_message.dart      pemetaan error Firestore terpusat
+│   ├── firebase/
+│   │   ├── firebase_providers.dart
+│   │   └── auth_providers.dart            authStateChangesProvider, authControllerProvider
 │   ├── local_storage/
-│   │   ├── settings_service.dart      ✅ (Task 7) baca/simpan budget limit + theme mode
-│   │   └── settings_providers.dart    ✅ (Task 7) DI prefs + budgetLimitProvider + appThemeModeProvider
-│   ├── navigation/app_shell.dart    ✅ NavigationBar 4 tab + IndexedStack
-│   └── utils/
-│       ├── rupiah_formatter.dart                      ✅ (Task 4)
-│       └── thousands_separator_input_formatter.dart   ✅ (pre-Task 7) titik ribuan live
+│   │   ├── settings_service.dart          budget limit, tema, nama, tipe profil, avatar,
+│   │   │                                  privacy, siklus anggaran, sorting, last sync, onboarding
+│   │   └── settings_providers.dart        10 Notifier: budgetLimit, appThemeMode, userName,
+│   │                                      userProfileType, profileAvatar, privacyMode,
+│   │                                      budgetCycleDate, lastSuccessfulSync,
+│   │                                      savingsSort, onboardingCompleted
+│   ├── navigation/app_shell.dart          FloatingPillNavigation + create options sheet
+│   ├── theme/savu_theme.dart              _buildLight (fromSeed) + _buildDark (palet manual)
+│   ├── utils/                             rupiah_formatter, date_formatter,
+│   │                                      thousands_separator_input_formatter
+│   └── widgets/app_page_background.dart   background bersama seluruh halaman
+├── features/
+│   ├── analytics/                 cash flow, balance trend, expense flow insight + overview
+│   ├── auth/                      auth_landing_page, email_verification_page
+│   ├── dashboard/                 summary, budget overview, pie chart, financial insight,
+│   │                              empty state
+│   ├── onboarding/                onboarding_page, onboarding_slide   ← BARU (f7b773f)
+│   ├── savings/                   goal, alokasi atomik, arsip, celebration,
+│   │                              edit goal, edit alokasi
+│   ├── settings/                  settings_page (ringan) + 10 widget modular
+│   └── transactions/              history, quick add, filter, CSV export, category icon
+└── firebase_options.dart
 ```
-└── features/
-    ├── transactions/
-    │   ├── domain/
-    │   │   ├── entities/transaction_entity.dart          ✅
-    │   │   ├── repositories/transaction_repository.dart  ✅ (interface CRUD + watch)
-    │   │   └── usecases/group_transactions_by_date_usecase.dart ✅ (Task 10) grouping per tanggal
-    │   ├── data/
-    │   │   ├── models/transaction_model.dart             ✅
-    │   │   ├── repositories/firestore_transaction_repository.dart ✅
-    │   │   └── providers/transaction_repository_provider.dart     ✅
-    │   └── presentation/
-    │       ├── pages/history_page.dart                   ✅ (Task 10) Card-based grouped + filter + search + ringkasan harian
-    │       ├── providers/
-    │       │   ├── quick_add_controller.dart             ✅ (Task 6)
-    │       │   └── history_providers.dart                ✅ (Task 10) grouped + filter + search + dailySummary
-    │       └── widgets/
-    │           ├── quick_add_transaction_sheet.dart      ✅ (Task 6)
-    │           ├── transaction_tile.dart                 ✅ (Task 10) Card + waktu + ikon dinamis + tap aksi
-    │           └── category_icon.dart                    ✅ (Task 10) ikon dinamis per kategori
-    ├── savings/
-    │   ├── domain/
-    │   │   ├── entities/savings_goal_entity.dart         ✅
-    │   │   ├── repositories/savings_goal_repository.dart ✅ (Task 9: + allocateToGoal)
-    │   │   └── usecases/allocate_to_goal_usecase.dart    ✅ (Task 9: validasi alokasi + Task 10: hard cap over-allocation)
-    │   ├── data/
-    │   │   ├── models/savings_goal_model.dart            ✅
-    │   │   ├── repositories/firestore_savings_goal_repository.dart ✅ (Task 9: WriteBatch)
-    │   │   └── providers/savings_goal_repository_provider.dart     ✅
-    │   └── presentation/
-    │       ├── pages/savings_page.dart                   ✅ (Task 9)
-    │       ├── providers/savings_providers.dart          ✅ (Task 9) stream + SavingsActionsController
-    │       └── widgets/                                  ✅ (Task 9) goal_card / allocate_fund_sheet / add_goal_sheet
-    └── dashboard/
-        ├── domain/
-        │   ├── entities/monthly_summary_entity.dart          ✅ (Task 4)
-        │   ├── entities/category_expense_entity.dart         ✅ (Task 5)
-        │   ├── entities/budget_status_entity.dart            ✅ (Task 8) enum BudgetLevel + spentRatio
-        │   ├── usecases/calculate_monthly_summary_usecase.dart ✅ (Task 4)
-        │   ├── usecases/calculate_category_expenses_usecase.dart ✅ (Task 5)
-        │   └── usecases/check_budget_status_usecase.dart     ✅ (Task 8) threshold 80%/100%
-        └── presentation/
-            ├── providers/dashboard_providers.dart            ✅ (Task 4-5: stream + summary + kategori; Task 7: budgetLimit pindah ke core/local_storage)
-            ├── pages/dashboard_page.dart                     ✅ (Task 4; Task 8: _BudgetAlertContent bar merah; Task 10: saldo warna merah/hijau)
-            └── widgets/category_expense_pie_card.dart        ✅ (Task 5)
-```
+
+### Hal yang Sering Terlupakan saat Mengubah Kode
+
+- **`main.dart` punya dua `MaterialApp`** — `_AuthGate` dan `SavuApp`. Keduanya
+  mengamankan `appThemeModeProvider` dan memakai `SavuTheme`. Perubahan tema atau
+  judul aplikasi harus dicek di kedua tempat.
+- **`historyNavigationIntentProvider`** dipantau `AppShell` lewat `ref.listen` untuk
+  memindahkan tab ke Riwayat otomatis dari budget overview.
+- **`Alokasi Tabungan` adalah kategori sistem.** Dipakai `savings_providers.dart:227`
+  saat alokasi otomatis, disembunyikan dari chip di
+  `quick_add_transaction_sheet.dart:78`, tetapi masih punya gaya di
+  `category_icon.dart:21`. Jangan dihapus tanpa migrasi data.
+- **`isFavorite` mati suri** — ada di entity dan model, tidak dipakai UI mana pun.
+- **`Savu_logo.png` tidak ada di working tree** meski masih ada di riwayat git.
+  Hanya `assets/images/app_icon.png` yang terdaftar di `pubspec.yaml`.
 
 ---
 
@@ -237,3 +276,13 @@ lib/
 | 2026-08-27 | Task 12 | Hapus Transaksi selesai — **FASE 3 TUNTAS 🎉**. **Dual delete options**: Dismissible swipe gesture (cepat) ATAU button di bottom sheet (hati-hati). **Dismissible background**: Gradient merah dengan ikon `delete_sweep_rounded` + label "Hapus" (Column layout untuk visual yang lebih menarik). **Delete logic**: `QuickAddController.deleteTransaction()` dengan conditional: jika alokasi → `deleteAllocation()` (WriteBatch atomik: delete transaction + restore goal currentAmount); jika non-alokasi → direct delete. **Dialog konfirmasi**: Async fetch goal title untuk transaksi alokasi, pesan berbeda: "Alokasi sebesar [amount] untuk [goal] akan dihapus dan uang kembali ke saldo utama" vs "Transaksi [kategori] sebesar [amount] akan dihapus permanen". **SnackBar feedback**: Hijau untuk sukses, merah untuk error, pesan berbeda untuk alokasi vs non-alokasi. **confirmDismiss**: Return false agar tidak auto-dismiss, dialog yang handle manual. **32/32 test passed**. Pelajaran: Dismissible + dialog konfirmasi = UX terbaik (gesture cepat tapi tetap aman). WriteBatch untuk delete alokasi mencegah inconsistency (transaction hilang tapi goal tidak update) |
 | 2026-08-27 | Bugfix UI | Fix UI overflow pada Android: 1. `history_page.dart` & `transaction_tile.dart` (Teks nominal meluber ke kanan jika panjang -> dibungkus `ConstrainedBox` & `Flexible`). 2. `settings_page.dart` (`SegmentedButton` tema meluber ke bawah karena padding bawaan -> diganti dengan custom `_ThemeChip` berbaris `Expanded` yang sangat responsif). |
 | 2026-08-27 | Task 13 | Settings Page redesign kelas Premium — **FASE 4 TUNTAS 🎉**. UI pengaturan dirombak agar tidak polos. Tambah fitur: Nama pengguna, status sinkronisasi, **Mode Privasi** (sembunyikan saldo di dashboard), dan siklus anggaran. Layer Data diperbarui di `settings_service.dart`. **32/32 test passed**. Pelajaran: UI Settings yang baik di aplikasi finance harus membangkitkan rasa aman & personalisasi (identitas, privasi, danger zone jelas). |
+| 2026-08-28 s/d 2026-08-31 | Enhancement | Serangkaian peningkatan: filter History searchable, ekspor CSV, hapus data massal, modularisasi Settings, empty state informatif, status sinkronisasi detail, Firebase Auth + path user-scoped, cash flow chart, balance trend, expense flow overview, filter rentang tanggal custom, dan penanganan error Firestore terpusat. Suite bertumbuh dari 32 menjadi 52 test |
+| 2026-09-01 | Step 27 (awal) | Menu dan sistem pada menu goals: `isArchived` + `isFavorite` pada `SavingsGoalEntity`, `archivedModeProvider`, `archivedActiveGoalsProvider`, `archivedCompletedGoalsProvider`, serta `deleteCompletedGoal()` terpisah dari `deleteGoalWithAllocations()`. Widget `savings_overview.dart` dihapus. **Catatan:** fitur favorit kemudian dicabut pada `2904310`; field `isFavorite` kini tidak terpakai |
+| 2026-09-02 | Rebrand | **MoneyTracker menjadi Savu** (`6dab288`). Package `com.example.savu`, `MainActivity.kt` dipindah, launcher icon baru untuk Android/iOS/Web/Windows/macOS, `flutter_launcher_icons` masuk dev_dependencies. `google-services.json` diperbarui: OAuth client sudah tersedia. Logo ganda dihapus (`34a7d21`). **Pelajaran:** rebrand aplikasi Flutter menyentuh lebih dari pubspec — AndroidManifest, Runner.rc, AppInfo.xcconfig, manifest.json, dan index.html ikut menyimpan nama aplikasi |
+| 2026-09-02 | Step 23-24 | Avatar profil preset dan kontak founder. 30 avatar (15 general + 15 people) tersimpan di SharedPreferences dengan sheet picker responsif; filter gender dihapus karena memperumit UI. Kontak founder membuka Gmail/WhatsApp secara langsung memakai `android_intent_plus` dengan fallback `url_launcher`, menggantikan sheet berbagi generik memakai `share_plus`. **Pelajaran:** `share_plus` cocok untuk berbagi konten, bukan untuk membuka aplikasi tertentu — pakai intent atau `url_launcher` untuk itu |
+| 2026-09-03 | Step 22 | Rombak total dark theme (`28f2ba1`, 25 file). `SavuTheme` dipecah menjadi `_buildLight()` (tetap `ColorScheme.fromSeed`) dan `_buildDark()` (palet manual). Dark theme lama memakai permukaan transparan yang menumpuk sehingga terlihat kotor; palet baru memakai surface solid `#1C2026` di atas scaffold `#121417` dengan aksen teal terang `#2DD4BF`. **Pelajaran:** skema warna hasil `fromSeed` sulit dikontrol presisi untuk dark mode — palet manual lebih mudah diaudit kontrasnya |
+| 2026-09-03 | Step 25 | Onboarding page (`f7b773f`). Folder baru `features/onboarding/` dengan 3 slide, ilustrasi custom, dan flag `onboarding_completed` di SharedPreferences. `_AuthGate` di `main.dart` kini memilih antara `OnboardingPage` dan `_AuthContent` memakai `AnimatedSwitcher`. **Pelajaran:** menambahkan lapisan sebelum auth mengubah urutan bootstrap — user lama yang flag-nya belum pernah diset akan melihat onboarding sekali, jadi selalu siapkan nilai default yang aman |
+| 2026-09-03 | Step 26 | Warna progres target dan peringatan budget. Progres target kini bertingkat: hijau terang saat 100%, biru terang saat >=50%, `cs.primary` di bawahnya. Warna peringatan budget diganti dari `cs.tertiary` menjadi konstanta eksplisit per tema karena `tertiary` sulit dibaca di dark mode. **Pelajaran:** mengandalkan peran warna ColorScheme bisa menghasilkan kontras buruk di satu tema; konstanta eksplisit per brightness lebih aman untuk warna semantik penting |
+| 2026-09-03 | Step 29 | Kategori default "Alokasi Tabungan" diganti menjadi "Kesehatan & Perawatan" (`96a246a`). ⚠️ Alokasi otomatis ke target **tetap** menulis kategori `'Alokasi Tabungan'` dan chip pilihan user tetap membuangnya, jadi ketiga tempat ini harus dijaga konsisten. **Pelajaran:** mengganti nilai enum/string yang sudah tersimpan di database butuh strategi migrasi, bukan sekadar mengganti daftar default |
+| 2026-09-03 | Verifikasi ulang | AI melakukan verifikasi mandiri: `flutter test` **69/69 lulus** (21 file), `flutter analyze` **5 info** (3× `use_build_context_synchronously`, 1× `curly_braces_in_flow_control_structures`, 1× `unnecessary_brace_in_string_interps`). Seluruh file md progres disinkronkan dengan 30 commit terakhir yang sebelumnya tidak tercatat. **Pelajaran:** dokumentasi yang tidak diperbarui bersama commit akan menyesatkan sesi berikutnya — lebih baik tidak ada angka daripada angka yang usang |
+| 2026-09-04 | Step 30 | Lima info analyzer diperbaiki tanpa perubahan perilaku fitur: `context.mounted` untuk callback async Settings, braces pada callback chart, dan interpolasi string Auth. Verifikasi: `flutter analyze` **No issues found**, `flutter test` **69/69 lulus**. |

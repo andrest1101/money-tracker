@@ -37,8 +37,8 @@ class _GoalCelebrationDialogState extends State<GoalCelebrationDialog> {
 
     final isDark = theme.brightness == Brightness.dark;
     final greenColor = isDark
-        ? const Color(0xFF4ADE80)
-        : const Color(0xFF10B981);
+        ? const Color(0xFF34D399)
+        : const Color(0xFF047857);
 
     return Stack(
       alignment: Alignment.topCenter,

@@ -1300,7 +1300,7 @@ class _SetCycleDialogState extends ConsumerState<_SetCycleDialog> {
                   final saved = await ref
                       .read(budgetCycleDateProvider.notifier)
                       .setDate(_selectedDay);
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   if (!saved) {
                     _showSettingsSnackBar(
                       context,

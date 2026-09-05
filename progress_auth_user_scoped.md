@@ -37,7 +37,40 @@
 - Validasi langsung di device Android.
 - Aktifkan provider Google dan Email/Password serta izinkan domain action link di Firebase Console.
 - Deploy Hosting setelah `flutter build web`, lalu uji action link dari Gmail di Chrome dan Android. Android App Links sudah disiapkan melalui intent-filter dan `web/.well-known/assetlinks.json`; release SHA-256 tetap perlu ditambahkan.
-- Google Android masih memerlukan OAuth client dan SHA-1/SHA-256; `android/app/google-services.json` saat ini belum memiliki `oauth_client`.
+- ~~Google Android masih memerlukan OAuth client~~ **SELESAI (2026-09-02).** Lihat
+  bagian "Update Google Sign-In" di bawah.
+
+### Update Google Sign-In (2026-09-02, commit `6dab288`)
+
+Catatan lama yang menyebut `google-services.json` belum memiliki `oauth_client`
+sudah tidak berlaku. Kondisi terkini:
+
+- `android/app/google-services.json` sudah berisi blok `oauth_client`:
+  - `client_type: 1` � client Android dengan package `com.example.savu` dan
+    `certificate_hash` `a0738b4d528ff1a73edce30753974eb2862b24cb` (SHA-1 debug).
+  - `client_type: 3` � client web, juga terdaftar di `other_platform_oauth_client`.
+- Package name diperbarui dari `com.example.money_tracker` menjadi
+  `com.example.savu` mengikuti rebrand, begitu pula `bundle_id` iOS menjadi
+  `com.example.savu`.
+- Yang **masih menjadi PR**: daftarkan **SHA-1 dan SHA-256 keystore release** di
+  Firebase Console dan tambahkan SHA-256 release ke
+  `web/.well-known/assetlinks.json`. Tanpa itu, Google Sign-In dan App Links hanya
+  berfungsi pada build debug.
+
+### Update Firestore Security Rules (kondisi terkini)
+
+`firestore.rules` sudah berisi:
+
+```
+match /users/{userId}/{document=**} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+}
+match /transactions/{transactionId} { allow read, write: if false; }
+match /savings_goals/{goalId}       { allow read, write: if false; }
+```
+
+Status: **file sudah benar, tetapi belum di-deploy.** Jalankan
+`firebase deploy --only firestore:rules` setelah konfigurasi Console siap.
 
 ### Perubahan Keamanan
 
@@ -88,22 +121,51 @@ Perubahan belum di-commit oleh AI. User melakukan commit manual sesuai workflow 
 - Siapkan Google iOS melalui `GoogleService-Info.plist`, bundle ID yang konsisten, dan `REVERSED_CLIENT_ID` pada `Info.plist`.
 - Validasi iOS membutuhkan Mac/Xcode.
 
-### Verifikasi Terakhir
+### Verifikasi Terakhir (diperbarui 2026-09-04)
 
-- `flutter analyze`: bersih dari error.
-- `flutter test`: 52/52 lulus.
+- `flutter analyze`: **No issues found**. Lima info Tahap 30 sudah diperbaiki. Rinciannya tercatat di
+  `progress_perbaikan.md` bagian G4. Tidak ada error yang memblokir build.
+- `flutter test`: **69/69 lulus** (21 file test). Catatan lama "52/52" sudah usang.
 - `flutter build web`: berhasil.
 - `flutter build apk --debug`: berhasil.
 - `flutter build windows --debug`: berhasil setelah policy CMake Firebase dan
   direktori install Windows diperbaiki.
+- Flutter 3.32.8 / Dart 3.8.1 (stable).
+
+### Perubahan Bootstrap Sejak Handoff (commit `f7b773f`, 2026-09-03)
+
+Alur masuk aplikasi berubah karena penambahan onboarding. Urutan sekarang:
+
+```
+main()
+  +- _AuthLinkHandler   (app_links: initial link + runtime stream)
+       +- _AuthGate
+            +- onboarding belum selesai ? OnboardingPage
+            +- onboarding selesai ? _AuthContent
+                 +- loading  ? CircularProgressIndicator
+                 +- error    ? AuthLandingPage
+                 +- data(user)
+                      +- user == null                    ? AuthLandingPage
+                      +- butuh verifikasi email          ? EmailVerificationPage
+                      +- selain itu                      ? SavuApp
+```
+
+- `onboardingCompletedProvider` (`Notifier<bool>`) membaca
+  `SettingsService.getOnboardingCompleted()`.
+- ?? **Risiko terhadap user lama:** flag `onboarding_completed` belum pernah diset
+  pada instalasi sebelum `f7b773f`, sehingga pengguna yang sudah punya data akan
+  melihat onboarding satu kali. Perlu validasi bahwa mereka tetap bisa lanjut dan
+  tidak kehilangan sesi.
 
 ### Sisa Validasi Manual
 
 - Uji email valid, typo, email palsu, dan resend pada Firebase Console aktif.
 - Validasi Google Web di Chrome/Edge.
-- Validasi deep link email pada Android.
+- Validasi deep link email pada Android (debug dan release).
 - Siapkan konfigurasi Google iOS melalui Mac/Xcode.
 - Deploy Hosting dan Firestore rules setelah konfigurasi Console siap.
+- **Baru:** daftarkan SHA-1/SHA-256 keystore release dan perbarui `assetlinks.json`.
+- **Baru:** validasi bahwa user lama tidak terjebak di onboarding.
 
 Perubahan kode dan dokumentasi belum di-commit oleh AI. User melakukan commit
 manual sesuai workflow proyek.

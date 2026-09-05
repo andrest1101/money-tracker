@@ -1358,20 +1358,20 @@ class _BudgetOverviewSheet extends StatelessWidget {
   }) {
     showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(title),
         content: Text(message),
         actions: [
           if (onAction != null)
             FilledButton.tonal(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 onAction();
               },
               child: Text(actionLabel ?? 'Lihat detail'),
             ),
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Mengerti'),
           ),
         ],

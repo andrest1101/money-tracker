@@ -123,6 +123,22 @@ mulai berlebihan, dan membuat target tabungan terasa lebih terukur.
 - Tampilkan status target tercapai, deadline dekat, atau deadline terlewat.
 - Urutkan target berdasarkan terbaru, terlama, atau progress.
 
+### 🎯 Target Tabungan Lanjutan
+
+- Arsipkan target yang sudah tidak aktif tanpa menghapus datanya.
+- Beralih antara tampilan target aktif dan target terarsip.
+- Penghapusan target selesai mempertahankan riwayat alokasi sebagai ledger agar
+  saldo utama tidak berubah.
+- Warna indikator progres mengikuti pencapaian: primer di bawah 50%, biru terang
+  mulai 50%, dan hijau terang saat target tercapai.
+
+### 🎨 Onboarding dan Personalisasi Lanjutan
+
+- Onboarding tiga slide untuk pengguna baru, ditampilkan sekali lalu disimpan.
+- 30 avatar profil preset dalam kategori umum dan wajah.
+- Avatar dapat diketuk untuk membuka pemilih avatar secara langsung.
+- Kontak founder membuka Gmail, WhatsApp, atau GitHub tanpa perantara.
+
 ### 🧾 Riwayat dan Manajemen Data
 
 - Kelompokkan transaksi berdasarkan tanggal secara descending.
@@ -138,6 +154,7 @@ mulai berlebihan, dan membuat target tabungan terasa lebih terukur.
 - Tema Sistem, Terang, dan Gelap.
 - Privacy Mode untuk menyamarkan saldo pada Dashboard.
 - Nama pengguna dan tipe profil keuangan.
+- Dark theme dengan permukaan solid charcoal dan aksen teal terang.
 - Status sinkronisasi Firestore dengan waktu pembaruan terakhir.
 - Aksi retry ketika sinkronisasi mengalami kegagalan.
 - Help Center dan FAQ interaktif.
@@ -189,8 +206,10 @@ savu/
 │   │   ├── navigation/               # App shell dan NavigationBar
 │   │   └── utils/                    # Formatter tanggal dan nominal
 │   └── features/                    # Modul fitur aplikasi
+│       ├── analytics/               # Cash flow, balance trend, expense flow
 │       ├── auth/                    # Landing page dan email verification
 │       ├── dashboard/               # Summary, budget, chart, dan insight
+│       ├── onboarding/              # Pengantar aplikasi untuk pengguna baru
 │       ├── savings/                 # Target dan alokasi tabungan
 │       ├── settings/                # Pengaturan dan manajemen data
 │       └── transactions/            # Quick Add, History, filter, dan CSV
@@ -350,7 +369,7 @@ langsung, bukan hanya login pada browser.
 flutter analyze
 ```
 
-- Pemeriksaan terakhir project lulus tanpa issue.
+- Pemeriksaan terakhir melaporkan **No issues found** pada 2026-09-04.
 
 ### 🧪 Test Suite
 
@@ -358,9 +377,9 @@ flutter analyze
 flutter test
 ```
 
-- Suite terakhir berisi 52 test yang lulus.
-- Test mencakup use case budget, filter, alokasi, insight, formatter, dan
-  widget utama.
+- Suite terakhir berisi **69 test** yang lulus (21 file test).
+- Test mencakup use case budget, filter, alokasi, insight, formatter, tren saldo,
+  arus kas, dan widget utama.
 
 ### 📱 Build Verification
 
@@ -429,6 +448,10 @@ firebase deploy --only hosting,firestore:rules
 - Firebase Authentication dan user-scoped Firestore.
 - Email verification dan email link flow.
 - Android App Links untuk email link.
+- Rebrand aplikasi menjadi Savu beserta aset lintas platform.
+- Onboarding dan katalog avatar profil.
+- Rombakan dark theme dan warna semantik anggaran.
+- Arsip target tabungan.
 - Validasi manual Google Sign-In Web dan Android pada environment production.
 - Konfigurasi Google Sign-In iOS.
 - Migrasi data lama dari collection global jika masih diperlukan.

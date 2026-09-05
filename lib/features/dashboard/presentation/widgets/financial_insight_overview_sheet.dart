@@ -495,8 +495,9 @@ class _CashFlowChartState extends State<_CashFlowChart> {
                 touchCallback: (event, response) {
                   if (event is! FlTapUpEvent) return;
                   final index = response?.spot?.touchedBarGroupIndex;
-                  if (index == null || index < 0 || index >= values.length)
-                    return;
+                   if (index == null || index < 0 || index >= values.length) {
+                     return;
+                   }
                   setState(() => _selectedIndex = index);
                 },
                 touchTooltipData: BarTouchTooltipData(

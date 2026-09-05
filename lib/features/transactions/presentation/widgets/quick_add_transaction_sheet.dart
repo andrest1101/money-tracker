@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../providers/quick_add_controller.dart';
+import 'manage_categories_sheet.dart';
 
 const _monthNames = [
   'Jan',
@@ -43,7 +45,10 @@ class _QuickAddTransactionSheetState
 
   TransactionType _selectedType = TransactionType.expense;
   String? _selectedCategory;
-  List<String> _extraCategories = const [];
+  final Map<TransactionType, List<String>> _extraCategoriesByType = {
+    TransactionType.expense: const [],
+    TransactionType.income: const [],
+  };
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -60,6 +65,16 @@ class _QuickAddTransactionSheetState
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_selectedCategory != null) return;
+    final categories = _categories;
+    if (categories.isNotEmpty) {
+      _selectedCategory = categories.first;
+    }
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
@@ -71,11 +86,58 @@ class _QuickAddTransactionSheetState
     final base = _selectedType == TransactionType.expense
         ? ref.watch(expenseCategoriesProvider)
         : ref.watch(incomeCategoriesProvider);
-    final all = [...base, ..._extraCategories];
+    final hidden = _selectedType == TransactionType.expense
+        ? ref.watch(hiddenExpenseCategoriesProvider)
+        : ref.watch(hiddenIncomeCategoriesProvider);
+    final all = <String>[
+      ...base,
+      ...(_extraCategoriesByType[_selectedType] ?? const <String>[])
+          .where((category) => !hidden.contains(category)),
+    ];
     if (widget.transaction?.isAllocation == true) {
       return all;
     }
     return all.where((c) => c != 'Alokasi Tabungan').toList();
+  }
+
+  List<String> get _allCategoriesForManagement {
+    final base = _selectedType == TransactionType.expense
+        ? ref.watch(expenseCategoriesProvider)
+        : ref.watch(incomeCategoriesProvider);
+    final hidden = _selectedType == TransactionType.expense
+        ? ref.watch(hiddenExpenseCategoriesProvider)
+        : ref.watch(hiddenIncomeCategoriesProvider);
+    return {
+      ...base,
+      ...hidden,
+      ...(_extraCategoriesByType[_selectedType] ?? const <String>[]),
+    }.toList();
+  }
+
+  String get _noteHint {
+    const examples = {
+      'Makanan': 'makan siang di warung',
+      'Transportasi': 'ongkos ojek ke kampus',
+      'Bensin': 'isi bensin motor',
+      'Pulsa & Kuota': 'beli paket internet',
+      'Kesehatan & Perawatan': 'beli vitamin',
+      'Hiburan': 'nonton film bioskop',
+      'Kos & Tagihan': 'bayar listrik kos',
+      'Belanja': 'beli kebutuhan harian',
+      'Lainnya': 'kebutuhan lainnya',
+      'Uang Kiriman': 'kiriman dari orang tua',
+      'Beasiswa': 'beasiswa bulan ini',
+      'Gaji Part-time': 'gaji kerja part-time',
+      'Alokasi Tabungan': 'alokasi dana ke target tabungan',
+    };
+    final example = examples[_selectedCategory];
+    if (example != null) return 'Contoh: $example';
+
+    final category = _selectedCategory?.trim();
+    if (category == null || category.isEmpty) {
+      return 'Contoh: tulis detail transaksi';
+    }
+    return 'Contoh: detail $category';
   }
 
   Future<void> _pickDate() async {
@@ -143,14 +205,19 @@ class _QuickAddTransactionSheetState
     if (trimmed == null || trimmed.isEmpty) return;
 
     setState(() {
+      final customCategories =
+          _extraCategoriesByType[_selectedType] ?? const <String>[];
       final alreadyExists =
-          _extraCategories.contains(trimmed) ||
+          customCategories.contains(trimmed) ||
           (_selectedType == TransactionType.expense
                   ? ref.read(expenseCategoriesProvider)
                   : ref.read(incomeCategoriesProvider))
               .contains(trimmed);
       if (!alreadyExists) {
-        _extraCategories = [..._extraCategories, trimmed];
+        _extraCategoriesByType[_selectedType] = [
+          ...customCategories,
+          trimmed,
+        ];
       }
       _selectedCategory = trimmed;
     });
@@ -446,6 +513,24 @@ class _QuickAddTransactionSheetState
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       onPressed: _addCustomCategory,
                     ),
+                    ActionChip(
+                      avatar: Icon(
+                        Icons.tune_rounded,
+                        size: 16,
+                        color: typeColor,
+                      ),
+                      label: Text(
+                        'Kelola',
+                        style: TextStyle(color: typeColor),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      onPressed: () => ManageCategoriesSheet.show(
+                        context,
+                        type: _selectedType,
+                        categories: _allCategoriesForManagement,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -503,7 +588,7 @@ class _QuickAddTransactionSheetState
                   maxLines: 2,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    hintText: 'Contoh: makan siang di warteg',
+                    hintText: _noteHint,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 10,

@@ -601,7 +601,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                       : _resendLink,
                   child: Text(
                     _resendSeconds > 0
-                        ? 'Kirim ulang dalam ${_resendSeconds} detik'
+                        ? 'Kirim ulang dalam $_resendSeconds detik'
                         : 'Kirim ulang link',
                   ),
                 ),
