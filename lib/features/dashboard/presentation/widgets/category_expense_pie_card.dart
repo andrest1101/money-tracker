@@ -379,6 +379,8 @@ class _CategoryDetailsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final average = transactions.isEmpty
         ? 0.0
         : category.amount / transactions.length;
@@ -413,12 +415,14 @@ class _CategoryDetailsSheet extends StatelessWidget {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          theme.colorScheme.primary,
-                          theme.colorScheme.tertiary,
-                        ],
+                        colors: isDark
+                            ? const [Color(0xFF28534C), Color(0xFF1D3C37)]
+                            : [colors.primary, colors.tertiary],
                       ),
                       borderRadius: BorderRadius.circular(18),
+                      border: isDark
+                          ? Border.all(color: const Color(0xFF3B6A61))
+                          : null,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,7 +430,9 @@ class _CategoryDetailsSheet extends StatelessWidget {
                         Text(
                           'Total bulan ini',
                           style: theme.textTheme.labelMedium?.copyWith(
-                            color: Colors.white70,
+                            color: isDark
+                                ? const Color(0xFFC1D7D1)
+                                : Colors.white70,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -436,7 +442,9 @@ class _CategoryDetailsSheet extends StatelessWidget {
                           child: Text(
                             formatRupiah(category.amount),
                             style: theme.textTheme.headlineSmall?.copyWith(
-                              color: Colors.white,
+                              color: isDark
+                                  ? const Color(0xFFF1F7F4)
+                                  : Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -445,7 +453,9 @@ class _CategoryDetailsSheet extends StatelessWidget {
                         Text(
                           '${transactions.length} transaksi  •  ${((category.amount / (totalExpense == 0 ? 1 : totalExpense)) * 100).round()}% dari total pengeluaran',
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white70,
+                            color: isDark
+                                ? const Color(0xFFB1C9C2)
+                                : Colors.white70,
                           ),
                         ),
                       ],

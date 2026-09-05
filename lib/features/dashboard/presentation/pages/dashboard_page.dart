@@ -9,6 +9,7 @@ import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/presentation/providers/history_providers.dart';
+import '../../../settings/presentation/widgets/profile_avatar_sheet.dart';
 import '../../domain/entities/budget_overview_entity.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
 import '../providers/dashboard_providers.dart';
@@ -133,6 +134,7 @@ class _DashboardHeader extends ConsumerWidget {
         : userName.trim().split(' ').first;
     final user = ref.watch(currentUserProvider);
     final isGuest = user?.isAnonymous ?? true;
+    final avatar = presetAvatarFor(ref.watch(profileAvatarProvider));
 
     return SliverToBoxAdapter(
       child: SafeArea(
@@ -140,71 +142,94 @@ class _DashboardHeader extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Material(
+                color: avatar.color,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  onTap: () => ProfileAvatarSheet.show(context),
+                  customBorder: const CircleBorder(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: avatar.color,
+                      child: Icon(avatar.icon, color: Colors.white, size: 25),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      greeting,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -.15,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          greeting,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (isGuest) ...[
+                          const SizedBox(width: 7),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'Tamu',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
                       displayName,
-                      style: theme.textTheme.headlineMedium?.copyWith(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w900,
-                        letterSpacing: -.8,
+                        letterSpacing: -.45,
                         color: colors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Pantau arus uang dan targetmu hari ini.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (isGuest)
-                Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: colors.outlineVariant.withValues(alpha: .4),
+              Semantics(
+                button: true,
+                label: 'Notifikasi',
+                child: Material(
+                  color: colors.surfaceContainerHigh,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Belum ada notifikasi baru'),
+                      ),
+                    ),
+                    customBorder: const CircleBorder(),
+                    child: const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Icon(Icons.notifications_none_rounded, size: 21),
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.person_outline_rounded,
-                        size: 16,
-                        color: colors.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Tamu',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
+              ),
             ],
           ),
         ),
@@ -240,10 +265,15 @@ class _BalanceHeroCard extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
     final isPositive = summary.balance >= 0;
 
-    // Semantic colors from the theme (no hard-coded shade values).
-    final incomeColor = colors.tertiary;
-    final expenseColor = colors.error;
-    final balanceColor = isPositive ? colors.primary : colors.error;
+    final incomeColor = isDark
+        ? const Color(0xFF9FE870)
+        : const Color(0xFF167A45);
+    final expenseColor = isDark
+        ? const Color(0xFFFFA3A3)
+        : const Color(0xFFB42318);
+    final balanceColor = isPositive
+        ? (isDark ? const Color(0xFFF4FFF0) : const Color(0xFF102A19))
+        : expenseColor;
 
     return Material(
       color: Colors.transparent,
@@ -253,7 +283,9 @@ class _BalanceHeroCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(28),
         child: Ink(
           decoration: BoxDecoration(
-            color: isDark ? colors.surfaceContainerHigh : null,
+            color: isDark
+                ? colors.surfaceContainerHigh
+                : colors.primaryContainer,
             gradient: isDark
                 ? null
                 : LinearGradient(
@@ -272,7 +304,7 @@ class _BalanceHeroCard extends ConsumerWidget {
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(22),
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -281,7 +313,7 @@ class _BalanceHeroCard extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Saldo Siklus Ini',
+                        'Saldo saat ini',
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: colors.onSurfaceVariant,
                           fontWeight: FontWeight.w600,
@@ -307,7 +339,8 @@ class _BalanceHeroCard extends ConsumerWidget {
                       isPrivacy ? 'Rp •••••••' : formatRupiah(summary.balance),
                       style: theme.textTheme.displayMedium?.copyWith(
                         fontWeight: FontWeight.w900,
-                        letterSpacing: -1,
+                        fontSize: 34,
+                        letterSpacing: -1.3,
                         color: isPrivacy
                             ? colors.onSurfaceVariant
                             : balanceColor,
@@ -712,7 +745,7 @@ class _BudgetStatusSection extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Status Anggaran',
+                      'Pengeluaran Bulanan',
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: colors.onSurface,
@@ -721,7 +754,7 @@ class _BudgetStatusSection extends ConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () => _showBudgetInfo(context),
-                    tooltip: 'Apa itu status anggaran?',
+                    tooltip: 'Apa itu pengeluaran bulanan?',
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
@@ -753,8 +786,9 @@ class _BudgetStatusSection extends ConsumerWidget {
 
   void _showBudgetInfo(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final warningColor =
-        isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706);
+    final warningColor = isDark
+        ? const Color(0xFFD6A72C)
+        : const Color(0xFFD97706);
 
     showModalBottomSheet<void>(
       context: context,
@@ -807,17 +841,20 @@ class _BudgetInfoSheet extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Tentang Status Anggaran', style: theme.textTheme.labelLarge),
+            Text(
+              'Tentang Pengeluaran Bulanan',
+              style: theme.textTheme.labelLarge,
+            ),
             const SizedBox(height: 4),
             Text(
-              'Lampu lalu lintas untuk pengeluaranmu',
+              'Pantau pengeluaranmu dalam satu siklus',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Status ini membandingkan total pengeluaran dalam siklus aktif dengan batas anggaran yang kamu atur. Gunakan sebagai pengingat sebelum pengeluaran mulai berlebihan.',
+              'Bagian ini membandingkan total pengeluaran dalam siklus aktif dengan batas yang kamu atur. Gunakan sebagai pengingat agar pengeluaran tetap terkendali.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurfaceVariant,
                 height: 1.45,
@@ -1010,7 +1047,7 @@ class _BudgetAlertBody extends StatelessWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final warningColor = isDark
-        ? const Color(0xFFFBBF24)
+        ? const Color(0xFFD6A72C)
         : const Color(0xFFD97706);
 
     final statusColor = overview.isExceeded
@@ -1166,7 +1203,7 @@ class _BudgetOverviewSheet extends StatelessWidget {
     final colors = theme.colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final warningColor = isDark
-        ? const Color(0xFFFBBF24)
+        ? const Color(0xFFD6A72C)
         : const Color(0xFFD97706);
     final statusColor = overview.isExceeded
         ? colors.error

@@ -15,7 +15,11 @@ class FinancialInsightCard extends StatelessWidget {
     final colors = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final improving = insight.expenseChangeRatio <= 0;
-    final trendColor = improving ? colors.tertiary : colors.error;
+    final accentColor = isDark ? const Color(0xFF8BD5C8) : colors.primary;
+    final expenseColor = isDark ? const Color(0xFFFF6B6B) : colors.error;
+    final trendColor = improving
+        ? (isDark ? const Color(0xFF8BD5A5) : colors.tertiary)
+        : expenseColor;
     final trend = insight.previousExpense == 0
         ? (insight.expense == 0 ? 'Pengeluaran stabil' : 'Belum ada pembanding')
         : '${(insight.expenseChangeRatio.abs() * 100).round()}% ${improving ? 'lebih rendah' : 'lebih tinggi'}';
@@ -23,131 +27,150 @@ class FinancialInsightCard extends StatelessWidget {
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
-      color: isDark ? colors.surfaceContainerHigh : colors.primaryContainer,
+      color: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        hoverColor: colors.primary.withValues(alpha: .06),
-        splashColor: colors.primary.withValues(alpha: .1),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: .14),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      Icons.auto_graph_rounded,
-                      color: colors.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Insight keuangan',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          insight.periodLabel,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.lightbulb_outline_rounded, color: colors.tertiary),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: _InsightMetric(
-                      label: 'Pengeluaran',
-                      value: formatRupiah(insight.expense),
-                      color: colors.error,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _InsightMetric(
-                      label: 'Rata-rata / hari',
-                      value: formatRupiah(insight.averageDailyExpense),
-                      color: colors.primary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? const [Color(0xFF22282E), Color(0xFF1C2127)]
+                : [
+                    colors.primaryContainer,
+                    colors.secondaryContainer.withValues(alpha: .72),
+                  ],
+          ),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isDark
+                ? const Color(0xFF343B43)
+                : colors.primary.withValues(alpha: .16),
+          ),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          hoverColor: colors.primary.withValues(alpha: .06),
+          splashColor: colors.primary.withValues(alpha: .1),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Icon(
-                      improving
-                          ? Icons.trending_down_rounded
-                          : Icons.trending_up_rounded,
-                      color: trendColor,
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: .13),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(Icons.auto_graph_rounded, color: accentColor),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Insight keuangan',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            insight.periodLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.lightbulb_outline_rounded, color: accentColor),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _InsightMetric(
+                        label: 'Pengeluaran',
+                        value: formatRupiah(insight.expense),
+                        color: expenseColor,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _InsightMetric(
+                        label: 'Rata-rata / hari',
+                        value: formatRupiah(insight.averageDailyExpense),
+                        color: accentColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF292F36)
+                        : colors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        improving
+                            ? Icons.trending_down_rounded
+                            : Icons.trending_up_rounded,
+                        color: trendColor,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '$trend dibanding periode sebelumnya',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: trendColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
                     Expanded(
                       child: Text(
-                        '$trend dibanding periode sebelumnya',
+                        insight.topCategory == null
+                            ? 'Belum ada kategori pengeluaran pada periode ini.'
+                            : 'Kategori terbesar: ${insight.topCategory} • ${insight.transactionCount} transaksi',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: trendColor,
-                          fontWeight: FontWeight.w600,
+                          color: colors.onSurfaceVariant,
                         ),
                       ),
                     ),
+                    if (onTap != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 18,
+                        color: colors.primary,
+                      ),
+                    ],
                   ],
                 ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      insight.topCategory == null
-                          ? 'Belum ada kategori pengeluaran pada periode ini.'
-                          : 'Kategori terbesar: ${insight.topCategory} • ${insight.transactionCount} transaksi',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  if (onTap != null) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 18,
-                      color: colors.primary,
-                    ),
-                  ],
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -171,10 +194,12 @@ class _InsightMetric extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Use brighter, high-contrast colors so numbers stand out on card background
-    final displayColor = color == theme.colorScheme.error
+    // Dark mode memakai aksen lembut agar nominal tetap terbaca tanpa silau.
+    final isExpense =
+        color == theme.colorScheme.error || color == const Color(0xFFFF6B6B);
+    final displayColor = isExpense
         ? (isDark ? const Color(0xFFFF6B6B) : const Color(0xFFE53935))
-        : (isDark ? const Color(0xFF5EEAD4) : const Color(0xFF0D9488));
+        : (isDark ? const Color(0xFF8BD5C8) : const Color(0xFF0D9488));
 
     return Container(
       padding: const EdgeInsets.all(12),

@@ -77,7 +77,8 @@ class SettingsContent extends ConsumerWidget {
     });
     final syncState = ref.watch(transactionsStreamProvider);
     return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
+      // Beri ruang ekstra agar footer tidak tertutup floating navigation bar.
+      padding: const EdgeInsets.only(bottom: 120),
       children: [
         _ProfileHeader(syncState: syncState),
         const _AccountSessionCard(),
@@ -1374,6 +1375,10 @@ class _DataManagementCard extends ConsumerWidget {
                   onPressed: () => Navigator.pop(context, true),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.red,
+                    foregroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : null,
                     minimumSize: const Size.fromHeight(48),
                   ),
                   child: const Text('Ya, Hapus Semua'),
@@ -1545,6 +1550,10 @@ class _FinalDeleteConfirmationDialogState
                     : null,
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.red,
+                  foregroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : null,
                   minimumSize: const Size.fromHeight(48),
                 ),
                 child: const Text('HAPUS SEMUA'),
