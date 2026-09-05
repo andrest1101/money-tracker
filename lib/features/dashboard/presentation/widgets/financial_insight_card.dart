@@ -13,8 +13,13 @@ class FinancialInsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final improving = insight.expenseChangeRatio <= 0;
-    final trendColor = improving ? colors.tertiary : colors.error;
+    final accentColor = isDark ? const Color(0xFF8BD5C8) : colors.primary;
+    final expenseColor = isDark ? const Color(0xFFFF6B6B) : colors.error;
+    final trendColor = improving
+        ? (isDark ? const Color(0xFF8BD5A5) : colors.tertiary)
+        : expenseColor;
     final trend = insight.previousExpense == 0
         ? (insight.expense == 0 ? 'Pengeluaran stabil' : 'Belum ada pembanding')
         : '${(insight.expenseChangeRatio.abs() * 100).round()}% ${improving ? 'lebih rendah' : 'lebih tinggi'}';
@@ -30,13 +35,19 @@ class FinancialInsightCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              colors.primaryContainer,
-              colors.secondaryContainer.withValues(alpha: .72),
-            ],
+            colors: isDark
+                ? const [Color(0xFF22282E), Color(0xFF1C2127)]
+                : [
+                    colors.primaryContainer,
+                    colors.secondaryContainer.withValues(alpha: .72),
+                  ],
           ),
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: colors.primary.withValues(alpha: .16)),
+          border: Border.all(
+            color: isDark
+                ? const Color(0xFF343B43)
+                : colors.primary.withValues(alpha: .16),
+          ),
         ),
         child: InkWell(
           onTap: onTap,
@@ -53,13 +64,10 @@ class FinancialInsightCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: colors.primary.withValues(alpha: .14),
+                        color: accentColor.withValues(alpha: .13),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        Icons.auto_graph_rounded,
-                        color: colors.primary,
-                      ),
+                      child: Icon(Icons.auto_graph_rounded, color: accentColor),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -81,10 +89,7 @@ class FinancialInsightCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Icon(
-                      Icons.lightbulb_outline_rounded,
-                      color: colors.tertiary,
-                    ),
+                    Icon(Icons.lightbulb_outline_rounded, color: accentColor),
                   ],
                 ),
                 const SizedBox(height: 18),
@@ -94,7 +99,7 @@ class FinancialInsightCard extends StatelessWidget {
                       child: _InsightMetric(
                         label: 'Pengeluaran',
                         value: formatRupiah(insight.expense),
-                        color: colors.error,
+                        color: expenseColor,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -102,7 +107,7 @@ class FinancialInsightCard extends StatelessWidget {
                       child: _InsightMetric(
                         label: 'Rata-rata / hari',
                         value: formatRupiah(insight.averageDailyExpense),
-                        color: colors.primary,
+                        color: accentColor,
                       ),
                     ),
                   ],
@@ -115,7 +120,9 @@ class FinancialInsightCard extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: colors.surfaceContainerHigh,
+                    color: isDark
+                        ? const Color(0xFF292F36)
+                        : colors.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
@@ -187,10 +194,12 @@ class _InsightMetric extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Use brighter, high-contrast colors so numbers stand out on card background
-    final displayColor = color == theme.colorScheme.error
+    // Dark mode memakai aksen lembut agar nominal tetap terbaca tanpa silau.
+    final isExpense =
+        color == theme.colorScheme.error || color == const Color(0xFFFF6B6B);
+    final displayColor = isExpense
         ? (isDark ? const Color(0xFFFF6B6B) : const Color(0xFFE53935))
-        : (isDark ? const Color(0xFF5EEAD4) : const Color(0xFF0D9488));
+        : (isDark ? const Color(0xFF8BD5C8) : const Color(0xFF0D9488));
 
     return Container(
       padding: const EdgeInsets.all(12),

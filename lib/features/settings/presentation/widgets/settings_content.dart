@@ -1374,6 +1374,10 @@ class _DataManagementCard extends ConsumerWidget {
                   onPressed: () => Navigator.pop(context, true),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.red,
+                    foregroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : null,
                     minimumSize: const Size.fromHeight(48),
                   ),
                   child: const Text('Ya, Hapus Semua'),
@@ -1545,6 +1549,10 @@ class _FinalDeleteConfirmationDialogState
                     : null,
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.red,
+                  foregroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : null,
                   minimumSize: const Size.fromHeight(48),
                 ),
                 child: const Text('HAPUS SEMUA'),

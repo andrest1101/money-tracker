@@ -787,7 +787,7 @@ class _BudgetStatusSection extends ConsumerWidget {
   void _showBudgetInfo(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final warningColor = isDark
-        ? const Color(0xFFFBBF24)
+        ? const Color(0xFFD6A72C)
         : const Color(0xFFD97706);
 
     showModalBottomSheet<void>(
@@ -1047,7 +1047,7 @@ class _BudgetAlertBody extends StatelessWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final warningColor = isDark
-        ? const Color(0xFFFBBF24)
+        ? const Color(0xFFD6A72C)
         : const Color(0xFFD97706);
 
     final statusColor = overview.isExceeded
@@ -1203,7 +1203,7 @@ class _BudgetOverviewSheet extends StatelessWidget {
     final colors = theme.colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final warningColor = isDark
-        ? const Color(0xFFFBBF24)
+        ? const Color(0xFFD6A72C)
         : const Color(0xFFD97706);
     final statusColor = overview.isExceeded
         ? colors.error
