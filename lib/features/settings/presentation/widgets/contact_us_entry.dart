@@ -154,11 +154,8 @@ class _ContactUsSheet extends StatelessWidget {
                 badge: 'Website',
                 color: colors.onSurface,
                 onTap: () => _openGitHub(context),
-                onCopy: () => _copy(
-                  context,
-                  _founderGitHub,
-                  'Link GitHub disalin.',
-                ),
+                onCopy: () =>
+                    _copy(context, _founderGitHub, 'Link GitHub disalin.'),
               ),
               const SizedBox(height: 16),
               Container(
@@ -223,7 +220,8 @@ class _ContactUsSheet extends StatelessWidget {
       try {
         final intent = AndroidIntent(
           action: 'android.intent.action.SENDTO',
-          data: 'mailto:$_founderEmail?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
+          data:
+              'mailto:$_founderEmail?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
           package: 'com.google.android.gm',
         );
         await intent.launch();
@@ -335,7 +333,9 @@ class _ContactUsSheet extends StatelessWidget {
   }
 
   String? _encodeQuery(Map<String, String> p) => p.entries
-      .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+      .map(
+        (e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+      )
       .join('&');
 
   Future<void> _copy(BuildContext c, String v, String msg) async {

@@ -10,10 +10,7 @@ class CheckBudgetStatusUseCase {
     required double budgetLimit,
   }) {
     if (budgetLimit <= 0) {
-      return const BudgetStatusEntity(
-        spentRatio: 0,
-        level: BudgetLevel.safe,
-      );
+      return const BudgetStatusEntity(spentRatio: 0, level: BudgetLevel.safe);
     }
 
     final spentRatio = totalExpense / budgetLimit;
@@ -21,8 +18,8 @@ class CheckBudgetStatusUseCase {
     final level = spentRatio >= 1
         ? BudgetLevel.exceeded
         : spentRatio >= warningThreshold
-            ? BudgetLevel.warning
-            : BudgetLevel.safe;
+        ? BudgetLevel.warning
+        : BudgetLevel.safe;
 
     return BudgetStatusEntity(spentRatio: spentRatio, level: level);
   }
