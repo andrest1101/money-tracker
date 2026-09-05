@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../providers/savings_providers.dart';
-import '../widgets/add_goal_sheet.dart';
 import '../widgets/allocate_fund_sheet.dart';
 import '../widgets/goal_card.dart';
 
@@ -29,16 +28,6 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  void _showAddGoalSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (_) => const AddGoalSheet(),
-    );
   }
 
   void _showAllocateSheet(SavingsGoalEntity goal) {
@@ -198,11 +187,6 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddGoalSheet,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Target Baru'),
-      ),
       body: Column(
         children: [
           // Sort filter chips
@@ -233,7 +217,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                       : 'Belum ada target aktif',
                   emptySubtitle: archivedMode
                       ? 'Target aktif yang kamu arsipkan akan muncul di sini.'
-                      : 'Tap "Target Baru" untuk mulai menabung\nuntuk impianmu!',
+                      : 'Tap tombol + di navigasi bawah untuk mulai menabung\nuntuk impianmu!',
                   onAllocate: _showAllocateSheet,
                   onDelete: _confirmDeleteGoal,
                   onArchive: (goal) => _toggleArchive(goal),
