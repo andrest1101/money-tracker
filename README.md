@@ -7,7 +7,7 @@
 Aplikasi pencatat keuangan pribadi untuk mahasiswa, anak kos, dan siapa pun
 yang ingin memahami ke mana uangnya pergi.
 
-[![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)](#-platform-dan-kompatibilitas) [![Flutter](https://img.shields.io/badge/Flutter-3.32+-02569B?logo=flutter&logoColor=white)](https://flutter.dev/) [![Firebase](https://img.shields.io/badge/Firebase-Enabled-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/) [![License](https://img.shields.io/badge/License-Not%20Specified-lightgrey)](#-lisensi) [![Status](https://img.shields.io/badge/Status-Active%20Development-00B894)](#-status-proyek)
+[![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)](#-platform-dan-kompatibilitas) [![Flutter](https://img.shields.io/badge/Flutter-3.32+-02569B?logo=flutter&logoColor=white)](https://flutter.dev/) [![Firebase](https://img.shields.io/badge/Firebase-Enabled-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/) [![License](https://img.shields.io/badge/License-Not%20Specified-lightgrey)](#-lisensi) [![Status](https://img.shields.io/badge/Status-Active%20Development-00B894)](#-status-proyek) [![Download](https://img.shields.io/badge/Download-APK%20Release-00B894?logo=android&logoColor=white)](https://www.mediafire.com/file/iiatm96kfvosnfg/app-arm64-v8a-release.apk/file)
 
 </div>
 
@@ -20,6 +20,7 @@ yang ingin memahami ke mana uangnya pergi.
 
 ## 🧭 Daftar Isi
 
+- [Download APK](#-download-apk)
 - [Tentang Savu](#-tentang-savu)
 - [Fitur Utama](#-fitur-utama)
 - [Teknologi yang Digunakan](#️-teknologi-yang-digunakan)
@@ -42,6 +43,17 @@ yang ingin memahami ke mana uangnya pergi.
 - **Windows:** build debug tersedia untuk pengujian desktop.
 - **iOS:** konfigurasi dasar tersedia; Google Sign-In dan deep link tetap perlu
   divalidasi menggunakan macOS dan Xcode.
+
+## 📥 Download APK
+
+[![Download APK](https://img.shields.io/badge/Download-APK%20Release-00B894?logo=android&logoColor=white)](https://www.mediafire.com/file/iiatm96kfvosnfg/app-arm64-v8a-release.apk/file)
+
+Unduh file APK untuk menginstall Savu langsung di perangkat Android kamu.
+
+1. Klik tombol download di atas.
+2. Buka file APK yang sudah terunduh.
+3. Izinkan install dari sumber tidak dikenal jika diminta.
+4. Buka aplikasi dan mulai gunakan Savu.
 
 ## 🚀 Tentang Savu
 
