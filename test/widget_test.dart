@@ -46,8 +46,34 @@ void main() {
     await tester.tap(navBarLabel('Riwayat'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Riwayat Transaksi'), findsOneWidget);
-    expect(find.text('Cari transaksi...'), findsOneWidget);
+    expect(navBarLabel('Riwayat'), findsOneWidget);
+    expect(find.text('Cari transaksi'), findsNothing);
+
+    expect(find.byTooltip('Cari transaksi'), findsOneWidget);
+  });
+
+  testWidgets('Riwayat membuka pencarian inline dan filter sheet', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await tester.tap(navBarLabel('Riwayat'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byWidgetPredicate((widget) => widget is SegmentedButton),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('Cari transaksi'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsOneWidget);
+    await tester.tap(find.byTooltip('Tutup pencarian'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNothing);
+
+    await tester.tap(find.byTooltip('Filter transaksi'));
+    await tester.pumpAndSettle();
+    expect(find.text('Filter'), findsOneWidget);
+    expect(find.text('Terapkan'), findsOneWidget);
   });
 
   testWidgets('tab pengaturan tidak menampilkan FAB', (tester) async {
