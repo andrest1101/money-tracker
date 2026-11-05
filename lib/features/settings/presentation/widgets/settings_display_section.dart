@@ -4,21 +4,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import 'settings_snack_bar.dart';
 
-class ThemeSelectionCard extends ConsumerWidget {
+/// Tema gelap sementara tidak ditawarkan sampai audit visual selesai.
+/// Implementasi AppTheme.dark dan penyimpanan preferensi tetap dipertahankan.
+class ThemeSelectionCard extends StatelessWidget {
   const ThemeSelectionCard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentTheme = ref.watch(appThemeModeProvider);
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    final colors = theme.colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 0,
         margin: const EdgeInsets.only(bottom: 12),
-        color: cs.surfaceContainerHigh,
+        color: colors.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -27,7 +28,7 @@ class ThemeSelectionCard extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.palette_outlined, color: cs.primary),
+                  Icon(Icons.palette_outlined, color: colors.primary),
                   const SizedBox(width: 12),
                   Text(
                     'Tema Aplikasi',
@@ -37,109 +38,45 @@ class ThemeSelectionCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  ThemeChip(
-                    icon: Icons.brightness_auto_rounded,
-                    label: 'Sistem',
-                    selected: currentTheme == ThemeMode.system,
-                    onTap: () => _saveTheme(context, ref, ThemeMode.system),
-                  ),
-                  const SizedBox(width: 8),
-                  ThemeChip(
-                    icon: Icons.light_mode_rounded,
-                    label: 'Terang',
-                    selected: currentTheme == ThemeMode.light,
-                    onTap: () => _saveTheme(context, ref, ThemeMode.light),
-                  ),
-                  const SizedBox(width: 8),
-                  ThemeChip(
-                    icon: Icons.dark_mode_rounded,
-                    label: 'Gelap',
-                    selected: currentTheme == ThemeMode.dark,
-                    onTap: () => _saveTheme(context, ref, ThemeMode.dark),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _saveTheme(
-    BuildContext context,
-    WidgetRef ref,
-    ThemeMode mode,
-  ) async {
-    final saved = await ref
-        .read(appThemeModeProvider.notifier)
-        .setThemeMode(mode);
-    if (!context.mounted) return;
-    showSettingsSnackBar(
-      context,
-      message: saved ? 'Tema aplikasi diperbarui.' : 'Tema gagal disimpan.',
-      isError: !saved,
-    );
-  }
-}
-
-class ThemeChip extends StatelessWidget {
-  const ThemeChip({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: selected
-                ? cs.primary.withValues(alpha: 0.15)
-                : cs.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: selected
-                  ? cs.primary.withValues(alpha: 0.6)
-                  : cs.outlineVariant.withValues(alpha: 0.4),
-              width: selected ? 1.5 : 1,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: selected ? cs.primary : cs.onSurfaceVariant,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: selected ? cs.primary : cs.onSurfaceVariant,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.light_mode_rounded,
+                      color: colors.onPrimaryContainer,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tema terang aktif',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: colors.onPrimaryContainer,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Pilihan tema gelap tersedia kembali setelah tampilannya disempurnakan.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onPrimaryContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -156,13 +93,13 @@ class PrivacyCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isPrivacyMode = ref.watch(privacyModeProvider);
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    final colors = theme.colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 0,
-        color: cs.surfaceContainerHigh,
+        color: colors.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: SwitchListTile(
           value: isPrivacyMode,
@@ -189,15 +126,15 @@ class PrivacyCard extends ConsumerWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: isPrivacyMode
-                  ? cs.primary.withValues(alpha: 0.1)
-                  : cs.onSurfaceVariant.withValues(alpha: 0.1),
+                  ? colors.primary.withValues(alpha: 0.1)
+                  : colors.onSurfaceVariant.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               isPrivacyMode
                   ? Icons.visibility_off_rounded
                   : Icons.visibility_rounded,
-              color: isPrivacyMode ? cs.primary : cs.onSurfaceVariant,
+              color: isPrivacyMode ? colors.primary : colors.onSurfaceVariant,
             ),
           ),
           shape: RoundedRectangleBorder(

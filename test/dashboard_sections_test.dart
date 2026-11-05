@@ -107,6 +107,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final barRect = tester.getRect(
+      find.byKey(const ValueKey('category-expense-stacked-bar')),
+    );
+    final amountRect = tester.getRect(
+      find.byKey(const ValueKey('category-expense-amount-column')).first,
+    );
+    expect((barRect.right - amountRect.right).abs(), lessThanOrEqualTo(1));
     expect(tester.takeException(), isNull);
   });
 }

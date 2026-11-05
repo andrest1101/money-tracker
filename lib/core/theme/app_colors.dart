@@ -40,12 +40,12 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color warningText;
 
   static const AppColors light = AppColors(
-    background: Color(0xFFF7F8F7),
+    background: Color(0xFFF6F7F9),
     surface: Color(0xFFFFFFFF),
-    surfaceVariant: Color(0xFFEEF1EF),
-    outline: Color(0xFFE1E5E3),
-    textPrimary: Color(0xFF121A18),
-    textSecondary: Color(0xFF5B6764),
+    surfaceVariant: Color(0xFFEDF0F4),
+    outline: Color(0xFFDDE2E8),
+    textPrimary: Color(0xFF151B23),
+    textSecondary: Color(0xFF596575),
     income: Color(0xFF12804A),
     danger: Color(0xFFC73A32),
     warning: Color(0xFFE8A317),
@@ -53,13 +53,13 @@ class AppColors extends ThemeExtension<AppColors> {
   );
 
   static const AppColors dark = AppColors(
-    background: Color(0xFF0E1311),
-    surface: Color(0xFF161C1A),
-    surfaceVariant: Color(0xFF1E2623),
-    outline: Color(0xFF2A3431),
-    textPrimary: Color(0xFFE8EEEC),
-    textSecondary: Color(0xFF9AA8A4),
-    income: Color(0xFF5BD38E),
+    background: Color(0xFF0E1218),
+    surface: Color(0xFF171C23),
+    surfaceVariant: Color(0xFF202833),
+    outline: Color(0xFF303B48),
+    textPrimary: Color(0xFFE9EDF2),
+    textSecondary: Color(0xFFA0AAB6),
+    income: Color(0xFF65C58A),
     danger: Color(0xFFFF8A80),
     warning: Color(0xFFF5C451),
     warningText: Color(0xFFF5C451),
@@ -68,9 +68,10 @@ class AppColors extends ThemeExtension<AppColors> {
   static AppColors of(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>();
     assert(colors != null, 'AppColors belum terdaftar di ThemeData.');
-    return colors ?? (Theme.of(context).brightness == Brightness.dark
-        ? AppColors.dark
-        : AppColors.light);
+    return colors ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? AppColors.dark
+            : AppColors.light);
   }
 
   @override

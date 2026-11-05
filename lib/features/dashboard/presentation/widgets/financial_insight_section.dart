@@ -105,6 +105,7 @@ class FinancialInsightSection extends StatelessWidget {
                         child: StatInline(
                           label: 'Rata-rata / hari',
                           amount: insight.averageDailyExpense,
+                          alignment: CrossAxisAlignment.end,
                         ),
                       ),
                     ],

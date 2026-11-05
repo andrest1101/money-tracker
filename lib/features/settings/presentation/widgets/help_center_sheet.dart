@@ -35,7 +35,6 @@ class HelpCenterSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     return SafeArea(
       child: FractionallySizedBox(
         heightFactor: 0.88,
@@ -45,19 +44,9 @@ class HelpCenterSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: isDark ? colors.surfaceContainerHigh : null,
-                gradient: isDark
-                    ? null
-                    : LinearGradient(
-                        colors: [
-                          colors.primaryContainer,
-                          colors.secondaryContainer,
-                        ],
-                      ),
+                color: colors.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(22),
-                border: isDark
-                    ? Border.all(color: colors.outlineVariant)
-                    : null,
+                border: Border.all(color: colors.outlineVariant),
               ),
               child: Row(
                 children: [

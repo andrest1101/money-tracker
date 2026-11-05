@@ -82,6 +82,16 @@ void main() {
           background: AppTheme.dark().colorScheme.primary,
         ),
         (
+          label: 'light hero text / primary container',
+          foreground: AppTheme.light().colorScheme.onPrimaryContainer,
+          background: AppTheme.light().colorScheme.primaryContainer,
+        ),
+        (
+          label: 'dark hero text / primary container',
+          foreground: AppTheme.dark().colorScheme.onPrimaryContainer,
+          background: AppTheme.dark().colorScheme.primaryContainer,
+        ),
+        (
           label: 'dark income / surface',
           foreground: AppColors.dark.income,
           background: AppColors.dark.surface,
@@ -139,14 +149,8 @@ void main() {
     });
 
     test('latar ikon memakai opasitas 14 persen', () {
-      final color = CategoryPalette.background(
-        'Makanan',
-        Brightness.light,
-      );
-      expect(
-        color.a,
-        closeTo(CategoryPalette.backgroundOpacity, 0.001),
-      );
+      final color = CategoryPalette.background('Makanan', Brightness.light);
+      expect(color.a, closeTo(CategoryPalette.backgroundOpacity, 0.001));
     });
   });
 }

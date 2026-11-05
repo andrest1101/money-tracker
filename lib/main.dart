@@ -25,7 +25,9 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(sharedPreferences)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      ],
       child: const _AuthLinkHandler(child: _AuthGate()),
     ),
   );
@@ -76,7 +78,9 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
           Uri.tryParse(link)?.queryParameters['email'] ??
           ref.read(pendingEmailLinkEmailProvider);
       if (email == null || email.trim().isEmpty) return;
-      await ref.read(authControllerProvider.notifier).completeEmailLink(email: email, link: link);
+      await ref
+          .read(authControllerProvider.notifier)
+          .completeEmailLink(email: email, link: link);
     } finally {
       if (mounted) setState(() => _handlingLink = false);
     }
@@ -125,7 +129,7 @@ class _AuthGate extends ConsumerWidget {
     return MaterialApp(
       title: 'Savu',
       debugShowCheckedModeBanner: false,
-      themeMode: ref.watch(appThemeModeProvider),
+      themeMode: ThemeMode.light,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       home: AnimatedSwitcher(
@@ -159,13 +163,16 @@ class _AuthContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return auth.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, __) => const AuthLandingPage(),
       data: (user) {
         if (user == null) return const AuthLandingPage();
         final needsVerification =
             !user.isAnonymous &&
-            user.providerData.any((provider) => provider.providerId == 'password') &&
+            user.providerData.any(
+              (provider) => provider.providerId == 'password',
+            ) &&
             !user.emailVerified;
         if (needsVerification) return EmailVerificationPage(user: user);
         return const SavuApp();
@@ -182,7 +189,7 @@ class SavuApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Savu',
       debugShowCheckedModeBanner: false,
-      themeMode: ref.watch(appThemeModeProvider),
+      themeMode: ThemeMode.light,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       builder: (context, child) {
@@ -192,10 +199,14 @@ class SavuApp extends ConsumerWidget {
           value: SystemUiOverlayStyle(
             systemNavigationBarColor: theme.colorScheme.surface,
             systemNavigationBarDividerColor: theme.colorScheme.surface,
-            systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            systemNavigationBarIconBrightness: isDark
+                ? Brightness.light
+                : Brightness.dark,
             systemNavigationBarContrastEnforced: false,
             statusBarColor: Colors.transparent,
-            statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            statusBarIconBrightness: isDark
+                ? Brightness.light
+                : Brightness.dark,
             statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
           ),
           child: child ?? const SizedBox.shrink(),

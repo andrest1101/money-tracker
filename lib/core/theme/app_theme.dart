@@ -64,9 +64,7 @@ abstract final class AppTheme {
           vertical: 14,
         ),
         hintStyle: textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
-        labelStyle: textTheme.bodyMedium?.copyWith(
-          color: colors.textSecondary,
-        ),
+        labelStyle: textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
         prefixIconColor: colors.textSecondary,
         suffixIconColor: colors.textSecondary,
         border: OutlineInputBorder(
@@ -157,18 +155,14 @@ abstract final class AppTheme {
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
-            color: selected
-                ? scheme.onPrimaryContainer
-                : colors.textSecondary,
+            color: selected ? scheme.onPrimaryContainer : colors.textSecondary,
             size: 22,
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return textTheme.labelSmall?.copyWith(
-            color: selected
-                ? scheme.onPrimaryContainer
-                : colors.textSecondary,
+            color: selected ? scheme.onPrimaryContainer : colors.textSecondary,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           );
         }),
@@ -214,9 +208,7 @@ abstract final class AppTheme {
         space: 1,
       ),
       listTileTheme: ListTileThemeData(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         iconColor: colors.textSecondary,
         textColor: colors.textPrimary,
         titleTextStyle: textTheme.titleSmall,
@@ -242,18 +234,18 @@ abstract final class AppTheme {
   static ColorScheme _lightScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
-      primary: Color(0xFF0B6B61),
+      primary: Color(0xFF315B7D),
       onPrimary: Color(0xFFFFFFFF),
-      primaryContainer: Color(0xFFD5EFEA),
-      onPrimaryContainer: Color(0xFF083F39),
-      secondary: Color(0xFF3F7D75),
+      primaryContainer: Color(0xFFE2EBF3),
+      onPrimaryContainer: Color(0xFF1C3449),
+      secondary: Color(0xFF526D83),
       onSecondary: Color(0xFFFFFFFF),
-      secondaryContainer: Color(0xFFDCEEE9),
-      onSecondaryContainer: Color(0xFF0B2E2A),
-      tertiary: Color(0xFF2F6F66),
+      secondaryContainer: Color(0xFFE7EDF2),
+      onSecondaryContainer: Color(0xFF293D4D),
+      tertiary: Color(0xFF397A55),
       onTertiary: Color(0xFFFFFFFF),
-      tertiaryContainer: Color(0xFFD5EFEA),
-      onTertiaryContainer: Color(0xFF083F39),
+      tertiaryContainer: Color(0xFFDCEFE2),
+      onTertiaryContainer: Color(0xFF173D27),
       error: Color(0xFFC73A32),
       onError: Color(0xFFFFFFFF),
       errorContainer: Color(0xFFFBE3E0),
@@ -274,46 +266,46 @@ abstract final class AppTheme {
       scrim: Color(0x8A000000),
       inverseSurface: Color(0xFF121A18),
       onInverseSurface: Color(0xFFF7F8F7),
-      inversePrimary: Color(0xFF5CCFBF),
+      inversePrimary: Color(0xFF8DB4D4),
     );
   }
 
   static ColorScheme _darkScheme() {
     return const ColorScheme(
       brightness: Brightness.dark,
-      primary: Color(0xFF5CCFBF),
-      onPrimary: Color(0xFF00201C),
-      primaryContainer: Color(0xFF12403B),
-      onPrimaryContainer: Color(0xFFC9F4EC),
-      secondary: Color(0xFF8FD8CE),
-      onSecondary: Color(0xFF00201C),
-      secondaryContainer: Color(0xFF16332F),
-      onSecondaryContainer: Color(0xFFC9F4EC),
-      tertiary: Color(0xFF8FD8CE),
-      onTertiary: Color(0xFF00201C),
-      tertiaryContainer: Color(0xFF12403B),
-      onTertiaryContainer: Color(0xFFC9F4EC),
+      primary: Color(0xFF6F9CC2),
+      onPrimary: Color(0xFF101D2A),
+      primaryContainer: Color(0xFF172B40),
+      onPrimaryContainer: Color(0xFFF1F5F9),
+      secondary: Color(0xFF91A9BE),
+      onSecondary: Color(0xFF17232F),
+      secondaryContainer: Color(0xFF253646),
+      onSecondaryContainer: Color(0xFFE1E8EF),
+      tertiary: Color(0xFF79B88F),
+      onTertiary: Color(0xFF102A1A),
+      tertiaryContainer: Color(0xFF244333),
+      onTertiaryContainer: Color(0xFFD4EBDD),
       error: Color(0xFFFF8A80),
       onError: Color(0xFF3B0907),
       errorContainer: Color(0xFF5C1A1A),
       onErrorContainer: Color(0xFFFFDAD6),
-      surface: Color(0xFF161C1A),
-      onSurface: Color(0xFFE8EEEC),
-      onSurfaceVariant: Color(0xFF9AA8A4),
-      surfaceContainerLowest: Color(0xFF0B0F0E),
-      surfaceContainerLow: Color(0xFF131917),
-      surfaceContainer: Color(0xFF1A211E),
-      surfaceContainerHigh: Color(0xFF1E2623),
-      surfaceContainerHighest: Color(0xFF222B27),
-      surfaceDim: Color(0xFF0E1311),
-      surfaceBright: Color(0xFF242E2A),
-      outline: Color(0xFF2A3431),
-      outlineVariant: Color(0xFF202824),
+      surface: Color(0xFF171C23),
+      onSurface: Color(0xFFE9EDF2),
+      onSurfaceVariant: Color(0xFFA0AAB6),
+      surfaceContainerLowest: Color(0xFF0B0F14),
+      surfaceContainerLow: Color(0xFF12171E),
+      surfaceContainer: Color(0xFF1A2028),
+      surfaceContainerHigh: Color(0xFF202833),
+      surfaceContainerHighest: Color(0xFF27313D),
+      surfaceDim: Color(0xFF0E1218),
+      surfaceBright: Color(0xFF293441),
+      outline: Color(0xFF303B48),
+      outlineVariant: Color(0xFF252E39),
       shadow: Color(0xFF000000),
       scrim: Color(0x8A000000),
-      inverseSurface: Color(0xFFE8EEEC),
-      onInverseSurface: Color(0xFF0E1311),
-      inversePrimary: Color(0xFF0B6B61),
+      inverseSurface: Color(0xFFE9EDF2),
+      onInverseSurface: Color(0xFF11161D),
+      inversePrimary: Color(0xFF315B7D),
     );
   }
 }
