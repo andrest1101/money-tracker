@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/savings_goal_entity.dart';
@@ -99,6 +100,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
   ({String label, Color color, IconData icon}) _deadlineStatus(
     SavingsGoalEntity goal,
     ColorScheme cs,
+    BuildContext context,
   ) {
     if (goal.isOverdue) {
       return (
@@ -110,7 +112,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
     if (goal.isDeadlineNear) {
       return (
         label: '${goal.daysUntilDeadline} hari lagi',
-        color: cs.tertiary,
+        color: Theme.of(context).extension<AppColors>()!.warningText,
         icon: Icons.schedule_rounded,
       );
     }
@@ -132,10 +134,10 @@ class _GoalCardState extends ConsumerState<GoalCard>
     final allocationSummary = ref.watch(allocationSummaryProvider(goal.id));
     final progress = goal.progress;
     final progressColor = _progressColor(progress, cs, isDark);
-    final deadlineStatus = _deadlineStatus(goal, cs);
+    final deadlineStatus = _deadlineStatus(goal, cs, context);
 
     return Card(
-      elevation: isCompleted ? 0 : 1,
+      elevation: 0,
       shadowColor: cs.shadow.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -215,17 +217,21 @@ class _GoalCardState extends ConsumerState<GoalCard>
                                         color: deadlineStatus.color,
                                       ),
                                       const SizedBox(width: 4),
-                                      Text(
-                                        deadlineStatus.label,
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                              color: deadlineStatus.color,
-                                              fontWeight:
-                                                  goal.isOverdue ||
-                                                      goal.isDeadlineNear
-                                                  ? FontWeight.w600
-                                                  : null,
-                                            ),
+                                      Flexible(
+                                        child: Text(
+                                          deadlineStatus.label,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                color: deadlineStatus.color,
+                                                fontWeight:
+                                                    goal.isOverdue ||
+                                                        goal.isDeadlineNear
+                                                    ? FontWeight.w600
+                                                    : null,
+                                              ),
+                                        ),
                                       ),
                                     ],
                                   ),
