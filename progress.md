@@ -454,8 +454,30 @@ Branch kerja: `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user).
   - Verifikasi: `flutter analyze` bersih, `flutter test` **110/110 lulus**,
     `flutter build web` berhasil.
   - `lib/shared/` bersih dari gradient dan `Colors.*` literal.
-- **Batch 3 — Shell + Beranda:** berikutnya (`NavigationBar` + FAB, hero saldo,
-  anggaran, pengeluaran per kategori, insight, transaksi terbaru).
+- **Batch 3 — Shell + Beranda:** selesai.
+  - `AppShell` memakai `NavigationBar` 4 tab (Beranda, Target, Riwayat,
+    Pengaturan) + FAB `endFloat` kontekstual; state tab di
+    `shellTabIndexProvider`; `IndexedStack` hanya membangun tab yang pernah
+    dibuka.
+  - FAB Beranda/Riwayat membuka `QuickAddTransactionSheet`, FAB Target membuka
+    `AddGoalSheet`, tab Pengaturan tanpa FAB.
+  - Beranda dirombak: header ringkas, hero saldo solid `primaryContainer`,
+    anggaran cardless dengan `BudgetProgress`, kategori memakai stacked bar
+    (maksimal 5 baris, tanpa PieChart), insight cardless, dan 5 transaksi
+    terbaru dengan aksi "Lihat semua".
+  - File baru: `navigation_providers.dart`, `category_expense_section.dart`,
+    `financial_insight_section.dart`, `recent_transactions_section.dart`.
+  - File lama dihapus: `category_expense_pie_card.dart`,
+    `financial_insight_card.dart`, `dashboard_empty_state.dart` beserta test.
+  - `TransactionTile` mendapat parameter `padding`; `StatInline` mendukung
+    warna kustom dan privacy masking.
+  - Test diperbarui: `test/widget_test.dart` untuk navigasi/FAB baru dan
+    `test/dashboard_sections_test.dart` untuk layout 360dp/text scale 1.3.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **111/111 lulus**,
+    `flutter build web` berhasil.
+  - Gradient tersisa: 5 titik (auth, onboarding, dua help center, dan swipe
+    action `TransactionTile` yang akan disapu pada batch layar terkait).
+- **Batch 4 — Riwayat:** berikutnya.
 - Aturan git baru ada di `agents.md` Bagian 6. AI tidak commit/push; user commit manual.
 
 ---
