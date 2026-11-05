@@ -152,14 +152,16 @@ class DashboardPage extends ConsumerWidget {
 
 String _resolveDisplayName(String storedName, User? user) {
   final cleanStoredName = storedName.trim();
-  if (cleanStoredName.isNotEmpty) return cleanStoredName;
+  if (cleanStoredName.isNotEmpty && cleanStoredName != 'Pengguna') {
+    return cleanStoredName;
+  }
   if (user != null && !user.isAnonymous) {
     final googleName = user.displayName?.trim() ?? '';
     if (googleName.isNotEmpty) return googleName;
     final emailName = user.email?.split('@').first.trim() ?? '';
     if (emailName.isNotEmpty) return emailName;
   }
-  return 'Pengguna';
+  return user?.isAnonymous ?? true ? 'Tamu' : 'Pengguna';
 }
 
 class DashboardHeader extends ConsumerWidget {
@@ -175,8 +177,6 @@ class DashboardHeader extends ConsumerWidget {
     final displayName = userName.trim().isEmpty
         ? 'Kamu'
         : userName.trim().split(' ').first;
-    final user = ref.watch(currentUserProvider);
-    final isGuest = user?.isAnonymous ?? true;
     final avatar = presetAvatarFor(ref.watch(profileAvatarProvider));
     final avatarIconColor = avatar.color.computeLuminance() > .5
         ? AppColors.light.textPrimary
@@ -188,34 +188,11 @@ class DashboardHeader extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Text(
-                    greeting,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.textSecondary,
-                    ),
-                  ),
-                  if (isGuest) ...[
-                    const SizedBox(width: AppSpacing.xs),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                      child: Text(
-                        'Tamu',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: colors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+              Text(
+                greeting,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
