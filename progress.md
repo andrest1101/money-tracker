@@ -477,7 +477,24 @@ Branch kerja: `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user).
     `flutter build web` berhasil.
   - Gradient tersisa: 5 titik (auth, onboarding, dua help center, dan swipe
     action `TransactionTile` yang akan disapu pada batch layar terkait).
-- **Batch 4 — Riwayat:** berikutnya.
+- **Batch 4 — Riwayat:** selesai.
+  - App bar ringkas dengan pencarian inline yang dapat dibuka/tutup dan filter
+    dalam bottom sheet; filter tipe memakai segmented control Semua/Pemasukan/
+    Pengeluaran.
+  - Filter kategori, periode (7/30 hari atau rentang khusus), serta siklus aktif
+    tetap tersedia. Chip filter aktif bisa dihapus satu per satu atau di-reset.
+  - Grup tanggal tanpa kartu bertingkat, ringkasan net harian, dan overview
+    harian tetap tersedia. Ketuk transaksi membuka edit; swipe meminta
+    konfirmasi hapus.
+  - Empty state Riwayat hanya mengarahkan pengguna ke FAB `+`, tanpa CTA aksi
+    duplikat. Empty state kategori dan transaksi terbaru Beranda juga memakai
+    pola arahan yang sama.
+  - CSV tetap tersedia lewat Pengaturan; tidak mengubah alur ekspor yang ada.
+  - Test baru `test/history_page_test.dart` mencakup empty state, filter kategori/
+    tanggal/siklus, serta layout 360dp dan text scale 1.3. Test shell mencakup
+    pencarian dan filter sheet.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **116/116 lulus**,
+    `flutter build web` berhasil.
 - Aturan git baru ada di `agents.md` Bagian 6. AI tidak commit/push; user commit manual.
 
 ---

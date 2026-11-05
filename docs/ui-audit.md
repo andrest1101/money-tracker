@@ -273,7 +273,7 @@ Tujuh koreksi berikut disetujui sebelum eksekusi:
 | 1 | Fondasi tema: token, font bundled, `ThemeExtension`, palet kategori | **Selesai** |
 | 2 | Komponen bersama + widget test light/dark | **Selesai** |
 | 3 | Shell + Beranda | **Selesai** |
-| 4 | Riwayat | Berikutnya |
+| 4 | Riwayat | **Selesai** |
 | 5 | Target | Belum |
 | 6 | Form transaksi + Pengaturan + Auth/Onboarding + sheet | Belum |
 | 7 | Polish: motion, aksesibilitas, dark sweep, dokumentasi | Belum |
@@ -285,6 +285,21 @@ flutter analyze
 flutter test
 git status --short
 ```
+
+### Catatan Batch 4 — Riwayat (2026-11-05)
+
+- Pencarian inline di app bar, segmented control tipe, dan filter tambahan
+  dalam bottom sheet telah diterapkan.
+- Filter periode, kategori, dan siklus aktif tetap tersedia; chip aktif dapat
+  dihapus satu per satu dan semua filter dapat di-reset.
+- Daftar memakai grup tanggal tanpa kartu bertingkat, ringkasan net harian,
+  serta overview harian. Tap baris membuka edit; swipe tetap meminta konfirmasi
+  hapus.
+- CSV tetap tersedia di Pengaturan. Empty state Beranda dan Riwayat tidak
+  memiliki CTA tambahan dan mengarahkan pengguna ke FAB `+`.
+- Validasi selesai: `flutter analyze` bersih, `flutter test` 116/116 lulus,
+  `flutter build web` berhasil. Test Riwayat mencakup lebar 360dp dan text scale
+  1.3.
 
 ### Audit DoD (dijalankan di seluruh `lib/`)
 
