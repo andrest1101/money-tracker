@@ -1,68 +1,86 @@
 import 'package:flutter/material.dart';
 
-class DashboardSkeleton extends StatelessWidget {
-  const DashboardSkeleton({super.key, required this.userName});
+import '../../../../core/theme/app_spacing.dart';
 
-  final String userName;
+class DashboardSkeleton extends StatelessWidget {
+  const DashboardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return SafeArea(
+      bottom: false,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.maxContentWidth,
+          ),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screen,
+              AppSpacing.md,
+              AppSpacing.screen,
+              104,
+            ),
+            children: [
+              Row(
                 children: [
-                  SkeletonBox(width: 130, height: 18, colors: colors),
-                  const SizedBox(height: 6),
-                  SkeletonBox(width: 180, height: 30, colors: colors),
-                  const SizedBox(height: 7),
-                  SkeletonBox(width: 220, height: 12, colors: colors),
+                  SkeletonBox(width: 120, height: 14, colors: colors),
+                  const Spacer(),
+                  SkeletonBox(
+                    width: 36,
+                    height: 36,
+                    radius: 18,
+                    colors: colors,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  SkeletonBox(
+                    width: 40,
+                    height: 40,
+                    radius: 20,
+                    colors: colors,
+                  ),
                 ],
               ),
-            ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-          sliver: SliverList.list(
-            children: [
+              const SizedBox(height: AppSpacing.xs),
+              SkeletonBox(width: 150, height: 28, colors: colors),
+              const SizedBox(height: AppSpacing.lg),
               SkeletonBox(
                 width: double.infinity,
-                height: 160,
-                radius: 28,
+                height: 176,
+                radius: AppRadius.hero,
                 colors: colors,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.section),
+              SkeletonBox(width: 160, height: 20, colors: colors),
+              const SizedBox(height: AppSpacing.sm),
               SkeletonBox(
                 width: double.infinity,
-                height: 120,
-                radius: 24,
+                height: 64,
+                radius: AppRadius.control,
                 colors: colors,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.section),
+              SkeletonBox(width: 200, height: 20, colors: colors),
+              const SizedBox(height: AppSpacing.sm),
               SkeletonBox(
                 width: double.infinity,
-                height: 130,
-                radius: 24,
+                height: 150,
+                radius: AppRadius.control,
                 colors: colors,
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
 
 class SectionSkeleton extends StatelessWidget {
   const SectionSkeleton({super.key, required this.height});
+
   final double height;
 
   @override
@@ -71,7 +89,7 @@ class SectionSkeleton extends StatelessWidget {
     return SkeletonBox(
       width: double.infinity,
       height: height,
-      radius: 24,
+      radius: AppRadius.control,
       colors: colors,
     );
   }
@@ -88,8 +106,8 @@ class SkeletonBox extends StatelessWidget {
 
   final double width;
   final double height;
-  final double radius;
   final ColorScheme colors;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {

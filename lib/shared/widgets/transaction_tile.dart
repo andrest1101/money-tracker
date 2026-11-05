@@ -23,6 +23,7 @@ class TransactionTile extends StatelessWidget {
     this.onDismissed,
     this.dismissKey,
     this.showDivider = true,
+    this.padding = const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
   });
 
   final String category;
@@ -37,6 +38,10 @@ class TransactionTile extends StatelessWidget {
   final VoidCallback? onDismissed;
   final String? dismissKey;
   final bool showDivider;
+
+  /// Padding luar. Default mengikuti layar penuh. Set [EdgeInsets.zero] saat
+  /// baris dipakai di section yang sudah punya padding horizontal sendiri.
+  final EdgeInsetsGeometry padding;
 
   String? get _subtitle {
     final parts = <String>[
@@ -84,7 +89,7 @@ class TransactionTile extends StatelessWidget {
     final subtitle = _subtitle;
 
     final content = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+      padding: padding,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

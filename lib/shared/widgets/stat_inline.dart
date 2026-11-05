@@ -16,6 +16,10 @@ class StatInline extends StatelessWidget {
     this.showSign = false,
     this.alignment = CrossAxisAlignment.start,
     this.valueStyle,
+    this.labelColor,
+    this.valueColor,
+    this.isMasked = false,
+    this.maskedText = 'Rp •••',
   });
 
   final String label;
@@ -24,6 +28,16 @@ class StatInline extends StatelessWidget {
   final bool showSign;
   final CrossAxisAlignment alignment;
   final TextStyle? valueStyle;
+
+  /// Warna label. Null berarti mengikuti [AppColors.textSecondary].
+  final Color? labelColor;
+
+  /// Warna nominal. Null berarti mengikuti [tone].
+  final Color? valueColor;
+
+  /// Menyembunyikan nominal (privacy mode).
+  final bool isMasked;
+  final String maskedText;
 
   @override
   Widget build(BuildContext context) {
@@ -41,20 +55,38 @@ class StatInline extends StatelessWidget {
         Text(
           label,
           style: theme.textTheme.labelMedium?.copyWith(
-            color: context.appColors.textSecondary,
+            color: labelColor ?? context.appColors.textSecondary,
           ),
           textAlign: textAlign,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: AppSpacing.xxs),
-        AmountText(
-          amount: amount,
-          tone: tone,
-          showSign: showSign,
-          style: valueStyle ?? theme.textTheme.titleSmall,
-          textAlign: textAlign,
-        ),
+        if (isMasked)
+          Semantics(
+            label: '$label disembunyikan',
+            child: ExcludeSemantics(
+              child: Text(
+                maskedText,
+                style: (valueStyle ?? theme.textTheme.titleSmall)?.copyWith(
+                  color: valueColor,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+                textAlign: textAlign,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          )
+        else
+          AmountText(
+            amount: amount,
+            tone: tone,
+            showSign: showSign,
+            style: valueStyle ?? theme.textTheme.titleSmall,
+            color: valueColor,
+            textAlign: textAlign,
+          ),
       ],
     );
   }

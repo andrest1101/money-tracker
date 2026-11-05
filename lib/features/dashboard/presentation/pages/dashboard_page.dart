@@ -4,17 +4,23 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/local_storage/settings_providers.dart';
-import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
+import '../../../../core/navigation/navigation_providers.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../shared/widgets/section_header.dart';
 import '../../../settings/presentation/widgets/profile_avatar_sheet.dart';
+import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../transactions/presentation/providers/history_providers.dart';
+import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/balance_hero_card.dart';
 import '../widgets/budget_status_section.dart';
-import '../widgets/category_expense_pie_card.dart';
-import '../widgets/dashboard_empty_state.dart';
+import '../widgets/category_expense_section.dart';
 import '../widgets/dashboard_error_view.dart';
 import '../widgets/dashboard_skeleton.dart';
-import '../widgets/financial_insight_card.dart';
 import '../widgets/financial_insight_overview_sheet.dart';
+import '../widgets/financial_insight_section.dart';
+import '../widgets/recent_transactions_section.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -33,69 +39,114 @@ class DashboardPage extends ConsumerWidget {
       builder: (_) => const QuickAddTransactionSheet(),
     );
 
+    void openEditSheet(TransactionEntity transaction) =>
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) => QuickAddTransactionSheet(transaction: transaction),
+        );
+
+    void openHistory() {
+      resetHistoryFilters(ref);
+      ref.read(shellTabIndexProvider.notifier).select(ShellTabIndex.history);
+    }
+
     return Scaffold(
       body: summaryAsync.when(
-        loading: () => DashboardSkeleton(userName: userName),
+        loading: () => const DashboardSkeleton(),
         error: (_, __) => DashboardErrorView(
           onRetry: () => ref.invalidate(transactionsStreamProvider),
         ),
         data: (summary) {
-          final isEmpty = transactionsAsync.value?.isEmpty ?? false;
-          return CustomScrollView(
-            slivers: [
-              DashboardHeader(userName: userName),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                sliver: SliverList.list(
+          final transactions = (transactionsAsync.value ?? const [])
+              .where((transaction) => !transaction.isAllocation)
+              .toList(growable: false);
+
+          return SafeArea(
+            bottom: false,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppLayout.maxContentWidth,
+                ),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screen,
+                    AppSpacing.md,
+                    AppSpacing.screen,
+                    104,
+                  ),
                   children: [
-                    if (isEmpty) ...[
-                      DashboardEmptyState(
-                        userName: userName,
-                        onAdd: openAddSheet,
-                      ),
-                    ] else ...[
-                      BalanceHeroCard(
-                        summary: summary,
-                        transactions: transactionsAsync.value ?? const [],
-                      ),
-                      const SizedBox(height: 12),
-                      BudgetStatusSection(summary: summary),
-                      const SizedBox(height: 12),
-                      ref
-                          .watch(financialInsightProvider)
-                          .when(
-                            loading: () => const SectionSkeleton(height: 130),
-                            error: (_, __) => DashboardSectionError(
-                              label: 'Insight keuangan tidak tersedia',
-                              onRetry: () =>
-                                  ref.invalidate(financialInsightProvider),
-                            ),
-                            data: (insight) => FinancialInsightCard(
-                              insight: insight,
-                              onTap: () => showModalBottomSheet<void>(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                builder: (_) => FinancialInsightOverviewSheet(
-                                  insight: insight,
-                                  transactions:
-                                      transactionsAsync.value ?? const [],
-                                  cycleDay: ref.read(budgetCycleDateProvider),
-                                ),
-                              ),
-                            ),
-                          ),
-                      const SizedBox(height: 12),
-                      const CategoryExpensePieCard(),
-                    ],
+                    DashboardHeader(userName: userName),
+                    const SizedBox(height: AppSpacing.lg),
+                    BalanceHeroCard(
+                      summary: summary,
+                      transactions: transactions,
+                    ),
+                    const SizedBox(height: AppSpacing.section),
+                    const BudgetStatusSection(),
+                    const SizedBox(height: AppSpacing.section),
+                    CategoryExpenseSection(onAddExpense: openAddSheet),
+                    const SizedBox(height: AppSpacing.section),
+                    _insightBlock(context, ref, transactions),
+                    const SizedBox(height: AppSpacing.section),
+                    RecentTransactionsSection(
+                      transactions: transactions,
+                      onSeeAll: openHistory,
+                      onTransactionTap: openEditSheet,
+                      onAddTransaction: openAddSheet,
+                    ),
                   ],
                 ),
               ),
-            ],
+            ),
           );
         },
       ),
     );
+  }
+
+  Widget _insightBlock(
+    BuildContext context,
+    WidgetRef ref,
+    List<TransactionEntity> transactions,
+  ) {
+    return ref
+        .watch(financialInsightProvider)
+        .when(
+          loading: () => const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeader(title: 'Insight keuangan'),
+              SizedBox(height: AppSpacing.xxs),
+              SectionSkeleton(height: 96),
+            ],
+          ),
+          error: (_, __) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionHeader(title: 'Insight keuangan'),
+              const SizedBox(height: AppSpacing.xxs),
+              DashboardSectionError(
+                label: 'Insight keuangan tidak tersedia',
+                onRetry: () => ref.invalidate(financialInsightProvider),
+              ),
+            ],
+          ),
+          data: (insight) => FinancialInsightSection(
+            insight: insight,
+            onTap: () => showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              showDragHandle: true,
+              builder: (_) => FinancialInsightOverviewSheet(
+                insight: insight,
+                transactions: transactions,
+                cycleDay: ref.read(budgetCycleDateProvider),
+              ),
+            ),
+          ),
+        );
   }
 }
 
@@ -119,7 +170,7 @@ class DashboardHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+    final colors = context.appColors;
     final greeting = _greeting();
     final displayName = userName.trim().isEmpty
         ? 'Kamu'
@@ -127,105 +178,95 @@ class DashboardHeader extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final isGuest = user?.isAnonymous ?? true;
     final avatar = presetAvatarFor(ref.watch(profileAvatarProvider));
+    final avatarIconColor = avatar.color.computeLuminance() > .5
+        ? AppColors.light.textPrimary
+        : AppColors.light.surface;
 
-    return SliverToBoxAdapter(
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Material(
-                color: avatar.color,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  onTap: () => ProfileAvatarSheet.show(context),
-                  customBorder: const CircleBorder(),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2),
-                    child: CircleAvatar(
-                      radius: 24,
-                      backgroundColor: avatar.color,
-                      child: Icon(avatar.icon, color: Colors.white, size: 25),
+              Row(
+                children: [
+                  Text(
+                    greeting,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.textSecondary,
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          greeting,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colors.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  if (isGuest) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                      child: Text(
+                        'Tamu',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.textSecondary,
                         ),
-                        if (isGuest) ...[
-                          const SizedBox(width: 7),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colors.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              'Tamu',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: colors.onSurfaceVariant,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      displayName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -.45,
-                        color: colors.onSurface,
                       ),
                     ),
                   ],
-                ),
+                ],
               ),
-              Semantics(
-                button: true,
-                label: 'Notifikasi',
-                child: Material(
-                  color: colors.surfaceContainerHigh,
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Belum ada notifikasi baru'),
-                      ),
-                    ),
-                    customBorder: const CircleBorder(),
-                    child: const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Icon(Icons.notifications_none_rounded, size: 21),
-                    ),
-                  ),
-                ),
+              const SizedBox(height: 2),
+              Text(
+                displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleLarge,
               ),
             ],
           ),
         ),
-      ),
+        const SizedBox(width: AppSpacing.xs),
+        Semantics(
+          button: true,
+          label: 'Ubah foto profil',
+          child: Material(
+            color: avatar.color,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => ProfileAvatarSheet.show(context),
+              customBorder: const CircleBorder(),
+              child: SizedBox(
+                width: 36,
+                height: 36,
+                child: Icon(avatar.icon, color: avatarIconColor, size: 19),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Semantics(
+          button: true,
+          label: 'Notifikasi',
+          child: Material(
+            color: colors.surfaceVariant,
+            shape: const CircleBorder(),
+            child: InkWell(
+              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Belum ada notifikasi baru')),
+              ),
+              customBorder: const CircleBorder(),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(Icons.notifications_none_rounded, size: 21),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
