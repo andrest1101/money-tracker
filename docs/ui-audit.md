@@ -274,7 +274,7 @@ Tujuh koreksi berikut disetujui sebelum eksekusi:
 | 2 | Komponen bersama + widget test light/dark | **Selesai** |
 | 3 | Shell + Beranda | **Selesai** |
 | 4 | Riwayat | **Selesai** |
-| 5 | Target | Belum |
+| 5 | Target | **Selesai** |
 | 6 | Form transaksi + Pengaturan + Auth/Onboarding + sheet | Belum |
 | 7 | Polish: motion, aksesibilitas, dark sweep, dokumentasi | Belum |
 
@@ -300,6 +300,20 @@ git status --short
 - Validasi selesai: `flutter analyze` bersih, `flutter test` 116/116 lulus,
   `flutter build web` berhasil. Test Riwayat mencakup lebar 360dp dan text scale
   1.3.
+
+### Catatan Batch 5 — Target dan header Beranda (2026-11-05)
+
+- Header Beranda mempertahankan nama profil sebagai identitas utama dan tidak
+  lagi menambahkan badge “Tamu” yang bertentangan dengan nama profil.
+- Aksi arsip dan pengurutan Target tersedia pada menu overflow; pemilihan urutan
+  dilakukan melalui bottom sheet. Tab Aktif/Selesai dan penghitung tetap ada.
+- Empty state menggunakan widget bersama, halaman Target mengikuti max-width
+  dan spacing token, serta label tenggat membatasi baris agar tidak overflow.
+- Uji regresi khusus tersedia di `test/dashboard_header_test.dart` dan
+  `test/savings_page_test.dart`.
+- Validasi selesai: `flutter analyze` bersih, `flutter test` 119/119 lulus,
+  `flutter build web` berhasil. Test Target memvalidasi layout 360dp dengan
+  text scale 1.3.
 
 ### Audit DoD (dijalankan di seluruh `lib/`)
 

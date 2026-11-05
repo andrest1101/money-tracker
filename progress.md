@@ -495,6 +495,19 @@ Branch kerja: `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user).
     pencarian dan filter sheet.
   - Verifikasi: `flutter analyze` bersih, `flutter test` **116/116 lulus**,
     `flutter build web` berhasil.
+- **Perbaikan header Beranda + Batch 5 — Target:** selesai.
+  - Header Beranda tidak lagi menampilkan badge “Tamu” terpisah dari nama profil;
+    nama lokal yang telah dipilih tetap tampil sebagai identitas utama, dan
+    fallback akun anonim kini “Tamu”.
+  - Opsi arsip dan urutkan Target dipindah ke menu overflow; urutan dipilih
+    melalui bottom sheet. Tab Aktif/Selesai dan jumlah target tetap dipertahankan.
+  - Empty state Target memakai `EmptyState` bersama, padding mengikuti token,
+    konten dibatasi max-width, dan label tenggat mencegah overflow pada layar
+    sempit. Tidak ada perubahan model, Firestore, atau logika tabungan.
+  - Test baru: `test/dashboard_header_test.dart` dan
+    `test/savings_page_test.dart`.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **119/119 lulus**,
+    `flutter build web` berhasil.
 - Aturan git baru ada di `agents.md` Bagian 6. AI tidak commit/push; user commit manual.
 
 ---
