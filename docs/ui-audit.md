@@ -271,8 +271,8 @@ Tujuh koreksi berikut disetujui sebelum eksekusi:
 | --- | --- | --- |
 | 0 | Audit + branch + aturan git | **Selesai** |
 | 1 | Fondasi tema: token, font bundled, `ThemeExtension`, palet kategori | **Selesai** |
-| 2 | Komponen bersama + widget test light/dark | Berikutnya |
-| 3 | Shell + Beranda | Belum |
+| 2 | Komponen bersama + widget test light/dark | **Selesai** |
+| 3 | Shell + Beranda | Berikutnya |
 | 4 | Riwayat | Belum |
 | 5 | Target | Belum |
 | 6 | Form transaksi + Pengaturan + Auth/Onboarding + sheet | Belum |

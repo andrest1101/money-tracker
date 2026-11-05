@@ -442,9 +442,20 @@ Branch kerja: `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user).
   - Verifikasi: `flutter analyze` bersih, `flutter test` **81/81 lulus**,
     `flutter build web` berhasil.
   - Gradient tersisa: 10 titik (dihapus per layar pada batch berikutnya).
-- **Batch 2 — Komponen bersama:** berikutnya (`SectionHeader`, `AmountText`,
-  `StatInline`, `BudgetProgress`, `CategoryIcon`, `TransactionTile`, `GoalCard`,
-  `EmptyState`, `FilterSheet`) + widget test light/dark.
+- **Batch 2 — Komponen bersama:** selesai.
+  - `lib/shared/widgets/`: `SectionHeader`, `AmountText`, `StatInline`,
+    `BudgetProgress`, `CategoryIcon`, `TransactionTile`, `GoalCard`,
+    `EmptyState`, `FilterSheet`.
+  - `lib/core/constants/app_strings.dart`: label bersama (filter, aksi target).
+  - `formatRupiahSpoken()` menambahkan label pembaca layar pada nominal
+    ("minus dua belas ribu rupiah").
+  - `test/shared_widgets_test.dart`: 29 test, seluruh komponen diuji pada
+    tema terang dan gelap, plus layout 360dp dengan text scale 1.3.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **110/110 lulus**,
+    `flutter build web` berhasil.
+  - `lib/shared/` bersih dari gradient dan `Colors.*` literal.
+- **Batch 3 — Shell + Beranda:** berikutnya (`NavigationBar` + FAB, hero saldo,
+  anggaran, pengeluaran per kategori, insight, transaksi terbaru).
 - Aturan git baru ada di `agents.md` Bagian 6. AI tidak commit/push; user commit manual.
 
 ---
