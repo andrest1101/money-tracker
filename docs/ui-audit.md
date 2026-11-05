@@ -15,8 +15,10 @@
 
 Savu secara fungsi sudah lengkap (Fase 1–4 tuntas), tetapi lapisan visualnya tumbuh organik:
 
-- **395 referensi warna literal** (`Colors.*`) tersebar di **40 file**.
-- **11 gradient** dekoratif di layar utama, auth, onboarding, dan swipe action.
+- **42 referensi warna literal** (`Colors.*`, di luar `Colors.transparent`)
+  tersebar di **14 file**.
+- **11 gradient** dekoratif di layar utama, auth, onboarding, dan swipe action
+  (10 tersisa setelah `AppPageBackground` dibersihkan di Batch 1).
 - Hampir semua section dibungkus kartu dengan treatment yang sama, sehingga tidak ada hierarki.
 - Navigasi pill melayang menutupi konten dan memotong label.
 - Tema gelap memakai palet manual, tetapi masih banyak warna hardcoded yang tidak ikut tema.
@@ -165,51 +167,32 @@ Ya. `fl_chart` dipakai di **4 file**:
 
 ### 5.5 Berapa banyak warna literal dan gradient?
 
-**Warna literal `Colors.*` (di luar `Colors.transparent`): 395 referensi di 40 file.**
+**Warna literal `Colors.*` (di luar `Colors.transparent`): 42 referensi di 14 file.**
+
+Angka ini hasil scan case-sensitive dengan word boundary
+(`Select-String -CaseSensitive -Pattern '\bColors\.'`). Scan tanpa
+`-CaseSensitive` salah menghitung variabel `colors.` dan `AppColors.`
+sehingga angkanya membengkak.
 
 | Jumlah | File |
 | ---: | --- |
-| 36 | `dashboard/presentation/widgets/financial_insight_overview_sheet.dart` |
-| 32 | `dashboard/presentation/widgets/budget_status_section.dart` |
-| 31 | `onboarding/presentation/widgets/onboarding_slide.dart` |
-| 25 | `dashboard/presentation/widgets/balance_hero_card.dart` |
-| 21 | `analytics/presentation/widgets/expense_flow_overview_sheet.dart` |
-| 19 | `auth/presentation/pages/auth_landing_page.dart` |
-| 19 | `analytics/presentation/widgets/cash_flow_chart_card.dart` |
-| 16 | `core/navigation/app_shell.dart` |
-| 15 | `savings/presentation/pages/savings_page.dart` |
-| 15 | `settings/presentation/widgets/contact_us_entry.dart` |
-| 14 | `settings/presentation/widgets/settings_profile_section.dart` |
-| 12 | `dashboard/presentation/widgets/financial_insight_card.dart` |
-| 11 | `analytics/presentation/widgets/balance_trend_chart_card.dart` |
-| 11 | `dashboard/presentation/widgets/dashboard_empty_state.dart` |
-| 10 | `transactions/presentation/widgets/category_filter_sheet.dart` |
-| 10 | `settings/presentation/widgets/help_center_sheet.dart` |
-| 8 | `settings/presentation/widgets/help_center_entry.dart` |
 | 8 | `settings/presentation/widgets/settings_data_section.dart` |
-| 8 | `settings/presentation/widgets/account_security_sheet.dart` |
-| 8 | `dashboard/presentation/widgets/category_expense_pie_card.dart` |
-| 8 | `onboarding/presentation/pages/onboarding_page.dart` |
-| 6 | `dashboard/presentation/pages/dashboard_page.dart` |
-| 5 | `transactions/presentation/widgets/manage_categories_sheet.dart` |
-| 5 | `settings/presentation/widgets/profile_avatar_sheet.dart` |
-| 5 | `auth/presentation/pages/email_verification_page.dart` |
+| 7 | `settings/presentation/widgets/settings_profile_section.dart` |
+| 5 | `dashboard/presentation/widgets/budget_status_section.dart` |
 | 4 | `savings/presentation/widgets/edit_allocation_sheet.dart` |
-| 4 | `savings/presentation/widgets/goal_celebration_dialog.dart` |
 | 4 | `transactions/presentation/widgets/quick_add_transaction_sheet.dart` |
-| 3 | `transactions/presentation/pages/history_page.dart` |
-| 3 | `core/widgets/app_page_background.dart` |
-| 3 | `dashboard/presentation/widgets/dashboard_error_view.dart` |
-| 3 | `core/theme/savu_theme.dart` |
-| 3 | `settings/presentation/widgets/developer_card.dart` |
-| 2 | `transactions/presentation/widgets/transaction_tile.dart` |
+| 3 | `dashboard/presentation/widgets/category_expense_pie_card.dart` |
 | 2 | `transactions/presentation/widgets/category_icon.dart` |
-| 2 | `settings/presentation/widgets/settings_snack_bar.dart` |
 | 2 | `settings/presentation/widgets/settings_financial_section.dart` |
-| 1 | `settings/presentation/widgets/settings_section_title.dart` |
-| 1 | `dashboard/presentation/widgets/dashboard_skeleton.dart` |
+| 2 | `transactions/presentation/widgets/transaction_tile.dart` |
+| 1 | `core/theme/app_theme.dart` (baru, `Colors.black54` untuk barrier) |
+| 1 | `core/navigation/app_shell.dart` |
+| 1 | `dashboard/presentation/pages/dashboard_page.dart` |
+| 1 | `settings/presentation/widgets/profile_avatar_sheet.dart` |
+| 1 | `onboarding/presentation/pages/onboarding_page.dart` |
 
-**Gradient: 11 titik.**
+**Gradient: 11 titik saat audit Batch 0.** `AppPageBackground` sudah
+dibersihkan di Batch 1, jadi tersisa **10 titik** yang harus disapu per layar.
 
 | File | Baris | Jenis |
 | --- | ---: | --- |
@@ -275,7 +258,7 @@ Tujuh koreksi berikut disetujui sebelum eksekusi:
 | Font asset belum tersedia | Unduh Plus Jakarta Sans (variable/4 weight) + lisensi OFL di Batch 1; hapus `google_fonts` setelah migrasi |
 | APK bertambah karena font | Gunakan 3–4 weight saja; ukur `flutter build apk --release` |
 | `lib/shared/` belum ada | Buat folder di Batch 2; migrasi `core/widgets` secara bertahap |
-| Warna literal 395 titik | Sapu per batch sesuai layar; DoD mencegah regresi |
+| Warna literal 42 titik | Sapu per batch sesuai layar; DoD mencegah regresi |
 | Dua `MaterialApp` lupa diperbarui | Checklist Batch 1 |
 | Fitur tidak sengaja hilang | Inventory Bagian 4 menjadi checklist regresi |
 | Gradient removal mengubah karakter visual | Review screenshot light/dark setiap batch sebelum commit |
@@ -287,8 +270,8 @@ Tujuh koreksi berikut disetujui sebelum eksekusi:
 | Batch | Isi | Status |
 | --- | --- | --- |
 | 0 | Audit + branch + aturan git | **Selesai** |
-| 1 | Fondasi tema: token, font bundled, `ThemeExtension`, palet kategori | Berikutnya |
-| 2 | Komponen bersama + widget test light/dark | Belum |
+| 1 | Fondasi tema: token, font bundled, `ThemeExtension`, palet kategori | **Selesai** |
+| 2 | Komponen bersama + widget test light/dark | Berikutnya |
 | 3 | Shell + Beranda | Belum |
 | 4 | Riwayat | Belum |
 | 5 | Target | Belum |
@@ -310,9 +293,12 @@ git status --short
 Select-String -Path (Get-ChildItem -Recurse lib -Filter *.dart).FullName `
   -Pattern 'LinearGradient|RadialGradient|SweepGradient'
 
-# Warna literal harus kosong (kecuali Colors.transparent)
-Select-String -Path (Get-ChildItem -Recurse lib -Filter *.dart).FullName `
-  -Pattern 'Colors\.' | Where-Object { $_.Line -notmatch 'Colors\.transparent' }
+# Warna literal harus kosong (kecuali Colors.transparent).
+# -CaseSensitive wajib: tanpa itu variabel `colors.` dan `AppColors.` ikut terhitung.
+Select-String -CaseSensitive `
+  -Path (Get-ChildItem -Recurse lib -Filter *.dart).FullName `
+  -Pattern '\bColors\.' |
+  Where-Object { $_.Line -notmatch '\bColors\.transparent' }
 ```
 
 ---
