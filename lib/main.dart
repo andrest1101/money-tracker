@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/firebase/auth_providers.dart';
 import 'core/local_storage/settings_providers.dart';
 import 'core/navigation/app_shell.dart';
-import 'core/theme/savu_theme.dart';
+import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/pages/auth_landing_page.dart';
 import 'features/auth/presentation/pages/email_verification_page.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
@@ -130,8 +130,8 @@ class _AuthGate extends ConsumerWidget {
       title: 'Savu',
       debugShowCheckedModeBanner: false,
       themeMode: ref.watch(appThemeModeProvider),
-      theme: SavuTheme.light(),
-      darkTheme: SavuTheme.dark(),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
       home: AnimatedSwitcher(
         duration: const Duration(milliseconds: 420),
         reverseDuration: const Duration(milliseconds: 280),
@@ -190,8 +190,8 @@ class SavuApp extends ConsumerWidget {
       title: 'Savu',
       debugShowCheckedModeBanner: false,
       themeMode: ref.watch(appThemeModeProvider),
-      theme: SavuTheme.light(),
-      darkTheme: SavuTheme.dark(),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
       builder: (context, child) {
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
