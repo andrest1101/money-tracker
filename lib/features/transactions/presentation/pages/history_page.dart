@@ -724,7 +724,12 @@ class _DailyOverviewSheet extends StatelessWidget {
             const SizedBox(height: 4),
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screen,
+                  0,
+                  AppSpacing.screen,
+                  AppSpacing.xl,
+                ),
                 itemCount: transactions.length,
                 itemBuilder: (context, index) => shared.TransactionTile(
                   category: transactions[index].category,

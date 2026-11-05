@@ -9,7 +9,6 @@ class HelpCenterEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
@@ -22,16 +21,8 @@ class HelpCenterEntry extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? colors.surfaceContainerHigh : null,
-              gradient: isDark
-                  ? null
-                  : LinearGradient(
-                      colors: [
-                        colors.primaryContainer,
-                        colors.surfaceContainerHigh,
-                      ],
-                    ),
-              border: isDark ? Border.all(color: colors.outlineVariant) : null,
+              color: colors.surfaceContainerHigh,
+              border: Border.all(color: colors.outlineVariant),
             ),
             child: Row(
               children: [

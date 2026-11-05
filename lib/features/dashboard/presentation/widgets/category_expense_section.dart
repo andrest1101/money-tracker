@@ -72,7 +72,11 @@ class _CategoryExpenseContent extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _CategoryStackedBar(categories: categories, total: total),
+        _CategoryStackedBar(
+          key: const ValueKey('category-expense-stacked-bar'),
+          categories: categories,
+          total: total,
+        ),
         const SizedBox(height: AppSpacing.sm),
         for (var i = 0; i < topCategories.length; i++)
           _CategoryRow(
@@ -137,7 +141,11 @@ class _CategoryExpenseContent extends ConsumerWidget {
 }
 
 class _CategoryStackedBar extends StatelessWidget {
-  const _CategoryStackedBar({required this.categories, required this.total});
+  const _CategoryStackedBar({
+    super.key,
+    required this.categories,
+    required this.total,
+  });
 
   final List<CategoryExpenseEntity> categories;
   final double total;
@@ -225,7 +233,9 @@ class _CategoryRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.xs),
-                  Flexible(
+                  SizedBox(
+                    key: const ValueKey('category-expense-amount-column'),
+                    width: 112,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
