@@ -7,8 +7,8 @@
 
 ## Timestamp
 
-- **Terakhir update:** 2026-09-05
-- **Branch aktif:** `develop_dua` (tracking `origin/develop_dua`)
+- **Terakhir update:** 2026-11-05
+- **Branch aktif:** `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user)
 - **Dibuat oleh:** Andre Robert
 
 ---
@@ -127,12 +127,13 @@ Status yang digunakan: `Selesai`, `Berjalan`, `Belum dimulai`, `Ditunda`.
 - Implementasi: `goal_celebration_dialog.dart` (package `confetti`).
 
 #### C3. Savings Archive and Goal Actions — `Selesai`
-- `SavingsGoalEntity` punya field `isArchived` dan `isFavorite` (default `false`).
+- `SavingsGoalEntity` punya field `isArchived` (default `false`).
 - Provider: `archivedModeProvider`, `archivedActiveGoalsProvider`, `archivedCompletedGoalsProvider`.
 - `activeGoalsProvider`/`completedGoalsProvider` memfilter `!isArchived`.
 - `deleteCompletedGoal()` hanya hapus dokumen target; transaksi alokasi tetap sebagai ledger.
 - `deleteGoalWithAllocations()` untuk target aktif.
-- **Fitur favorit dicabut dari UI** (`2904310`): field `isFavorite` masih ada di entity/model tapi tidak terpakai.
+- **Fitur favorit dicabut dari UI** (`2904310`): field `isFavorite` sudah
+  dihapus dari entity, model, dan data source.
 
 ### D. Transaction History
 
@@ -418,13 +419,106 @@ main()
 
 ---
 
+## UI/UX Refactor v2
+
+Pekerjaan aktif sekarang adalah **Fase 5 — UI/UX Refactor** sesuai `PRD.md` versi 2.0.
+Branch kerja: `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user).
+
+- **Batch 0 — Audit:** selesai. Hasil di `docs/ui-audit.md`.
+  - Inventaris 8 layar, 13 sheet/dialog, dan seluruh fitur di luar PRD lama.
+  - 42 referensi warna literal di 14 file; 11 gradient saat audit
+    (10 tersisa setelah `AppPageBackground` dibersihkan di Batch 1).
+  - `fl_chart` tetap dipakai di 4 file (pie, insight bar, cash flow, balance trend).
+  - Alur buat target hanya lewat tombol `+` di navigasi pill.
+- **Batch 1 — Fondasi tema:** selesai.
+  - File baru: `app_colors.dart` (`ThemeExtension` semantik), `app_theme.dart`,
+    `app_typography.dart`, `app_spacing.dart`, `category_palette.dart`.
+  - Plus Jakarta Sans (5 weight) di-bundle di `assets/fonts/` + lisensi OFL;
+    dependency `google_fonts` dihapus.
+  - `savu_theme.dart` dihapus; `main.dart` memakai `AppTheme.light()`/`AppTheme.dark()`.
+  - `AppPageBackground` tidak lagi memakai gradient; memakai `AppColors.background`.
+  - Test baru `test/app_theme_test.dart`: kontras 4.5:1, font, elevation kartu,
+    dan stabilitas palet kategori.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **81/81 lulus**,
+    `flutter build web` berhasil.
+  - Gradient tersisa: 10 titik (dihapus per layar pada batch berikutnya).
+- **Batch 2 — Komponen bersama:** selesai.
+  - `lib/shared/widgets/`: `SectionHeader`, `AmountText`, `StatInline`,
+    `BudgetProgress`, `CategoryIcon`, `TransactionTile`, `GoalCard`,
+    `EmptyState`, `FilterSheet`.
+  - `lib/core/constants/app_strings.dart`: label bersama (filter, aksi target).
+  - `formatRupiahSpoken()` menambahkan label pembaca layar pada nominal
+    ("minus dua belas ribu rupiah").
+  - `test/shared_widgets_test.dart`: 29 test, seluruh komponen diuji pada
+    tema terang dan gelap, plus layout 360dp dengan text scale 1.3.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **110/110 lulus**,
+    `flutter build web` berhasil.
+  - `lib/shared/` bersih dari gradient dan `Colors.*` literal.
+- **Batch 3 — Shell + Beranda:** selesai.
+  - `AppShell` memakai `NavigationBar` 4 tab (Beranda, Target, Riwayat,
+    Pengaturan) + FAB `endFloat` kontekstual; state tab di
+    `shellTabIndexProvider`; `IndexedStack` hanya membangun tab yang pernah
+    dibuka.
+  - FAB Beranda/Riwayat membuka `QuickAddTransactionSheet`, FAB Target membuka
+    `AddGoalSheet`, tab Pengaturan tanpa FAB.
+  - Beranda dirombak: header ringkas, hero saldo solid `primaryContainer`,
+    anggaran cardless dengan `BudgetProgress`, kategori memakai stacked bar
+    (maksimal 5 baris, tanpa PieChart), insight cardless, dan 5 transaksi
+    terbaru dengan aksi "Lihat semua".
+  - File baru: `navigation_providers.dart`, `category_expense_section.dart`,
+    `financial_insight_section.dart`, `recent_transactions_section.dart`.
+  - File lama dihapus: `category_expense_pie_card.dart`,
+    `financial_insight_card.dart`, `dashboard_empty_state.dart` beserta test.
+  - `TransactionTile` mendapat parameter `padding`; `StatInline` mendukung
+    warna kustom dan privacy masking.
+  - Test diperbarui: `test/widget_test.dart` untuk navigasi/FAB baru dan
+    `test/dashboard_sections_test.dart` untuk layout 360dp/text scale 1.3.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **111/111 lulus**,
+    `flutter build web` berhasil.
+  - Gradient tersisa: 5 titik (auth, onboarding, dua help center, dan swipe
+    action `TransactionTile` yang akan disapu pada batch layar terkait).
+- **Batch 4 — Riwayat:** selesai.
+  - App bar ringkas dengan pencarian inline yang dapat dibuka/tutup dan filter
+    dalam bottom sheet; filter tipe memakai segmented control Semua/Pemasukan/
+    Pengeluaran.
+  - Filter kategori, periode (7/30 hari atau rentang khusus), serta siklus aktif
+    tetap tersedia. Chip filter aktif bisa dihapus satu per satu atau di-reset.
+  - Grup tanggal tanpa kartu bertingkat, ringkasan net harian, dan overview
+    harian tetap tersedia. Ketuk transaksi membuka edit; swipe meminta
+    konfirmasi hapus.
+  - Empty state Riwayat hanya mengarahkan pengguna ke FAB `+`, tanpa CTA aksi
+    duplikat. Empty state kategori dan transaksi terbaru Beranda juga memakai
+    pola arahan yang sama.
+  - CSV tetap tersedia lewat Pengaturan; tidak mengubah alur ekspor yang ada.
+  - Test baru `test/history_page_test.dart` mencakup empty state, filter kategori/
+    tanggal/siklus, serta layout 360dp dan text scale 1.3. Test shell mencakup
+    pencarian dan filter sheet.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **116/116 lulus**,
+    `flutter build web` berhasil.
+- **Perbaikan header Beranda + Batch 5 — Target:** selesai.
+  - Header Beranda tidak lagi menampilkan badge “Tamu” terpisah dari nama profil;
+    nama lokal yang telah dipilih tetap tampil sebagai identitas utama, dan
+    fallback akun anonim kini “Tamu”.
+  - Opsi arsip dan urutkan Target dipindah ke menu overflow; urutan dipilih
+    melalui bottom sheet. Tab Aktif/Selesai dan jumlah target tetap dipertahankan.
+  - Empty state Target memakai `EmptyState` bersama, padding mengikuti token,
+    konten dibatasi max-width, dan label tenggat mencegah overflow pada layar
+    sempit. Tidak ada perubahan model, Firestore, atau logika tabungan.
+  - Test baru: `test/dashboard_header_test.dart` dan
+    `test/savings_page_test.dart`.
+  - Verifikasi: `flutter analyze` bersih, `flutter test` **119/119 lulus**,
+    `flutter build web` berhasil.
+- Aturan git baru ada di `agents.md` Bagian 6. AI tidak commit/push; user commit manual.
+
+---
+
 ## NEXT TASK
 
 1. **Tahap 31:** daftarkan SHA-1/SHA-256 keystore release ke Firebase Console dan `web/.well-known/assetlinks.json`, lalu validasi Google Sign-In + deep link pada APK release.
 2. **Validasi alur onboarding:** pastikan user lama tidak terjebak di onboarding.
 3. **Uji regresi kategori "Kesehatan & Perawatan":** cek transaksi lama berkategori "Alokasi Tabungan" tidak hilang dari pie chart dan filter.
 4. **Validasi di device Android:** dark theme baru, warna progress target, warna peringatan budget, avatar picker, kontak founder.
-5. **Tahap 32:** bersihkan field `isFavorite` yang sudah tidak terpakai, atau pulihkan fitur favorit.
+5. **Tahap 32:** ~~bersihkan field `isFavorite`~~ (selesai — field sudah dihapus).
 6. **Tahap 33:** validasi regresi data lama pasca penggantian default kategori.
 7. **Tahap 34:** konfigurasi Google Sign-In iOS (butuh Mac/Xcode + `GoogleService-Info.plist` + `REVERSED_CLIENT_ID`).
 
@@ -479,7 +573,7 @@ main()
 ### Terbuka
 
 - [ ] Tahap 31: daftarkan SHA-1/SHA-256 keystore release ke Firebase Console.
-- [ ] Tahap 32: bersihkan field `isFavorite` yang sudah tidak terpakai.
+- [x] Tahap 32: hapus field `isFavorite` yang sudah tidak terpakai.
 - [ ] Tahap 33: validasi regresi data lama pasca penggantian default kategori.
 - [ ] Tahap 34: konfigurasi Google Sign-In iOS.
 
@@ -547,7 +641,8 @@ lib/
 - **`main.dart` memiliki dua `MaterialApp`**: `_AuthGate` dan `SavuApp`. Keduanya mengamankan `appThemeModeProvider` dan memakai `SavuTheme.light()`/`SavuTheme.dark()`.
 - **`historyNavigationIntentProvider`** dipantau `AppShell` lewat `ref.listen` untuk memindahkan tab ke Riwayat dari budget overview.
 - **`Alokasi Tabungan` adalah kategori sistem**: dipakai `savings_providers.dart:227` untuk alokasi otomatis, disembunyikan dari chip user. Jangan dihapus.
-- **`isFavorite` mati suri**: ada di entity dan model, tapi tidak dipakai UI mana pun.
+- **`isFavorite` sudah dihapus** dari entity, model, dan data source; tidak ada
+  sisa referensi di `lib/`.
 - **ASET `assets/images/Savu_logo.png` tidak ada di working tree**. Hanya `assets/images/app_icon.png` yang terdaftar di `pubspec.yaml`.
 
 ---
@@ -555,7 +650,7 @@ lib/
 ## Verifikasi Terakhir
 
 - `flutter analyze`: **No issues found**
-- `flutter test`: **73/73 lulus** (21 file test)
+- `flutter test`: **81/81 lulus** (22 file test)
 - `flutter build web`: berhasil
 - `flutter build apk --debug`: berhasil
 - `flutter build windows --debug`: berhasil

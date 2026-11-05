@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../shared/widgets/empty_state.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../providers/savings_providers.dart';
@@ -126,6 +128,70 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
     );
   }
 
+  String _sortLabel(SavingsSortOption option) => switch (option) {
+    SavingsSortOption.newest => 'Terbaru',
+    SavingsSortOption.oldest => 'Terlama',
+    SavingsSortOption.progress => 'Progres tertinggi',
+  };
+
+  Future<void> _showSortOptions(SavingsSortOption currentSort) async {
+    final selection = await showModalBottomSheet<SavingsSortOption>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Urutkan target',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Pilih urutan yang paling membantu kamu.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              for (final option in SavingsSortOption.values)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    currentSort == option
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_unchecked_rounded,
+                    color: currentSort == option
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  title: Text(_sortLabel(option)),
+                  onTap: () => Navigator.pop(sheetContext, option),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (selection == null || !mounted) return;
+    try {
+      await ref
+          .read(savingsSortControllerProvider.notifier)
+          .setSortOption(selection);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Urutan target gagal disimpan.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -148,6 +214,43 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
       appBar: AppBar(
         title: Text(archivedMode ? 'Target Diarsipkan' : 'Target Tabungan'),
         centerTitle: false,
+        actions: [
+          PopupMenuButton<String>(
+            tooltip: 'Opsi target',
+            onSelected: (action) {
+              switch (action) {
+                case 'sort':
+                  _showSortOptions(sortOption);
+                case 'archive':
+                  ref.read(archivedModeProvider.notifier).toggle();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'archive',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    archivedMode
+                        ? Icons.unarchive_outlined
+                        : Icons.archive_outlined,
+                  ),
+                  title: Text(archivedMode ? 'Target aktif' : 'Diarsipkan'),
+                ),
+              ),
+              PopupMenuItem(
+                value: 'sort',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.sort_rounded),
+                  title: const Text('Urutkan'),
+                  subtitle: Text(_sortLabel(sortOption)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: AppSpacing.xs),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: [
@@ -155,11 +258,9 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.trending_up_rounded, size: 18),
-                  const SizedBox(width: 6),
                   const Text('Aktif'),
                   if (activeCount > 0) ...[
-                    const SizedBox(width: 6),
+                    const SizedBox(width: AppSpacing.xs),
                     _TabBadge(count: activeCount, color: cs.primary),
                   ],
                 ],
@@ -169,11 +270,9 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.emoji_events_rounded, size: 18),
-                  const SizedBox(width: 6),
                   const Text('Selesai'),
                   if (completedCount > 0) ...[
-                    const SizedBox(width: 6),
+                    const SizedBox(width: AppSpacing.xs),
                     _TabBadge(
                       count: completedCount,
                       color: Theme.of(context).brightness == Brightness.dark
@@ -189,210 +288,47 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
       ),
       body: Column(
         children: [
-          // Sort filter chips
-          _SortFilterRow(currentSort: sortOption),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: _ArchiveButton(
-                selected: archivedMode,
-                onPressed: () =>
-                    ref.read(archivedModeProvider.notifier).toggle(),
-              ),
-            ),
-          ),
-
-          // Tab views
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // Tab 1: Aktif
-                _GoalListView(
-                  goalsAsync: activeList,
-                  emptyIcon: Icons.savings_outlined,
-                  emptyTitle: archivedMode
-                      ? 'Belum ada target aktif di arsip'
-                      : 'Belum ada target aktif',
-                  emptySubtitle: archivedMode
-                      ? 'Target aktif yang kamu arsipkan akan muncul di sini.'
-                      : 'Tap tombol + di navigasi bawah untuk mulai menabung\nuntuk impianmu!',
-                  onAllocate: _showAllocateSheet,
-                  onDelete: _confirmDeleteGoal,
-                  onArchive: (goal) => _toggleArchive(goal),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppLayout.maxContentWidth,
                 ),
-                // Tab 2: Selesai
-                _GoalListView(
-                  goalsAsync: completedList,
-                  emptyIcon: Icons.emoji_events_outlined,
-                  emptyTitle: archivedMode
-                      ? 'Belum ada target selesai di arsip'
-                      : 'Belum ada target selesai',
-                  emptySubtitle: archivedMode
-                      ? 'Target selesai yang kamu arsipkan akan muncul di sini.'
-                      : 'Target yang sudah mencapai 100% akan muncul di sini.',
-                  onAllocate: _showAllocateSheet,
-                  onDelete: _confirmDeleteGoal,
-                  onArchive: (goal) => _toggleArchive(goal),
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _GoalListView(
+                      goalsAsync: activeList,
+                      emptyIcon: Icons.savings_outlined,
+                      emptyTitle: archivedMode
+                          ? 'Belum ada target aktif di arsip'
+                          : 'Belum ada target aktif',
+                      emptySubtitle: archivedMode
+                          ? 'Target aktif yang kamu arsipkan akan muncul di sini.'
+                          : 'Ketuk tombol + di bawah untuk mulai menabung bagi impianmu.',
+                      onAllocate: _showAllocateSheet,
+                      onDelete: _confirmDeleteGoal,
+                      onArchive: _toggleArchive,
+                    ),
+                    _GoalListView(
+                      goalsAsync: completedList,
+                      emptyIcon: Icons.emoji_events_outlined,
+                      emptyTitle: archivedMode
+                          ? 'Belum ada target selesai di arsip'
+                          : 'Belum ada target selesai',
+                      emptySubtitle: archivedMode
+                          ? 'Target selesai yang kamu arsipkan akan muncul di sini.'
+                          : 'Target yang sudah mencapai 100% akan muncul di sini.',
+                      onAllocate: _showAllocateSheet,
+                      onDelete: _confirmDeleteGoal,
+                      onArchive: _toggleArchive,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SortFilterRow extends ConsumerWidget {
-  const _SortFilterRow({required this.currentSort});
-
-  final SavingsSortOption currentSort;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colors = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-      child: Row(
-        children: [
-          Icon(Icons.sort_rounded, size: 17, color: colors.onSurfaceVariant),
-          const SizedBox(width: 7),
-          Text(
-            'Urutkan',
-            style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _SortChip(
-                    label: 'Terbaru',
-                    icon: Icons.fiber_new_rounded,
-                    selected: currentSort == SavingsSortOption.newest,
-                    onTap: () => ref
-                        .read(savingsSortControllerProvider.notifier)
-                        .setSortOption(SavingsSortOption.newest),
-                  ),
-                  const SizedBox(width: 8),
-                  _SortChip(
-                    label: 'Terlama',
-                    icon: Icons.history_rounded,
-                    selected: currentSort == SavingsSortOption.oldest,
-                    onTap: () => ref
-                        .read(savingsSortControllerProvider.notifier)
-                        .setSortOption(SavingsSortOption.oldest),
-                  ),
-                  const SizedBox(width: 8),
-                  _SortChip(
-                    label: 'Progress',
-                    icon: Icons.bar_chart_rounded,
-                    selected: currentSort == SavingsSortOption.progress,
-                    onTap: () => ref
-                        .read(savingsSortControllerProvider.notifier)
-                        .setSortOption(SavingsSortOption.progress),
-                  ),
-                ],
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SortChip extends StatelessWidget {
-  const _SortChip({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected
-              ? colors.primary.withValues(alpha: .12)
-              : colors.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: selected
-                ? colors.primary.withValues(alpha: .5)
-                : colors.outlineVariant,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 14,
-              color: selected ? colors.primary : colors.onSurfaceVariant,
-            ),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: selected ? colors.primary : colors.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ArchiveButton extends StatelessWidget {
-  const _ArchiveButton({required this.selected, required this.onPressed});
-
-  final bool selected;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(
-        selected ? Icons.inventory_2_rounded : Icons.archive_outlined,
-        size: 17,
-      ),
-      label: Text(selected ? 'Kembali' : 'Diarsipkan'),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: selected ? colors.primary : colors.onSurfaceVariant,
-        backgroundColor: isDark
-            ? colors.surfaceContainerHigh
-            : (selected
-                  ? colors.primaryContainer
-                  : colors.surfaceContainerHigh),
-        side: BorderSide(
-          color: selected
-              ? colors.primary.withValues(alpha: .55)
-              : colors.outlineVariant,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
@@ -484,48 +420,26 @@ class _GoalListView extends ConsumerWidget {
       data: (goals) {
         if (goals.isEmpty) {
           return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: cs.primary.withValues(alpha: 0.08),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      emptyIcon,
-                      size: 52,
-                      color: cs.primary.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    emptyTitle,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    emptySubtitle,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurfaceVariant,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: EmptyState(
+                icon: emptyIcon,
+                title: emptyTitle,
+                message: emptySubtitle,
+                compact: false,
+                padding: EdgeInsets.zero,
               ),
             ),
           );
         }
 
         return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screen,
+            AppSpacing.sm,
+            AppSpacing.screen,
+            104,
+          ),
           itemCount: goals.length,
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) => GoalCard(
@@ -547,7 +461,12 @@ class _GoalListSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        AppSpacing.sm,
+        AppSpacing.screen,
+        104,
+      ),
       itemCount: 3,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (_, __) => Container(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+
 class DashboardErrorView extends StatelessWidget {
   const DashboardErrorView({super.key, required this.onRetry});
 
@@ -68,19 +71,24 @@ class DashboardSectionError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(
-          Icons.cloud_off_outlined,
-          color: Theme.of(context).colorScheme.error,
+    final colors = context.appColors;
+    return Row(
+      children: [
+        Icon(Icons.cloud_off_outlined, size: 20, color: colors.danger),
+        const SizedBox(width: AppSpacing.xs),
+        Expanded(
+          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
         ),
-        title: Text(label),
-        trailing: IconButton(
-          tooltip: 'Coba lagi',
+        TextButton(
           onPressed: onRetry,
-          icon: const Icon(Icons.refresh_rounded),
+          style: TextButton.styleFrom(
+            minimumSize: const Size(0, 48),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: const Text('Coba lagi'),
         ),
-      ),
+      ],
     );
   }
 }

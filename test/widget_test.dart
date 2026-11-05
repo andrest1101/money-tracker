@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:savu/core/local_storage/settings_providers.dart';
-import 'package:savu/core/navigation/app_shell.dart';
 import 'package:savu/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,38 +14,91 @@ Future<Widget> buildApp() async {
   );
 }
 
+Future<void> pumpApp(WidgetTester tester) async {
+  await tester.pumpWidget(await buildApp());
+  await tester.pumpAndSettle();
+}
+
+Finder navBarLabel(String label) {
+  return find.descendant(
+    of: find.byType(NavigationBar),
+    matching: find.text(label),
+  );
+}
+
 void main() {
-  testWidgets('app shell menampilkan navigation bar dan tab beranda', (
+  testWidgets('app shell menampilkan navigation bar empat tab dan FAB', (
     tester,
   ) async {
-    await tester.pumpWidget(await buildApp());
+    await pumpApp(tester);
 
-    expect(find.byType(FloatingPillNavigation), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(FloatingPillNavigation),
-        matching: find.text('Beranda'),
-      ),
-      findsOneWidget,
-    );
+    expect(find.byType(NavigationBar), findsOneWidget);
+    for (final label in ['Beranda', 'Target', 'Riwayat', 'Pengaturan']) {
+      expect(navBarLabel(label), findsOneWidget);
+    }
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byTooltip('Catat transaksi'), findsOneWidget);
   });
 
   testWidgets('pindah tab melalui navigation bar', (tester) async {
-    await tester.pumpWidget(await buildApp());
+    await pumpApp(tester);
 
-    await tester.tap(find.text('Riwayat'));
+    await tester.tap(navBarLabel('Riwayat'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Belum ada transaksi'), findsOneWidget);
+    expect(navBarLabel('Riwayat'), findsOneWidget);
+    expect(find.text('Cari transaksi'), findsNothing);
+
+    expect(find.byTooltip('Cari transaksi'), findsOneWidget);
+  });
+
+  testWidgets('Riwayat membuka pencarian inline dan filter sheet', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await tester.tap(navBarLabel('Riwayat'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byWidgetPredicate((widget) => widget is SegmentedButton),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('Cari transaksi'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsOneWidget);
+    await tester.tap(find.byTooltip('Tutup pencarian'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNothing);
+
+    await tester.tap(find.byTooltip('Filter transaksi'));
+    await tester.pumpAndSettle();
+    expect(find.text('Filter'), findsOneWidget);
+    expect(find.text('Terapkan'), findsOneWidget);
+  });
+
+  testWidgets('tab pengaturan tidak menampilkan FAB', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(navBarLabel('Pengaturan'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+  });
+
+  testWidgets('FAB beranda membuka form transaksi baru', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.byTooltip('Catat transaksi'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tambah Transaksi'), findsOneWidget);
+    expect(find.text('Nominal'), findsOneWidget);
   });
 
   testWidgets('quick add sheet memvalidasi nominal kosong', (tester) async {
-    await tester.pumpWidget(await buildApp());
+    await pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Buat Catatan Baru'));
+    await tester.tap(find.byTooltip('Catat transaksi'));
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('Simpan'));
@@ -56,26 +108,26 @@ void main() {
     expect(find.text('Nominal wajib diisi'), findsOneWidget);
   });
 
-  testWidgets('tombol tambah menampilkan pilihan catatan dan target', (
-    tester,
-  ) async {
-    await tester.pumpWidget(await buildApp());
+  testWidgets('FAB tab target membuka form target tabungan', (tester) async {
+    await pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(navBarLabel('Target'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Buat Catatan Baru'), findsOneWidget);
-    expect(find.text('Buat Target Tabungan Baru'), findsOneWidget);
+    expect(find.text('Target Tabungan'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Buat target'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Target Tabungan Baru'), findsOneWidget);
   });
 
   testWidgets('placeholder catatan mengikuti kategori yang dipilih', (
     tester,
   ) async {
-    await tester.pumpWidget(await buildApp());
+    await pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Buat Catatan Baru'));
+    await tester.tap(find.byTooltip('Catat transaksi'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Makanan'));
@@ -94,12 +146,11 @@ void main() {
   testWidgets('placeholder kategori custom memakai nama kategori', (
     tester,
   ) async {
-    await tester.pumpWidget(await buildApp());
+    await pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.byTooltip('Catat transaksi'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Buat Catatan Baru'));
-    await tester.pumpAndSettle();
+
     final newCategoryChip = find.widgetWithText(ActionChip, 'Baru');
     await tester.scrollUntilVisible(
       newCategoryChip,
@@ -119,12 +170,11 @@ void main() {
   testWidgets('kategori custom pengeluaran tidak muncul di pemasukan', (
     tester,
   ) async {
-    await tester.pumpWidget(await buildApp());
+    await pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.byTooltip('Catat transaksi'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Buat Catatan Baru'));
-    await tester.pumpAndSettle();
+
     final newCategoryChip = find.widgetWithText(ActionChip, 'Baru');
     await tester.ensureVisible(newCategoryChip);
     await tester.tap(newCategoryChip);
