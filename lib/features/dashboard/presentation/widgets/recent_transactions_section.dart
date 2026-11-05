@@ -42,9 +42,8 @@ class RecentTransactionsSection extends StatelessWidget {
             title: 'Belum ada transaksi',
             message:
                 'Catat pemasukan atau pengeluaran pertamamu untuk mulai '
-                'melihat pola keuangan.',
-            actionLabel: 'Catat transaksi',
-            onAction: onAddTransaction,
+                'melihat pola keuangan. Ketuk tombol + di kanan bawah untuk '
+                'mencatat transaksi.',
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           )
         else

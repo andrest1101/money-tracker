@@ -48,9 +48,8 @@ class CategoryExpenseSection extends ConsumerWidget {
                   title: 'Belum ada pengeluaran bulan ini',
                   message:
                       'Catat pengeluaran pertamamu untuk melihat ke mana '
-                      'uangmu pergi.',
-                  actionLabel: 'Catat pengeluaran',
-                  onAction: onAddExpense,
+                      'uangmu pergi. Ketuk tombol + di kanan bawah untuk '
+                      'mulai mencatat.',
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 )
               : _CategoryExpenseContent(categories: categories),
