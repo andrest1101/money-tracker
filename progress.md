@@ -418,6 +418,21 @@ main()
 
 ---
 
+## UI/UX Refactor v2
+
+Pekerjaan aktif sekarang adalah **Fase 5 — UI/UX Refactor** sesuai `PRD.md` versi 2.0.
+Branch kerja: `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user).
+
+- **Batch 0 — Audit:** selesai. Hasil di `docs/ui-audit.md`.
+  - Inventaris 8 layar, 13 sheet/dialog, dan seluruh fitur di luar PRD lama.
+  - 395 referensi warna literal di 40 file; 11 gradient.
+  - `fl_chart` tetap dipakai di 4 file (pie, insight bar, cash flow, balance trend).
+  - Alur buat target hanya lewat tombol `+` di navigasi pill.
+- **Batch 1 — Fondasi tema:** berikutnya (token, Plus Jakarta Sans bundled, `ThemeExtension`, palet kategori).
+- Aturan git baru ada di `agents.md` Bagian 6. AI tidak commit/push; user commit manual.
+
+---
+
 ## NEXT TASK
 
 1. **Tahap 31:** daftarkan SHA-1/SHA-256 keystore release ke Firebase Console dan `web/.well-known/assetlinks.json`, lalu validasi Google Sign-In + deep link pada APK release.
