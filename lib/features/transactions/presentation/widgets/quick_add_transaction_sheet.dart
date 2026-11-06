@@ -374,6 +374,9 @@ class _QuickAddTransactionSheetState
     final typeColor = _selectedType == TransactionType.expense
         ? theme.colorScheme.error
         : context.appColors.income;
+    final typeForeground = typeColor.computeLuminance() > .5
+        ? AppColors.light.textPrimary
+        : AppColors.light.surface;
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -609,18 +612,19 @@ class _QuickAddTransactionSheetState
                   onPressed: isSaving ? null : _submit,
                   style: FilledButton.styleFrom(
                     backgroundColor: typeColor,
+                    foregroundColor: typeForeground,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   icon: isSaving
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: typeForeground,
                           ),
                         )
                       : Icon(isEdit ? Icons.check : Icons.add),

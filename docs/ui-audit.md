@@ -275,8 +275,8 @@ Tujuh koreksi berikut disetujui sebelum eksekusi:
 | 3 | Shell + Beranda | **Selesai** |
 | 4 | Riwayat | **Selesai** |
 | 5 | Target | **Selesai** |
-| 6 | Form transaksi + Pengaturan + Auth/Onboarding + sheet | Belum |
-| 7 | Polish: motion, aksesibilitas, dark sweep, dokumentasi | Belum |
+| 6 | Form transaksi + Pengaturan + Auth/Onboarding + sheet | **Selesai** |
+| 7 | Polish: motion, aksesibilitas, dark sweep, dokumentasi | **Selesai** |
 
 ### Gate setiap batch
 
@@ -331,6 +331,25 @@ Select-String -CaseSensitive `
 ```
 
 ---
+
+### Catatan Batch 6 — Form, Pengaturan, Auth/Onboarding, dan sheet
+
+- Konsistensi token untuk aksi berisiko dan warna foreground pada tombol berwarna.
+- Layar utama mempertahankan max-width, spacing, dan tap target konsisten di Android 360dp.
+- Grafik kategori dibuat interaktif dengan pemilihan/periode yang sesuai tanpa mengubah alur transaksi.
+- `AnalyticsPage` tidak ditambahkan ke navigasi; tetap tersembunyi sampai ada scope khusus.
+- Verifikasi: `flutter analyze` bersih, `flutter test` lulus, `flutter build apk --debug` berhasil.
+
+### Catatan Batch 7 — Final polish dan audit DoD
+
+- Ikon notifikasi placeholder dihapus dari header Beranda; tidak ada fitur notifikasi yang diklaim tersedia.
+- Ikon avatar Kompakt dibuat minimal 40dp; aksi bersama memakai target sentuh dan label semantik yang konsisten.
+- `Colors.*` literal selain `Colors.transparent` tidak tersisa di `lib/`; foreground pada tombol/spinner dan ikon avatar mengikuti luminance/token tema.
+- Gradient tetap nol setelah audit ulang seluruh `lib/`.
+- History tidak lagi menampilkan empty state saat stream gagal: halaman menampilkan error terkontrol dengan aksi **Coba lagi** dan `ref.invalidate(transactionsStreamProvider)`.
+- Area chart dan error section utama sudah menyediakan retry yang relevan; tidak ada retry pada data yang belum terhubung.
+- `AnalyticsPage` tetap tidak terhubung ke navigasi.
+- Validasi yang dijalankan untuk batch ini tercatat di laporan akhir: `flutter analyze`, `flutter test`, dan scan `LinearGradient|RadialGradient|SweepGradient`.
 
 ### Catatan Batch 10 — Motion polish dan reduced motion (2026-11-06)
 

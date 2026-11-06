@@ -130,6 +130,9 @@ class ProfileHeader extends ConsumerWidget {
     final isGuest = authUser?.isAnonymous ?? true;
     final avatarId = ref.watch(profileAvatarProvider);
     final avatar = presetAvatarFor(avatarId);
+    final avatarForeground = avatar.color.computeLuminance() > .5
+        ? AppColors.light.textPrimary
+        : AppColors.light.surface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -183,7 +186,7 @@ class ProfileHeader extends ConsumerWidget {
                             backgroundColor: avatar.color,
                             child: Icon(
                               avatar.icon,
-                              color: Colors.white,
+                              color: avatarForeground,
                               size: 31,
                             ),
                           ),
@@ -204,7 +207,7 @@ class ProfileHeader extends ConsumerWidget {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.15),
+                                  color: cs.shadow.withValues(alpha: 0.15),
                                   blurRadius: 4,
                                   offset: const Offset(0, 1),
                                 ),

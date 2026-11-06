@@ -175,7 +175,12 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isSaving = ref.watch(quickAddControllerProvider).isLoading;
-    const accentColor = Color(0xFF4CAF50); // teal-green for savings
+    final accentColor = theme.brightness == Brightness.dark
+        ? AppColors.dark.income
+        : AppColors.light.income;
+    final accentForeground = accentColor.computeLuminance() > .5
+        ? AppColors.light.textPrimary
+        : AppColors.light.surface;
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -199,7 +204,7 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                         color: accentColor.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.savings_rounded,
                         color: accentColor,
                         size: 22,
@@ -241,7 +246,7 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.info_outline_rounded,
                         size: 18,
                         color: accentColor,
@@ -278,7 +283,7 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                     labelText: 'Nominal Baru',
                     hintText: '50.000',
                     prefixText: 'Rp ',
-                    prefixStyle: const TextStyle(
+                    prefixStyle: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: accentColor,
@@ -295,7 +300,7 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
+                      borderSide: BorderSide(
                         color: accentColor,
                         width: 2,
                       ),
@@ -325,7 +330,7 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
+                      borderSide: BorderSide(
                         color: accentColor,
                         width: 2,
                       ),
@@ -351,15 +356,16 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                         onPressed: isSaving ? null : _submit,
                         style: FilledButton.styleFrom(
                           backgroundColor: accentColor,
+                          foregroundColor: accentForeground,
                           minimumSize: const Size.fromHeight(48),
                         ),
                         icon: isSaving
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: accentForeground,
                                 ),
                               )
                             : const Icon(Icons.check_rounded),

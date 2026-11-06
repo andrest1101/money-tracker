@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_motion.dart';
 import '../../../../core/widgets/app_page_background.dart';
 import '../widgets/onboarding_slide.dart';
@@ -111,6 +112,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     final isLast = _index == _slides.length - 1;
     final hasPrev = _index > 0;
     final currentAccent = _slides[_index].accent;
+    final accentForeground = currentAccent.computeLuminance() > .5
+        ? AppColors.light.textPrimary
+        : AppColors.light.surface;
 
     return AppPageBackground(
       child: Scaffold(
@@ -228,7 +232,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                               ? currentAccent
                               : colors.primary,
                           foregroundColor: isLast
-                              ? Colors.white
+                              ? accentForeground
                               : colors.onPrimary,
                           minimumSize: Size(isLast ? 160 : 138, 50),
                           padding: const EdgeInsets.symmetric(horizontal: 18),

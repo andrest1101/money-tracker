@@ -214,29 +214,9 @@ class DashboardHeader extends ConsumerWidget {
               onTap: () => ProfileAvatarSheet.show(context),
               customBorder: const CircleBorder(),
               child: SizedBox(
-                width: 36,
-                height: 36,
-                child: Icon(avatar.icon, color: avatarIconColor, size: 19),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Semantics(
-          button: true,
-          label: 'Notifikasi',
-          child: Material(
-            color: colors.surfaceVariant,
-            shape: const CircleBorder(),
-            child: InkWell(
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Belum ada notifikasi baru')),
-              ),
-              customBorder: const CircleBorder(),
-              child: const SizedBox(
                 width: 40,
                 height: 40,
-                child: Icon(Icons.notifications_none_rounded, size: 21),
+                child: Icon(avatar.icon, color: avatarIconColor, size: 20),
               ),
             ),
           ),
