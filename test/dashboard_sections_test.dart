@@ -114,6 +114,14 @@ void main() {
       find.byKey(const ValueKey('category-expense-amount-column')).first,
     );
     expect((barRect.right - amountRect.right).abs(), lessThanOrEqualTo(1));
+    expect(find.text('Terpilih: Kesehatan & Perawatan · 63%'), findsOneWidget);
+
+    await tester.tapAt(
+      Offset(barRect.left + barRect.width * .8, barRect.center.dy),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Terpilih: Makanan · 38%'), findsOneWidget);
+    expect(find.text('Kategori dipilih'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
