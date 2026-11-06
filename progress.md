@@ -1,13 +1,13 @@
-# PROGRESS - Savu
+# PROGRESS - Dompetku
 
-> File ini adalah sumber kebenaran tunggal untuk semua progress proyek Savu.
+> File ini adalah sumber kebenaran tunggal untuk semua progress proyek Dompetku.
 > **Cara pakai di sesi baru:** suruh AI `baca progress.md + task.md + AGENTS.md + PRD.md` lalu lanjutkan dari `NEXT TASK` di bawah.
 
 ---
 
 ## Timestamp
 
-- **Terakhir update:** 2026-11-05
+- **Terakhir update:** 2026-11-06
 - **Branch aktif:** `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user)
 - **Dibuat oleh:** Andre Robert
 
@@ -19,12 +19,14 @@
 - **FASE 2 TUNTAS** (Task 7-9) — `83b13fe`, `81aa315`
 - **FASE 3 TUNTAS** (Task 10-12)
 - **FASE 4 TUNTAS** (Task 13 Settings Page & Premium UI)
-- **Rebrand selesai:** aplikasi bernama **Savu** (`6dab288`)
-- **Kesehatan kode (2026-09-05):**
-  - `flutter test` → **73/73 lulus**
+- **Rebrand Dompetku selesai:** branding, logo, dan metadata platform diperbarui;
+  package `savu`/ID `com.example.savu` dipertahankan.
+- **UI/UX Refactor Batch 1-7 dan Batch 10 selesai.**
+- **Kesehatan kode (2026-11-06):**
+  - `flutter test` → **134/134 lulus**
   - `flutter analyze` → **No issues found**
-  - File split: `dashboard_page.dart` dan `settings_content.dart` sudah dipecah ke file kecil
-- **Working tree:** bersih (semua perubahan sudah ter-commit)
+  - `flutter build apk --debug` → berhasil
+- **Working tree:** berisi Batch 7 dan koreksi ikon/rebrand yang belum di-commit.
 
 ---
 
@@ -508,6 +510,27 @@ Branch kerja: `refactor/ui-v2` (jangan merge ke `main` tanpa persetujuan user).
     `test/savings_page_test.dart`.
   - Verifikasi: `flutter analyze` bersih, `flutter test` **119/119 lulus**,
     `flutter build web` berhasil.
+- **Rebrand dan launcher Dompetku:** selesai.
+  - Nama tampilan, metadata web/desktop, label Android/iOS, logo aktivitas,
+    dan ikon launcher seluruh platform memakai Dompetku; `assets/images/Dompetku_logo.png`
+    tetap beresolusi tinggi, sedangkan `assets/images/app_icon.png` dipakai sebagai
+    turunan ikon.
+  - Package `savu` dan ID `com.example.savu` dipertahankan.
+- **Batch 6 — Konsistensi UI:** selesai.
+  - Grafik kategori interaktif, penyempurnaan form transaksi, Pengaturan,
+    Auth/Onboarding, dan sheet mengikuti max-width, spacing, serta token tema.
+  - `AnalyticsPage` tetap tersembunyi dari navigasi.
+- **Batch 10 — Motion polish:** selesai.
+  - `AppMotion.isReduced`, durasi terpusat, dan `AppEntrance` dipakai di tab utama;
+    transaksi/motion reduced-motion aman.
+  - Verifikasi device masih memerlukan pengecekan skala animator di setelan
+    perangkat sebelum membandingkan kehalusan di perangkat.
+- **Batch 7 — Final polish dan audit DoD:** selesai.
+  - Placeholder notifikasi dihapus dari header Beranda; ikon avatar dibuat 40dp;
+    literal `Colors.*` selain `Colors.transparent` nol dan gradient tetap nol di `lib/`.
+  - Serialisasi warna foreground tombol/spinner/avatar mengikuti kecerahan warna dan
+    token tema, serta History menampilkan error terkontrol dengan retry.
+  - `AnalyticsPage` tetap tidak terhubung; tidak ada alur notifikasi baru.
 - Aturan git baru ada di `agents.md` Bagian 6. AI tidak commit/push; user commit manual.
 
 ---

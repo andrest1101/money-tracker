@@ -4,7 +4,7 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// Tema Savu v2.
+/// Tema Dompetku v2.
 ///
 /// Prinsip:
 /// - Satu sumber kebenaran warna peran di [ColorScheme].
@@ -170,7 +170,7 @@ abstract final class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colors.surface,
         surfaceTintColor: Colors.transparent,
-        modalBarrierColor: Colors.black54,
+        modalBarrierColor: scheme.scrim.withValues(alpha: 0.54),
         showDragHandle: true,
         dragHandleColor: colors.outline,
         shape: const RoundedRectangleBorder(

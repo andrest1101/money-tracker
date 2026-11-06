@@ -157,7 +157,19 @@ class AuthController extends Notifier<AsyncValue<void>> {
   Future<void> sendPasswordReset(String email) async {
     state = const AsyncLoading();
     try {
-      await _auth.sendPasswordResetEmail(email: email.trim());
+      await _auth.sendPasswordResetEmail(
+        email: email.trim(),
+        actionCodeSettings: ActionCodeSettings(
+          url: Uri.https('money-tracker-e22c0.web.app', '/reset-password', {
+            'from': 'password_reset',
+          }).toString(),
+          handleCodeInApp: true,
+          androidPackageName: 'com.example.savu',
+          androidInstallApp: true,
+          androidMinimumVersion: '23',
+          iOSBundleId: 'com.example.savu',
+        ),
+      );
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
       state = AsyncError(_messageFor(error), stackTrace);

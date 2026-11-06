@@ -12,6 +12,7 @@ import '../../../../shared/widgets/filter_sheet.dart';
 import '../../../../shared/widgets/transaction_tile.dart' as shared;
 import '../../../savings/data/providers/savings_goal_repository_provider.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
+import '../../../dashboard/presentation/widgets/dashboard_error_view.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../providers/history_providers.dart';
 import '../providers/quick_add_controller.dart';
@@ -426,8 +427,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   const SizedBox(height: AppSpacing.sm),
                 Expanded(
                   child:
-                      allTransactionsAsync.isLoading &&
-                          allTransactionsAsync.value == null
+                      allTransactionsAsync.hasError
+                      ? DashboardErrorView(
+                          onRetry: () =>
+                              ref.invalidate(transactionsStreamProvider),
+                        )
+                      : allTransactionsAsync.isLoading &&
+                            allTransactionsAsync.value == null
                       ? const Center(child: CircularProgressIndicator())
                       : grouped.isEmpty
                       ? EmptyState(

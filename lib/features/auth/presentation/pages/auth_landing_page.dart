@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/firebase/auth_providers.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_page_background.dart';
+import '../widgets/auth_error_message.dart';
+import 'email_auth_page.dart';
 
 class AuthLandingPage extends ConsumerStatefulWidget {
   const AuthLandingPage({super.key});
@@ -42,12 +46,11 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     String? initialEmail,
   }) async {
     ref.read(authControllerProvider.notifier).clearError();
-    final message = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) =>
-          EmailAuthSheet(initialLink: initialLink, initialEmail: initialEmail),
+    final message = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) =>
+            EmailAuthPage(initialLink: initialLink, initialEmail: initialEmail),
+      ),
     );
     if (!mounted || message == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -60,561 +63,214 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     final state = ref.watch(authControllerProvider);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return Scaffold(
-      body: ColoredBox(
-        color: colors.surface,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 76,
-                    width: 76,
-                    decoration: BoxDecoration(
-                      color: colors.primary,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colors.primary.withValues(alpha: .25),
-                          blurRadius: 24,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Image.asset(
-                        'assets/images/app_icon.png',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 34),
-                  Text(
-                    'Keuangan lebih tertata,\nmulai dari sini.',
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      height: 1.08,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Catat pengeluaran tanpa ribet, pantau batas anggaran, dan wujudkan target tabunganmu sedikit demi sedikit.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: colors.onSurfaceVariant,
-                      height: 1.45,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  const _BenefitRow(
-                    icon: Icons.bolt_rounded,
-                    title: 'Catat dalam hitungan detik',
-                    subtitle: 'Tidak ada formulir panjang yang mengganggu.',
-                  ),
-                  const _BenefitRow(
-                    icon: Icons.insights_rounded,
-                    title: 'Pahami pola pengeluaranmu',
-                    subtitle: 'Insight sederhana untuk keputusan lebih baik.',
-                  ),
-                  const _BenefitRow(
-                    icon: Icons.shield_outlined,
-                    title: 'Data tetap milikmu',
-                    subtitle:
-                        'Simpan lokal sebagai guest atau amankan dengan akun.',
-                  ),
-                  const SizedBox(height: 28),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: state.isLoading ? null : _google,
-                      icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-                      label: const Text('Lanjutkan dengan Google'),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(54),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(17),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: state.isLoading ? null : _showEmailAuth,
-                      icon: const Icon(Icons.mail_outline_rounded),
-                      label: const Text('Masuk dengan email atau link'),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(54),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(17),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: TextButton(
-                      onPressed: state.isLoading ? null : _guest,
-                      child: const Text('Coba sebagai Guest'),
-                    ),
-                  ),
-                  if (state.hasError)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        state.error.toString(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: colors.error),
-                      ),
-                    ),
-                  const SizedBox(height: 14),
-                  Center(
-                    child: Text(
-                      'Dengan melanjutkan, kamu menyetujui penggunaan Firebase Authentication untuk menjaga sesi akunmu.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+    return AppPageBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxHeight < 700;
+              final horizontalPadding = constraints.maxWidth < 380
+                  ? 20.0
+                  : 28.0;
 
-class _BenefitRow extends StatelessWidget {
-  const _BenefitRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 21,
-            backgroundColor: colors.surfaceContainerHigh,
-            child: Icon(icon, color: colors.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+              return SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: compact ? 24 : 40,
                 ),
-                const SizedBox(height: 2),
-                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-enum _EmailMode { login, register, link }
-
-class EmailAuthSheet extends ConsumerStatefulWidget {
-  const EmailAuthSheet({super.key, this.initialLink, this.initialEmail});
-
-  final String? initialLink;
-  final String? initialEmail;
-
-  @override
-  ConsumerState<EmailAuthSheet> createState() => _EmailAuthSheetState();
-}
-
-class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
-  final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
-  final _confirm = TextEditingController();
-  final _link = TextEditingController();
-  _EmailMode _mode = _EmailMode.login;
-  bool _obscure = true;
-  bool _linkSent = false;
-  int _resendSeconds = 0;
-  Timer? _resendTimer;
-  String? _successMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.initialLink != null) {
-      _mode = _EmailMode.link;
-      _linkSent = true;
-      _link.text = widget.initialLink!;
-      final savedEmail =
-          widget.initialEmail ?? ref.read(pendingEmailLinkEmailProvider);
-      if (savedEmail != null) _email.text = savedEmail;
-    }
-  }
-
-  @override
-  void dispose() {
-    _resendTimer?.cancel();
-    _email.dispose();
-    _password.dispose();
-    _confirm.dispose();
-    _link.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    final controller = ref.read(authControllerProvider.notifier);
-    if (_mode == _EmailMode.login) {
-      await controller.signInWithEmail(
-        email: _email.text,
-        password: _password.text,
-      );
-    } else if (_mode == _EmailMode.register) {
-      await controller.registerWithEmail(
-        email: _email.text,
-        password: _password.text,
-      );
-    } else if (!_linkSent) {
-      await controller.sendEmailLink(_email.text);
-      if (mounted && !ref.read(authControllerProvider).hasError) {
-        setState(() {
-          _linkSent = true;
-          _successMessage =
-              'Link login berhasil dikirim. Periksa Inbox atau Spam Gmail.';
-        });
-        _startResendCooldown();
-        return;
-      }
-    } else {
-      await controller.completeEmailLink(email: _email.text, link: _link.text);
-    }
-    if (!mounted) return;
-    if (ref.read(authControllerProvider).hasValue &&
-        (_mode != _EmailMode.link || _linkSent)) {
-      final message = _mode == _EmailMode.register
-          ? 'Akun berhasil dibuat. Selamat datang di Dompetku.'
-          : _mode == _EmailMode.login
-          ? 'Login berhasil. Selamat datang kembali.'
-          : 'Link login berhasil diverifikasi.';
-      Navigator.pop(context, message);
-    }
-  }
-
-  void _startResendCooldown() {
-    _resendTimer?.cancel();
-    setState(() => _resendSeconds = 60);
-    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      if (_resendSeconds <= 1) {
-        timer.cancel();
-        setState(() => _resendSeconds = 0);
-      } else {
-        setState(() => _resendSeconds--);
-      }
-    });
-  }
-
-  Future<void> _resendLink() async {
-    if (_resendSeconds > 0 || _email.text.trim().isEmpty) return;
-    await ref.read(authControllerProvider.notifier).sendEmailLink(_email.text);
-    if (!mounted || ref.read(authControllerProvider).hasError) return;
-    setState(() {
-      _successMessage =
-          'Link login baru berhasil dikirim. Periksa Inbox atau Spam Gmail.';
-    });
-    _startResendCooldown();
-  }
-
-  Future<void> _resetPassword() async {
-    if (_email.text.trim().isEmpty || !_email.text.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Masukkan email yang valid terlebih dahulu.'),
-        ),
-      );
-      return;
-    }
-    await ref
-        .read(authControllerProvider.notifier)
-        .sendPasswordReset(_email.text);
-    if (!mounted) return;
-    if (!ref.read(authControllerProvider).hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Link reset password dikirim ke emailmu.'),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
-    final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isLink = _mode == _EmailMode.link;
-    final title = switch (_mode) {
-      _EmailMode.login => 'Selamat datang kembali',
-      _EmailMode.register => 'Buat akun Dompetku',
-      _EmailMode.link =>
-        _linkSent ? 'Masukkan link login' : 'Login tanpa password',
-    };
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          4,
-          20,
-          MediaQuery.viewInsetsOf(context).bottom + 24,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              isLink
-                  ? 'Kami kirim link aman ke emailmu. Tidak perlu mengingat password.'
-                  : 'Gunakan email asli agar akun dan catatanmu mudah dipulihkan.',
-              style: TextStyle(color: colors.onSurfaceVariant),
-            ),
-            const SizedBox(height: 18),
-            SegmentedButton<_EmailMode>(
-              segments: const [
-                ButtonSegment(value: _EmailMode.login, label: Text('Masuk')),
-                ButtonSegment(
-                  value: _EmailMode.register,
-                  label: Text('Daftar'),
-                ),
-                ButtonSegment(
-                  value: _EmailMode.link,
-                  label: Text('Email link'),
-                ),
-              ],
-              selected: {_mode},
-              onSelectionChanged: (value) {
-                ref.read(authControllerProvider.notifier).clearError();
-                setState(() {
-                  _mode = value.first;
-                  _linkSent = false;
-                  _successMessage = null;
-                });
-              },
-            ),
-            const SizedBox(height: 18),
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.alternate_email_rounded),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) => value != null && value.contains('@')
-                        ? null
-                        : 'Masukkan email yang valid',
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: (constraints.maxHeight - (compact ? 48 : 80))
+                        .clamp(0.0, double.infinity),
                   ),
-                  if (!isLink) ...[
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _password,
-                      obscureText: _obscure,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline_rounded),
-                        suffixIcon: IconButton(
-                          onPressed: () => setState(() => _obscure = !_obscure),
-                          icon: Icon(
-                            _obscure
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.asset(
+                                  'assets/images/app_icon.png',
+                                  width: 48,
+                                  height: 48,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'DOMPETKU',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        border: const OutlineInputBorder(),
+                          SizedBox(height: compact ? 32 : 44),
+                          Text(
+                            'Keuangan lebih teratur.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              height: 1.12,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'Satu tempat untuk transaksi, anggaran, dan tabunganmu.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              height: 1.45,
+                            ),
+                          ),
+                          SizedBox(height: compact ? 24 : 32),
+                          Container(
+                            padding: EdgeInsets.all(compact ? 18 : 24),
+                            decoration: BoxDecoration(
+                              color: colors.surface,
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.hero,
+                              ),
+                              border: Border.all(color: colors.outlineVariant),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (state.hasError) ...[
+                                  AuthErrorMessage(
+                                    message: state.error.toString(),
+                                  ),
+                                  const SizedBox(height: AppSpacing.md),
+                                ],
+                                _GoogleSignInButton(
+                                  isLoading: state.isLoading,
+                                  onPressed: _google,
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(
+                                        color: colors.outlineVariant,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.md,
+                                      ),
+                                      child: Text(
+                                        'atau',
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
+                                              color: colors.onSurfaceVariant,
+                                            ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Divider(
+                                        color: colors.outlineVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                OutlinedButton.icon(
+                                  onPressed: state.isLoading
+                                      ? null
+                                      : _showEmailAuth,
+                                  icon: const Icon(Icons.mail_outline_rounded),
+                                  label: const Text('Lanjutkan dengan email'),
+                                  style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(54),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.control,
+                                      ),
+                                    ),
+                                    side: BorderSide(
+                                      color: colors.outlineVariant,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                TextButton(
+                                  onPressed: state.isLoading ? null : _guest,
+                                  child: const Text('Jelajahi tanpa akun'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      validator: (value) => value != null && value.length >= 6
-                          ? null
-                          : 'Password minimal 6 karakter',
                     ),
-                  ],
-                  if (_mode == _EmailMode.register) ...[
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _confirm,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Ulangi password',
-                        prefixIcon: Icon(Icons.verified_user_outlined),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) => value == _password.text
-                          ? null
-                          : 'Password belum sama',
-                    ),
-                  ],
-                  if (_linkSent) ...[
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _link,
-                      minLines: 2,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Tempel link dari email di sini',
-                        prefixIcon: Icon(Icons.link_rounded),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) =>
-                          value != null && value.startsWith('http')
-                          ? null
-                          : 'Tempel link login yang valid',
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (_mode == _EmailMode.login)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: authState.isLoading ? null : _resetPassword,
-                  child: const Text('Lupa password?'),
-                ),
-              ),
-            const SizedBox(height: 6),
-            if (_successMessage != null)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? colors.surfaceContainerHigh
-                      : colors.primaryContainer,
-                  borderRadius: BorderRadius.circular(16),
-                  border: isDark
-                      ? Border.all(color: colors.outlineVariant)
-                      : null,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.mark_email_read_rounded, color: colors.primary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _successMessage!,
-                        style: TextStyle(
-                          color: colors.onPrimaryContainer,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: authState.isLoading ? null : _submit,
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                ),
-                child: authState.isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(
-                        isLink && _linkSent
-                            ? 'Verifikasi link'
-                            : isLink
-                            ? 'Kirim link login'
-                            : _mode == _EmailMode.login
-                            ? 'Masuk ke akun'
-                            : 'Buat akun',
-                      ),
-              ),
-            ),
-            if (authState.hasError)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  authState.error.toString(),
-                  style: TextStyle(color: colors.error),
-                ),
-              ),
-            if (_linkSent)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  'Di Android, menekan link akan membuka aplikasi otomatis. Jika browser tetap terbuka, salin link lengkap dan tempel di sini.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
                   ),
                 ),
-              ),
-            if (_linkSent && _mode == _EmailMode.link)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: authState.isLoading || _resendSeconds > 0
-                      ? null
-                      : _resendLink,
-                  child: Text(
-                    _resendSeconds > 0
-                        ? 'Kirim ulang dalam $_resendSeconds detik'
-                        : 'Kirim ulang link',
-                  ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GoogleSignInButton extends StatelessWidget {
+  const _GoogleSignInButton({required this.isLoading, required this.onPressed});
+
+  final bool isLoading;
+  final Future<void> Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Material(
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: isLoading ? null : () => onPressed(),
+        child: Container(
+          height: 56,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: scheme.outlineVariant),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Semantics(
+                image: true,
+                label: 'Google',
+                child: Image.asset(
+                  'assets/images/google_logo_192.png',
+                  width: 23,
+                  height: 23,
+                  fit: BoxFit.contain,
                 ),
               ),
-            const SizedBox(height: 12),
-            Center(
-              child: Text(
-                'Password diproses oleh Firebase Authentication, bukan disimpan di database aplikasi.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                isLoading ? 'Menghubungkan…' : 'Lanjutkan dengan Google',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: scheme.onSurface,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

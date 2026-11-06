@@ -14,6 +14,8 @@ import 'core/navigation/app_shell.dart';
 import 'core/theme/app_motion.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/pages/auth_landing_page.dart';
+import 'features/auth/presentation/pages/password_reset_action_page.dart';
+import 'features/auth/presentation/pages/password_reset_success_page.dart';
 import 'features/auth/presentation/pages/email_verification_page.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
 import 'firebase_options.dart';
@@ -158,6 +160,8 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
   final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _subscription;
   bool _handlingLink = false;
+  bool _passwordResetSucceeded = false;
+  String? _passwordResetCode;
   String? _lastHandledLink;
 
   @override
@@ -177,6 +181,15 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
   }
 
   Future<void> _handleUri(Uri uri) async {
+    final passwordResetCode = _passwordResetAction(uri);
+    if (passwordResetCode != null) {
+      if (mounted) setState(() => _passwordResetCode = passwordResetCode);
+      return;
+    }
+    if (_isPasswordResetSuccess(uri)) {
+      if (mounted) setState(() => _passwordResetSucceeded = true);
+      return;
+    }
     final link = _emailSignInLink(uri);
     if (link == null) return;
     if (link == _lastHandledLink || !mounted) {
@@ -196,6 +209,37 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
     } finally {
       if (mounted) setState(() => _handlingLink = false);
     }
+  }
+
+  String? _passwordResetAction(Uri uri) {
+    Uri candidate = uri;
+    final continueUrl = uri.queryParameters['continueUrl'];
+    if (continueUrl != null) {
+      candidate = Uri.tryParse(Uri.decodeComponent(continueUrl)) ?? candidate;
+    }
+
+    String? codeFrom(Uri candidate) {
+      if (candidate.queryParameters['mode'] != 'resetPassword') return null;
+      final code = candidate.queryParameters['oobCode'];
+      return code == null || code.isEmpty ? null : code;
+    }
+
+    return codeFrom(uri) ?? codeFrom(candidate);
+  }
+
+  bool _isPasswordResetSuccess(Uri uri) {
+    Uri candidate = uri;
+    final continueUrl = uri.queryParameters['continueUrl'];
+    if (continueUrl != null) {
+      candidate = Uri.tryParse(Uri.decodeComponent(continueUrl)) ?? candidate;
+    }
+
+    bool matches(Uri candidate) =>
+        candidate.path == '/finishSignIn' &&
+        candidate.queryParameters['from'] == 'password_reset' &&
+        candidate.queryParameters['status'] == 'success';
+
+    return matches(candidate) || matches(uri);
   }
 
   String? _emailSignInLink(Uri uri) {
@@ -221,6 +265,31 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
 
   @override
   Widget build(BuildContext context) {
+    if (_passwordResetCode != null) {
+      return MaterialApp(
+        title: 'Dompetku',
+        debugShowCheckedModeBanner: false,
+        themeMode: ThemeMode.light,
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        home: PasswordResetActionPage(
+          actionCode: _passwordResetCode!,
+          onContinue: () => setState(() => _passwordResetCode = null),
+        ),
+      );
+    }
+    if (_passwordResetSucceeded) {
+      return MaterialApp(
+        title: 'Dompetku',
+        debugShowCheckedModeBanner: false,
+        themeMode: ThemeMode.light,
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        home: PasswordResetSuccessPage(
+          onContinue: () => setState(() => _passwordResetSucceeded = false),
+        ),
+      );
+    }
     if (_handlingLink) {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
