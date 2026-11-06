@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/firebase/auth_providers.dart';
+import 'reset_password_page.dart';
 
 class AuthLandingPage extends ConsumerStatefulWidget {
   const AuthLandingPage({super.key});
@@ -352,28 +353,6 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
     _startResendCooldown();
   }
 
-  Future<void> _resetPassword() async {
-    if (_email.text.trim().isEmpty || !_email.text.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Masukkan email yang valid terlebih dahulu.'),
-        ),
-      );
-      return;
-    }
-    await ref
-        .read(authControllerProvider.notifier)
-        .sendPasswordReset(_email.text);
-    if (!mounted) return;
-    if (!ref.read(authControllerProvider).hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Link reset password dikirim ke emailmu.'),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
@@ -512,7 +491,12 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: authState.isLoading ? null : _resetPassword,
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          ResetPasswordPage(initialEmail: _email.text.trim()),
+                    ),
+                  ),
                   child: const Text('Lupa password?'),
                 ),
               ),
