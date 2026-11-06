@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../../shared/widgets/app_entrance.dart';
 import '../../../../shared/widgets/amount_text.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/filter_sheet.dart';
@@ -310,256 +311,268 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           const SizedBox(width: AppSpacing.xxs),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 680),
-          child: Column(
-            children: [
-              if (_searchVisible)
+      body: AppEntrance(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: Column(
+              children: [
+                if (_searchVisible)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screen,
+                      AppSpacing.xxs,
+                      AppSpacing.screen,
+                      AppSpacing.xs,
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      textInputAction: TextInputAction.search,
+                      onChanged: (value) {
+                        ref
+                            .read(historySearchQueryProvider.notifier)
+                            .setQuery(value);
+                        setState(() {});
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Cari transaksi',
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        suffixIcon: _searchController.text.isEmpty
+                            ? null
+                            : IconButton(
+                                tooltip: 'Hapus pencarian',
+                                onPressed: () {
+                                  _searchController.clear();
+                                  ref
+                                      .read(historySearchQueryProvider.notifier)
+                                      .setQuery('');
+                                  setState(() {});
+                                },
+                                icon: const Icon(Icons.clear_rounded),
+                              ),
+                      ),
+                    ),
+                  ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screen,
-                    AppSpacing.xxs,
-                    AppSpacing.screen,
-                    AppSpacing.xs,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
                   ),
-                  child: TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    textInputAction: TextInputAction.search,
-                    onChanged: (value) {
-                      ref
-                          .read(historySearchQueryProvider.notifier)
-                          .setQuery(value);
-                      setState(() {});
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Cari transaksi',
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      suffixIcon: _searchController.text.isEmpty
-                          ? null
-                          : IconButton(
-                              tooltip: 'Hapus pencarian',
-                              onPressed: () {
-                                _searchController.clear();
-                                ref
-                                    .read(historySearchQueryProvider.notifier)
-                                    .setQuery('');
-                                setState(() {});
-                              },
-                              icon: const Icon(Icons.clear_rounded),
-                            ),
-                    ),
-                  ),
-                ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screen,
-                ),
-                child: SegmentedButton<TransactionType?>(
-                  key: const ValueKey('history-type-filter'),
-                  showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment<TransactionType?>(
-                      value: null,
-                      label: Text('Semua'),
-                    ),
-                    ButtonSegment<TransactionType?>(
-                      value: TransactionType.income,
-                      label: Text('Pemasukan'),
-                    ),
-                    ButtonSegment<TransactionType?>(
-                      value: TransactionType.expense,
-                      label: Text('Pengeluaran'),
-                    ),
-                  ],
-                  selected: {filter},
-                  onSelectionChanged: (selection) => ref
-                      .read(historyFilterProvider.notifier)
-                      .setType(selection.first),
-                ),
-              ),
-              if (hasAnyFilters)
-                SizedBox(
-                  height: 48,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.screen,
-                    ),
-                    children: [
-                      if (filter != null)
-                        _ActiveFilterChip(
-                          label: filter == TransactionType.income
-                              ? 'Pemasukan'
-                              : 'Pengeluaran',
-                          onDeleted: () => ref
-                              .read(historyFilterProvider.notifier)
-                              .setType(null),
-                        ),
-                      if (category != null)
-                        _ActiveFilterChip(
-                          label: category,
-                          onDeleted: _removeCategoryFilter,
-                        ),
-                      if (cycleOnly)
-                        _ActiveFilterChip(
-                          label: 'Siklus aktif',
-                          onDeleted: _removeCycleFilter,
-                        ),
-                      if (dateRange != null)
-                        _ActiveFilterChip(
-                          label:
-                              '${formatDateShort(dateRange.start)} – ${formatDateShort(dateRange.end)}',
-                          onDeleted: _removeDateFilter,
-                        ),
-                      TextButton(
-                        onPressed: _resetAllFilters,
-                        child: const Text('Reset semua'),
+                  child: SegmentedButton<TransactionType?>(
+                    key: const ValueKey('history-type-filter'),
+                    showSelectedIcon: false,
+                    segments: const [
+                      ButtonSegment<TransactionType?>(
+                        value: null,
+                        label: Text('Semua'),
+                      ),
+                      ButtonSegment<TransactionType?>(
+                        value: TransactionType.income,
+                        label: Text('Pemasukan'),
+                      ),
+                      ButtonSegment<TransactionType?>(
+                        value: TransactionType.expense,
+                        label: Text('Pengeluaran'),
                       ),
                     ],
+                    selected: {filter},
+                    onSelectionChanged: (selection) => ref
+                        .read(historyFilterProvider.notifier)
+                        .setType(selection.first),
                   ),
-                )
-              else
-                const SizedBox(height: AppSpacing.sm),
-              Expanded(
-                child:
-                    allTransactionsAsync.isLoading &&
-                        allTransactionsAsync.value == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : grouped.isEmpty
-                    ? EmptyState(
-                        icon: Icons.receipt_long_outlined,
-                        title:
-                            hasAnyFilters ||
-                                ref.watch(historySearchQueryProvider).isNotEmpty
-                            ? 'Tidak ada transaksi yang cocok'
-                            : 'Belum ada transaksi',
-                        message:
-                            hasAnyFilters ||
-                                ref.watch(historySearchQueryProvider).isNotEmpty
-                            ? 'Coba ubah filter atau kata kunci pencarianmu.'
-                            : 'Transaksimu akan muncul di sini. Ketuk tombol + '
-                                  'di kanan bawah untuk mencatat transaksi.',
-                        compact: true,
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.screen,
-                          AppSpacing.xs,
-                          AppSpacing.screen,
-                          104,
-                        ),
-                        itemCount: sortedDays.length,
-                        itemBuilder: (context, index) {
-                          final entry = sortedDays[index];
-                          final date = entry.key;
-                          final transactions = entry.value;
-                          final summary = dailySummary[date];
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              InkWell(
-                                onTap: summary == null
-                                    ? null
-                                    : () => _showDailyOverview(
-                                        date,
-                                        transactions,
-                                        summary,
-                                      ),
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(16),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    12,
-                                    12,
-                                    12,
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Icon(
-                                        Icons.calendar_today_rounded,
-                                        size: 18,
-                                        color: theme.colorScheme.primary,
-                                      ),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              date,
-                                              style: theme.textTheme.titleSmall
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                            ),
-                                            const SizedBox(height: 3),
-                                            Text(
-                                              '${transactions.length} transaksi · Ketuk untuk ringkasan',
-                                              style: theme.textTheme.labelSmall
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (summary != null)
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            _SummaryAmount(
-                                              amount:
-                                                  summary.income -
-                                                  summary.expense,
-                                            ),
-                                          ],
-                                        ),
-                                      const SizedBox(width: 4),
-                                      Icon(
-                                        Icons.chevron_right_rounded,
-                                        color:
-                                            theme.colorScheme.onSurfaceVariant,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Divider(
-                                height: 1,
-                                indent: 52,
-                                color: context.appColors.outline,
-                              ),
-                              ...transactions.map(
-                                (t) => shared.TransactionTile(
-                                  category: t.category,
-                                  amount: t.amount,
-                                  isExpense: t.isExpense,
-                                  note: t.note,
-                                  timeLabel: _formatTime(t.date),
-                                  onTap: () => _openEdit(t),
-                                  onDismissed: () => _confirmDelete(t),
-                                  dismissKey: t.id,
-                                  padding: EdgeInsets.zero,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                            ],
-                          );
-                        },
+                ),
+                if (hasAnyFilters)
+                  SizedBox(
+                    height: 48,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screen,
                       ),
-              ),
-            ],
+                      children: [
+                        if (filter != null)
+                          _ActiveFilterChip(
+                            label: filter == TransactionType.income
+                                ? 'Pemasukan'
+                                : 'Pengeluaran',
+                            onDeleted: () => ref
+                                .read(historyFilterProvider.notifier)
+                                .setType(null),
+                          ),
+                        if (category != null)
+                          _ActiveFilterChip(
+                            label: category,
+                            onDeleted: _removeCategoryFilter,
+                          ),
+                        if (cycleOnly)
+                          _ActiveFilterChip(
+                            label: 'Siklus aktif',
+                            onDeleted: _removeCycleFilter,
+                          ),
+                        if (dateRange != null)
+                          _ActiveFilterChip(
+                            label:
+                                '${formatDateShort(dateRange.start)} – ${formatDateShort(dateRange.end)}',
+                            onDeleted: _removeDateFilter,
+                          ),
+                        TextButton(
+                          onPressed: _resetAllFilters,
+                          child: const Text('Reset semua'),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  const SizedBox(height: AppSpacing.sm),
+                Expanded(
+                  child:
+                      allTransactionsAsync.isLoading &&
+                          allTransactionsAsync.value == null
+                      ? const Center(child: CircularProgressIndicator())
+                      : grouped.isEmpty
+                      ? EmptyState(
+                          icon: Icons.receipt_long_outlined,
+                          title:
+                              hasAnyFilters ||
+                                  ref
+                                      .watch(historySearchQueryProvider)
+                                      .isNotEmpty
+                              ? 'Tidak ada transaksi yang cocok'
+                              : 'Belum ada transaksi',
+                          message:
+                              hasAnyFilters ||
+                                  ref
+                                      .watch(historySearchQueryProvider)
+                                      .isNotEmpty
+                              ? 'Coba ubah filter atau kata kunci pencarianmu.'
+                              : 'Transaksimu akan muncul di sini. Ketuk tombol + '
+                                    'di kanan bawah untuk mencatat transaksi.',
+                          compact: true,
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.screen,
+                            AppSpacing.xs,
+                            AppSpacing.screen,
+                            104,
+                          ),
+                          itemCount: sortedDays.length,
+                          itemBuilder: (context, index) {
+                            final entry = sortedDays[index];
+                            final date = entry.key;
+                            final transactions = entry.value;
+                            final summary = dailySummary[date];
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                InkWell(
+                                  onTap: summary == null
+                                      ? null
+                                      : () => _showDailyOverview(
+                                          date,
+                                          transactions,
+                                          summary,
+                                        ),
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(16),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      12,
+                                      12,
+                                      12,
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.calendar_today_rounded,
+                                          size: 18,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        const SizedBox(width: AppSpacing.sm),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                date,
+                                                style: theme
+                                                    .textTheme
+                                                    .titleSmall
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                '${transactions.length} transaksi · Ketuk untuk ringkasan',
+                                                style: theme
+                                                    .textTheme
+                                                    .labelSmall
+                                                    ?.copyWith(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (summary != null)
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              _SummaryAmount(
+                                                amount:
+                                                    summary.income -
+                                                    summary.expense,
+                                              ),
+                                            ],
+                                          ),
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          Icons.chevron_right_rounded,
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Divider(
+                                  height: 1,
+                                  indent: 52,
+                                  color: context.appColors.outline,
+                                ),
+                                ...transactions.map(
+                                  (t) => shared.TransactionTile(
+                                    category: t.category,
+                                    amount: t.amount,
+                                    isExpense: t.isExpense,
+                                    note: t.note,
+                                    timeLabel: _formatTime(t.date),
+                                    onTap: () => _openEdit(t),
+                                    onDismissed: () => _confirmDelete(t),
+                                    dismissKey: t.id,
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                              ],
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

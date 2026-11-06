@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_motion.dart';
+
 enum OnboardingIllustrationKind { transactions, budget, savings }
 
 class OnboardingSlideData {
@@ -213,7 +215,10 @@ class _OnboardingInteractiveCardState extends State<OnboardingInteractiveCard> {
         splashColor: accent.withValues(alpha: .12),
         highlightColor: accent.withValues(alpha: .06),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 260),
+          duration: AppMotion.durationOf(
+            context,
+            const Duration(milliseconds: 260),
+          ),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
             color: colors.surface,
@@ -401,7 +406,10 @@ class _InteractiveTransactionsPreview extends StatelessWidget {
         final color = item.isIncome ? colors.primary : colors.error;
 
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
+          duration: AppMotion.durationOf(
+            context,
+            const Duration(milliseconds: 220),
+          ),
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
@@ -567,7 +575,10 @@ class _InteractiveBudgetPreview extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 350),
+            duration: AppMotion.durationOf(
+              context,
+              const Duration(milliseconds: 350),
+            ),
             curve: Curves.easeOutCubic,
             tween: Tween<double>(begin: 0.0, end: current.ratio),
             builder: (context, val, _) {
@@ -669,7 +680,10 @@ class _InteractiveSavingsPreview extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 350),
+                duration: AppMotion.durationOf(
+                  context,
+                  const Duration(milliseconds: 350),
+                ),
                 curve: Curves.easeOutBack,
                 tween: Tween<double>(begin: 0.0, end: current.progress),
                 builder: (context, val, _) {

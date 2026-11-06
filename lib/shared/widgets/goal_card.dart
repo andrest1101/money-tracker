@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_motion.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../core/utils/rupiah_formatter.dart';
@@ -60,10 +61,7 @@ class GoalCard extends StatelessWidget {
   ({String text, Color color}) _deadlineInfo(BuildContext context) {
     final colors = context.appColors;
     if (isCompleted) {
-      return (
-        text: 'Semua dana sudah terkumpul',
-        color: colors.income,
-      );
+      return (text: 'Semua dana sudah terkumpul', color: colors.income);
     }
     if (daysUntilDeadline < 0) {
       return (
@@ -89,7 +87,6 @@ class GoalCard extends StatelessWidget {
     final progressColor = _progressColor(context);
     final deadlineInfo = _deadlineInfo(context);
     final percentage = '${(_progress * 100).round()}%';
-    final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
     return Semantics(
       container: true,
@@ -220,10 +217,8 @@ class GoalCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0, end: _progress),
-                duration: disableAnimations
-                    ? Duration.zero
-                    : AppDuration.progress,
-                curve: Curves.easeOutCubic,
+                duration: AppMotion.durationOf(context, AppDuration.progress),
+                curve: AppMotion.standard,
                 builder: (context, value, _) {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.pill),

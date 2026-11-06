@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../shared/widgets/app_entrance.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/savings_goal_entity.dart';
@@ -285,49 +286,51 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: AppLayout.maxContentWidth,
-                ),
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _GoalListView(
-                      goalsAsync: activeList,
-                      emptyIcon: Icons.savings_outlined,
-                      emptyTitle: archivedMode
-                          ? 'Belum ada target aktif di arsip'
-                          : 'Belum ada target aktif',
-                      emptySubtitle: archivedMode
-                          ? 'Target aktif yang kamu arsipkan akan muncul di sini.'
-                          : 'Ketuk tombol + di bawah untuk mulai menabung bagi impianmu.',
-                      onAllocate: _showAllocateSheet,
-                      onDelete: _confirmDeleteGoal,
-                      onArchive: _toggleArchive,
-                    ),
-                    _GoalListView(
-                      goalsAsync: completedList,
-                      emptyIcon: Icons.emoji_events_outlined,
-                      emptyTitle: archivedMode
-                          ? 'Belum ada target selesai di arsip'
-                          : 'Belum ada target selesai',
-                      emptySubtitle: archivedMode
-                          ? 'Target selesai yang kamu arsipkan akan muncul di sini.'
-                          : 'Target yang sudah mencapai 100% akan muncul di sini.',
-                      onAllocate: _showAllocateSheet,
-                      onDelete: _confirmDeleteGoal,
-                      onArchive: _toggleArchive,
-                    ),
-                  ],
+      body: AppEntrance(
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppLayout.maxContentWidth,
+                  ),
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _GoalListView(
+                        goalsAsync: activeList,
+                        emptyIcon: Icons.savings_outlined,
+                        emptyTitle: archivedMode
+                            ? 'Belum ada target aktif di arsip'
+                            : 'Belum ada target aktif',
+                        emptySubtitle: archivedMode
+                            ? 'Target aktif yang kamu arsipkan akan muncul di sini.'
+                            : 'Ketuk tombol + di bawah untuk mulai menabung bagi impianmu.',
+                        onAllocate: _showAllocateSheet,
+                        onDelete: _confirmDeleteGoal,
+                        onArchive: _toggleArchive,
+                      ),
+                      _GoalListView(
+                        goalsAsync: completedList,
+                        emptyIcon: Icons.emoji_events_outlined,
+                        emptyTitle: archivedMode
+                            ? 'Belum ada target selesai di arsip'
+                            : 'Belum ada target selesai',
+                        emptySubtitle: archivedMode
+                            ? 'Target selesai yang kamu arsipkan akan muncul di sini.'
+                            : 'Target yang sudah mencapai 100% akan muncul di sini.',
+                        onAllocate: _showAllocateSheet,
+                        onDelete: _confirmDeleteGoal,
+                        onArchive: _toggleArchive,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

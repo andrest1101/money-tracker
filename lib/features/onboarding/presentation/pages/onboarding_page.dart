@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
+import '../../../../core/theme/app_motion.dart';
 import '../../../../core/widgets/app_page_background.dart';
 import '../widgets/onboarding_slide.dart';
 
@@ -82,9 +83,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   void _next() {
-    final duration = MediaQuery.disableAnimationsOf(context)
-        ? Duration.zero
-        : const Duration(milliseconds: 380);
+    final duration = AppMotion.durationOf(
+      context,
+      const Duration(milliseconds: 380),
+    );
     if (_index == _slides.length - 1) {
       _finish();
       return;
@@ -94,9 +96,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   void _previous() {
     if (_index > 0) {
-      final duration = MediaQuery.disableAnimationsOf(context)
-          ? Duration.zero
-          : const Duration(milliseconds: 380);
+      final duration = AppMotion.durationOf(
+        context,
+        const Duration(milliseconds: 380),
+      );
       _controller.previousPage(duration: duration, curve: Curves.easeOutCubic);
     }
   }
@@ -274,8 +277,11 @@ class _StepDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 240),
-      curve: Curves.easeOutCubic,
+      duration: AppMotion.durationOf(
+        context,
+        const Duration(milliseconds: 240),
+      ),
+      curve: AppMotion.standard,
       margin: const EdgeInsets.only(right: 6),
       width: active ? 26 : 7,
       height: 7,

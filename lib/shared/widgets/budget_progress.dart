@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_motion.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/rupiah_formatter.dart';
 
@@ -40,7 +41,6 @@ class BudgetProgress extends StatelessWidget {
         ? 'Sisa ${formatRupiah(remaining)}'
         : 'Lebih ${formatRupiah(remaining.abs())}';
     final percentage = _hasLimit ? '${(spent / limit * 100).round()}%' : '—';
-    final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
     return Semantics(
       label: !_hasLimit
@@ -75,7 +75,7 @@ class BudgetProgress extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: _ratio),
-            duration: disableAnimations ? Duration.zero : AppDuration.progress,
+            duration: AppMotion.durationOf(context, AppDuration.progress),
             curve: Curves.easeOutCubic,
             builder: (context, value, _) {
               return ClipRRect(

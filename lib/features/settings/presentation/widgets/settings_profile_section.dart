@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
+import '../../../../core/theme/app_motion.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
@@ -161,7 +163,10 @@ class ProfileHeader extends ConsumerWidget {
                       clipBehavior: Clip.none,
                       children: [
                         AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 280),
+                          duration: AppMotion.durationOf(
+                            context,
+                            AppDuration.enter,
+                          ),
                           switchInCurve: Curves.easeOutBack,
                           switchOutCurve: Curves.easeIn,
                           transitionBuilder: (child, animation) =>

@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_motion.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../domain/entities/cash_flow_point_entity.dart';
@@ -106,7 +107,10 @@ class _RangeSelector extends ConsumerWidget {
                     ref.read(cashFlowRangeProvider.notifier).setRange(item.$1),
                 borderRadius: BorderRadius.circular(12),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
+                  duration: AppMotion.durationOf(
+                    context,
+                    const Duration(milliseconds: 180),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
                     color: range == item.$1

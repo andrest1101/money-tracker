@@ -38,6 +38,7 @@ abstract final class AppElevation {
 abstract final class AppDuration {
   static const Duration fast = Duration(milliseconds: 200);
   static const Duration normal = Duration(milliseconds: 250);
+  static const Duration enter = Duration(milliseconds: 280);
   static const Duration progress = Duration(milliseconds: 400);
   static const Duration counter = Duration(milliseconds: 600);
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
+import '../../../../core/theme/app_motion.dart';
 
 enum PresetAvatarCategory { general, people }
 
@@ -412,7 +413,10 @@ class _AvatarChoice extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(15),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
+          duration: AppMotion.durationOf(
+            context,
+            const Duration(milliseconds: 220),
+          ),
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
           decoration: BoxDecoration(
@@ -432,7 +436,10 @@ class _AvatarChoice extends StatelessWidget {
             children: [
               AnimatedScale(
                 scale: selected ? 1.08 : 1,
-                duration: const Duration(milliseconds: 220),
+                duration: AppMotion.durationOf(
+                  context,
+                  const Duration(milliseconds: 220),
+                ),
                 curve: Curves.easeOutBack,
                 child: CircleAvatar(
                   radius: 23,

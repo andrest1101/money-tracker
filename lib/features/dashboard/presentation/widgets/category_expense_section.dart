@@ -5,6 +5,7 @@ import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/category_palette.dart';
+import '../../../../core/theme/app_motion.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/widgets/amount_text.dart';
 import '../../../../shared/widgets/category_icon.dart';
@@ -65,10 +66,12 @@ class _CategoryExpenseContent extends ConsumerStatefulWidget {
   final List<CategoryExpenseEntity> categories;
 
   @override
-  ConsumerState<_CategoryExpenseContent> createState() => _CategoryExpenseContentState();
+  ConsumerState<_CategoryExpenseContent> createState() =>
+      _CategoryExpenseContentState();
 }
 
-class _CategoryExpenseContentState extends ConsumerState<_CategoryExpenseContent> {
+class _CategoryExpenseContentState
+    extends ConsumerState<_CategoryExpenseContent> {
   late String _selectedCategory = widget.categories.first.category;
 
   @override
@@ -90,14 +93,19 @@ class _CategoryExpenseContentState extends ConsumerState<_CategoryExpenseContent
           categories: categories,
           total: total,
           selectedCategory: selected.category,
-          onSelected: (category) => setState(() => _selectedCategory = category),
+          onSelected: (category) =>
+              setState(() => _selectedCategory = category),
         ),
         const SizedBox(height: AppSpacing.xxs),
         Semantics(
           liveRegion: true,
           child: Row(
             children: [
-              Icon(Icons.touch_app_outlined, size: 16, color: context.appColors.textSecondary),
+              Icon(
+                Icons.touch_app_outlined,
+                size: 16,
+                color: context.appColors.textSecondary,
+              ),
               const SizedBox(width: AppSpacing.xxs),
               Expanded(
                 child: Text(
@@ -118,7 +126,9 @@ class _CategoryExpenseContentState extends ConsumerState<_CategoryExpenseContent
                 label: const Text('Detail'),
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs,
+                  ),
                 ),
               ),
             ],
@@ -131,7 +141,8 @@ class _CategoryExpenseContentState extends ConsumerState<_CategoryExpenseContent
             total: total,
             selected: topCategories[i].category == selected.category,
             showDivider: i != topCategories.length - 1,
-            onSelect: () => setState(() => _selectedCategory = topCategories[i].category),
+            onSelect: () =>
+                setState(() => _selectedCategory = topCategories[i].category),
           ),
         if (categories.length > topCategories.length)
           Padding(
@@ -139,9 +150,9 @@ class _CategoryExpenseContentState extends ConsumerState<_CategoryExpenseContent
             child: Text(
               '${categories.length - topCategories.length} kategori lain '
               'tersembunyi',
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: context.appColors.textSecondary),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: context.appColors.textSecondary,
+              ),
             ),
           ),
       ],
@@ -159,7 +170,15 @@ class _CategoryExpenseContentState extends ConsumerState<_CategoryExpenseContent
       date: DateTime.now(),
       cycleDay: ref.read(budgetCycleDateProvider),
     );
-    final endOfCycle = DateTime(cycle.end.year, cycle.end.month, cycle.end.day, 23, 59, 59, 999);
+    final endOfCycle = DateTime(
+      cycle.end.year,
+      cycle.end.month,
+      cycle.end.day,
+      23,
+      59,
+      59,
+      999,
+    );
     final categoryTransactions = transactions.where((transaction) {
       return transaction.isExpense &&
           transaction.category == category.category &&
@@ -215,11 +234,15 @@ class _CategoryStackedBar extends StatelessWidget {
             children: [
               for (final item in categories)
                 Expanded(
-                  flex: ((item.amount / total) * 1000).round().clamp(1, 1000).toInt(),
+                  flex: ((item.amount / total) * 1000)
+                      .round()
+                      .clamp(1, 1000)
+                      .toInt(),
                   child: Semantics(
                     button: true,
                     selected: item.category == selectedCategory,
-                    label: '${item.category}, ${(item.amount / total * 100).round()} persen',
+                    label:
+                        '${item.category}, ${(item.amount / total * 100).round()} persen',
                     onTap: () => onSelected(item.category),
                     child: ExcludeSemantics(
                       child: Material(
@@ -235,7 +258,10 @@ class _CategoryStackedBar extends StatelessWidget {
                         child: InkWell(
                           onTap: () => onSelected(item.category),
                           child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 160),
+                            duration: AppMotion.durationOf(
+                              context,
+                              const Duration(milliseconds: 160),
+                            ),
                             decoration: BoxDecoration(
                               border: item.category == selectedCategory
                                   ? Border.all(
@@ -353,7 +379,9 @@ class _CategoryRow extends StatelessWidget {
                               '$percent%',
                               style: theme.textTheme.labelSmall?.copyWith(
                                 color: colors.textSecondary,
-                                fontFeatures: const [FontFeature.tabularFigures()],
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
                               ),
                             ),
                           ],
@@ -366,7 +394,8 @@ class _CategoryRow extends StatelessWidget {
             ),
           ),
         ),
-        if (showDivider) Divider(height: 1, thickness: 1, indent: 52, color: colors.outline),
+        if (showDivider)
+          Divider(height: 1, thickness: 1, indent: 52, color: colors.outline),
       ],
     );
   }
@@ -387,16 +416,24 @@ class _CategoryExpenseDetailsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final average = transactions.isEmpty ? 0.0 : category.amount / transactions.length;
+    final average = transactions.isEmpty
+        ? 0.0
+        : category.amount / transactions.length;
     final largest = transactions.isEmpty
         ? 0.0
-        : transactions.map((item) => item.amount).reduce((a, b) => a > b ? a : b);
-    final percent = totalExpense <= 0 ? 0 : ((category.amount / totalExpense) * 100).round();
+        : transactions
+              .map((item) => item.amount)
+              .reduce((a, b) => a > b ? a : b);
+    final percent = totalExpense <= 0
+        ? 0
+        : ((category.amount / totalExpense) * 100).round();
 
     return SafeArea(
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.maxContentWidth,
+          ),
           child: FractionallySizedBox(
             heightFactor: .88,
             child: Column(
@@ -412,9 +449,15 @@ class _CategoryExpenseDetailsSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Detail pengeluaran', style: theme.textTheme.labelLarge),
+                      Text(
+                        'Detail pengeluaran',
+                        style: theme.textTheme.labelLarge,
+                      ),
                       const SizedBox(height: AppSpacing.xxs),
-                      Text(category.category, style: theme.textTheme.headlineSmall),
+                      Text(
+                        category.category,
+                        style: theme.textTheme.headlineSmall,
+                      ),
                       const SizedBox(height: AppSpacing.md),
                       Container(
                         width: double.infinity,
@@ -429,7 +472,9 @@ class _CategoryExpenseDetailsSheet extends StatelessWidget {
                             Text(
                               'Total bulan ini',
                               style: theme.textTheme.labelMedium?.copyWith(
-                                color: colors.onPrimaryContainer.withValues(alpha: .72),
+                                color: colors.onPrimaryContainer.withValues(
+                                  alpha: .72,
+                                ),
                               ),
                             ),
                             const SizedBox(height: AppSpacing.xxs),
@@ -443,7 +488,9 @@ class _CategoryExpenseDetailsSheet extends StatelessWidget {
                               '${transactions.length} transaksi  •  '
                               '$percent% dari total pengeluaran',
                               style: theme.textTheme.labelSmall?.copyWith(
-                                color: colors.onPrimaryContainer.withValues(alpha: .78),
+                                color: colors.onPrimaryContainer.withValues(
+                                  alpha: .78,
+                                ),
                               ),
                             ),
                           ],
@@ -473,8 +520,13 @@ class _CategoryExpenseDetailsSheet extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
-                  child: Text('Transaksi kategori ini', style: theme.textTheme.titleMedium),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screen,
+                  ),
+                  child: Text(
+                    'Transaksi kategori ini',
+                    style: theme.textTheme.titleMedium,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Expanded(
@@ -483,8 +535,11 @@ class _CategoryExpenseDetailsSheet extends StatelessWidget {
                           compact: true,
                           icon: Icons.receipt_long_outlined,
                           title: 'Belum ada transaksi',
-                          message: 'Transaksi kategori ini akan muncul di sini.',
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                          message:
+                              'Transaksi kategori ini akan muncul di sini.',
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.lg,
+                          ),
                         )
                       : ListView.builder(
                           padding: const EdgeInsets.only(bottom: AppSpacing.lg),
@@ -527,7 +582,11 @@ class _CategoryExpenseDetailsSheet extends StatelessWidget {
 }
 
 class _DetailMetric extends StatelessWidget {
-  const _DetailMetric({required this.label, required this.amount, required this.icon});
+  const _DetailMetric({
+    required this.label,
+    required this.amount,
+    required this.icon,
+  });
 
   final String label;
   final double amount;
@@ -549,7 +608,11 @@ class _DetailMetric extends StatelessWidget {
           Icon(icon, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: AppSpacing.xs),
           Expanded(
-            child: StatInline(label: label, amount: amount, valueStyle: theme.textTheme.labelLarge),
+            child: StatInline(
+              label: label,
+              amount: amount,
+              valueStyle: theme.textTheme.labelLarge,
+            ),
           ),
         ],
       ),
