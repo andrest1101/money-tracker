@@ -1,6 +1,8 @@
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_motion.dart';
+
 class GoalCelebrationDialog extends StatefulWidget {
   const GoalCelebrationDialog({super.key, required this.goalTitle});
 
@@ -20,7 +22,10 @@ class _GoalCelebrationDialogState extends State<GoalCelebrationDialog> {
       duration: const Duration(milliseconds: 1600),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _confettiController.play();
+      // Hormati reduced motion: jangan main confetti bila diminta pengguna.
+      if (mounted && !AppMotion.isReduced(context)) {
+        _confettiController.play();
+      }
     });
   }
 

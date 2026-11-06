@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../settings/presentation/widgets/profile_avatar_sheet.dart';
+import '../../../../shared/widgets/app_entrance.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/presentation/providers/history_providers.dart';
 import '../../../transactions/presentation/widgets/quick_add_transaction_sheet.dart';
@@ -51,59 +52,56 @@ class DashboardPage extends ConsumerWidget {
       ref.read(shellTabIndexProvider.notifier).select(ShellTabIndex.history);
     }
 
-    return Scaffold(
-      body: summaryAsync.when(
-        loading: () => const DashboardSkeleton(),
-        error: (_, __) => DashboardErrorView(
-          onRetry: () => ref.invalidate(transactionsStreamProvider),
-        ),
-        data: (summary) {
-          final transactions = (transactionsAsync.value ?? const [])
-              .where((transaction) => !transaction.isAllocation)
-              .toList(growable: false);
+    final body = summaryAsync.when(
+      loading: () => const DashboardSkeleton(),
+      error: (_, __) => DashboardErrorView(
+        onRetry: () => ref.invalidate(transactionsStreamProvider),
+      ),
+      data: (summary) {
+        final transactions = (transactionsAsync.value ?? const [])
+            .where((transaction) => !transaction.isAllocation)
+            .toList(growable: false);
 
-          return SafeArea(
-            bottom: false,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: AppLayout.maxContentWidth,
+        return SafeArea(
+          bottom: false,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppLayout.maxContentWidth,
+              ),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screen,
+                  AppSpacing.md,
+                  AppSpacing.screen,
+                  104,
                 ),
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screen,
-                    AppSpacing.md,
-                    AppSpacing.screen,
-                    104,
+                children: [
+                  DashboardHeader(userName: userName),
+                  const SizedBox(height: AppSpacing.lg),
+                  BalanceHeroCard(summary: summary, transactions: transactions),
+                  const SizedBox(height: AppSpacing.section),
+                  const BudgetStatusSection(),
+                  const SizedBox(height: AppSpacing.section),
+                  CategoryExpenseSection(onAddExpense: openAddSheet),
+                  const SizedBox(height: AppSpacing.section),
+                  _insightBlock(context, ref, transactions),
+                  const SizedBox(height: AppSpacing.section),
+                  RecentTransactionsSection(
+                    transactions: transactions,
+                    onSeeAll: openHistory,
+                    onTransactionTap: openEditSheet,
+                    onAddTransaction: openAddSheet,
                   ),
-                  children: [
-                    DashboardHeader(userName: userName),
-                    const SizedBox(height: AppSpacing.lg),
-                    BalanceHeroCard(
-                      summary: summary,
-                      transactions: transactions,
-                    ),
-                    const SizedBox(height: AppSpacing.section),
-                    const BudgetStatusSection(),
-                    const SizedBox(height: AppSpacing.section),
-                    CategoryExpenseSection(onAddExpense: openAddSheet),
-                    const SizedBox(height: AppSpacing.section),
-                    _insightBlock(context, ref, transactions),
-                    const SizedBox(height: AppSpacing.section),
-                    RecentTransactionsSection(
-                      transactions: transactions,
-                      onSeeAll: openHistory,
-                      onTransactionTap: openEditSheet,
-                      onAddTransaction: openAddSheet,
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
+
+    return Scaffold(body: AppEntrance(child: body));
   }
 
   Widget _insightBlock(

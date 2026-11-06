@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/firebase/auth_providers.dart';
 import 'core/local_storage/settings_providers.dart';
 import 'core/navigation/app_shell.dart';
+import 'core/theme/app_motion.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/pages/auth_landing_page.dart';
 import 'features/auth/presentation/pages/email_verification_page.dart';
@@ -61,7 +62,7 @@ class _BootstrapAppState extends State<_BootstrapApp> {
         final preferences = snapshot.data;
         if (preferences == null) {
           return MaterialApp(
-            title: 'Savu',
+            title: 'Dompetku',
             debugShowCheckedModeBanner: false,
             themeMode: ThemeMode.light,
             theme: AppTheme.light(),
@@ -88,7 +89,7 @@ class _BootstrapErrorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Savu',
+      title: 'Dompetku',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),
@@ -237,16 +238,21 @@ class _AuthGate extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingCompleted = ref.watch(onboardingCompletedProvider);
     final auth = ref.watch(authStateChangesProvider);
+    final animationsEnabled = !AppMotion.isReduced(context);
     return MaterialApp(
-      title: 'Savu',
+      title: 'Dompetku',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       home: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 420),
-        reverseDuration: const Duration(milliseconds: 280),
-        switchInCurve: Curves.easeOutCubic,
+        duration: animationsEnabled
+            ? const Duration(milliseconds: 420)
+            : Duration.zero,
+        reverseDuration: animationsEnabled
+            ? const Duration(milliseconds: 280)
+            : Duration.zero,
+        switchInCurve: AppMotion.standard,
         switchOutCurve: Curves.easeInCubic,
         transitionBuilder: (child, animation) => FadeTransition(
           opacity: animation,
@@ -286,19 +292,19 @@ class _AuthContent extends StatelessWidget {
             ) &&
             !user.emailVerified;
         if (needsVerification) return EmailVerificationPage(user: user);
-        return const SavuApp();
+        return const DompetkuApp();
       },
     );
   }
 }
 
-class SavuApp extends ConsumerWidget {
-  const SavuApp({super.key});
+class DompetkuApp extends ConsumerWidget {
+  const DompetkuApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Savu',
+      title: 'Dompetku',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),

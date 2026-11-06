@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_motion.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
@@ -31,7 +32,6 @@ class BalanceHeroCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final isPrivacy = ref.watch(privacyModeProvider);
-    final disableAnimations = MediaQuery.disableAnimationsOf(context);
     final heroText = scheme.onPrimaryContainer;
     final heroMuted = heroText.withValues(alpha: .72);
     final balanceColor = summary.balance < 0 ? scheme.error : heroText;
@@ -91,10 +91,11 @@ class BalanceHeroCard extends ConsumerWidget {
                     alignment: Alignment.centerLeft,
                     child: TweenAnimationBuilder<double>(
                       tween: Tween(begin: 0, end: summary.balance),
-                      duration: disableAnimations
-                          ? Duration.zero
-                          : AppDuration.counter,
-                      curve: Curves.easeOutCubic,
+                      duration: AppMotion.durationOf(
+                        context,
+                        AppDuration.counter,
+                      ),
+                      curve: AppMotion.standard,
                       builder: (context, value, _) {
                         return AmountText(
                           amount: value,

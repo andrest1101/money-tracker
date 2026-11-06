@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/app_entrance.dart';
 import '../widgets/settings_content.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -15,7 +16,7 @@ class SettingsPage extends StatelessWidget {
         ),
         centerTitle: false,
       ),
-      body: const SettingsContent(),
+      body: const AppEntrance(child: SettingsContent()),
     );
   }
 }

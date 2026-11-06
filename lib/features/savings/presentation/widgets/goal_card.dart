@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_motion.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../domain/entities/savings_goal_entity.dart';
@@ -39,7 +41,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
   void initState() {
     super.initState();
     _expandController = AnimationController(
-      duration: const Duration(milliseconds: 250),
+      duration: AppDuration.normal,
       vsync: this,
     );
     _expandAnimation = CurvedAnimation(
@@ -480,7 +482,10 @@ class _GoalCardState extends ConsumerState<GoalCard>
                     const Spacer(),
                     AnimatedRotation(
                       turns: _isExpanded ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 250),
+                      duration: AppMotion.durationOf(
+                        context,
+                        AppDuration.normal,
+                      ),
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 20,
