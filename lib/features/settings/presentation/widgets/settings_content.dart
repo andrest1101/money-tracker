@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import 'developer_card.dart';
 import 'help_center_entry.dart';
@@ -33,30 +34,41 @@ class SettingsContent extends ConsumerWidget {
       }
     });
     final syncState = ref.watch(transactionsStreamProvider);
-    return ListView(
-      // Beri ruang ekstra agar footer tidak tertutup floating navigation bar.
-      padding: const EdgeInsets.only(bottom: 120),
-      children: [
-        ProfileHeader(syncState: syncState),
-        const AccountSessionCard(),
-        const SizedBox(height: 16),
-        const SettingsSectionTitle(title: 'PREFERENSI TAMPILAN & PRIVASI'),
-        const ThemeSelectionCard(),
-        const PrivacyCard(),
-        const SizedBox(height: 24),
-        const SettingsSectionTitle(title: 'PENGELOLAAN KEUANGAN'),
-        const FinancialSettingsCard(),
-        const SizedBox(height: 24),
-        const SettingsSectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
-        const DataManagementCard(),
-        const SizedBox(height: 24),
-        const SettingsSectionTitle(title: 'BANTUAN'),
-        HelpCenterEntry(onTap: () => _showHelpCenter(context)),
-        const SizedBox(height: 10),
-        const ContactUsEntry(),
-        const SizedBox(height: 32),
-        const DeveloperCard(),
-      ],
+    return LayoutBuilder(
+      builder: (context, _) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.maxContentWidth,
+          ),
+          child: ListView(
+            // Extra space keeps the final sections above the navigation bar.
+            padding: const EdgeInsets.only(bottom: 120),
+            children: [
+              ProfileHeader(syncState: syncState),
+              const AccountSessionCard(),
+              const SizedBox(height: 16),
+              const SettingsSectionTitle(
+                title: 'PREFERENSI TAMPILAN & PRIVASI',
+              ),
+              const ThemeSelectionCard(),
+              const PrivacyCard(),
+              const SizedBox(height: 24),
+              const SettingsSectionTitle(title: 'PENGELOLAAN KEUANGAN'),
+              const FinancialSettingsCard(),
+              const SizedBox(height: 24),
+              const SettingsSectionTitle(title: 'MANAJEMEN DATA & APLIKASI'),
+              const DataManagementCard(),
+              const SizedBox(height: 24),
+              const SettingsSectionTitle(title: 'BANTUAN'),
+              HelpCenterEntry(onTap: () => _showHelpCenter(context)),
+              const SizedBox(height: 10),
+              const ContactUsEntry(),
+              const SizedBox(height: 32),
+              const DeveloperCard(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

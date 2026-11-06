@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
@@ -275,9 +276,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                     const SizedBox(width: AppSpacing.xs),
                     _TabBadge(
                       count: completedCount,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF34D399)
-                          : const Color(0xFF047857),
+                      color: context.appColors.income,
                     ),
                   ],
                 ],
