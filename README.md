@@ -1,6 +1,6 @@
 <div align="center">
 
-# 💰 Savu
+# 💰 Dompetku
 
 ### 📊 Catat lebih cepat. Atur lebih cerdas. Capai target lebih konsisten.
 
@@ -21,7 +21,7 @@ yang ingin memahami ke mana uangnya pergi.
 ## 🧭 Daftar Isi
 
 - [Download APK](#-download-apk)
-- [Tentang Savu](#-tentang-savu)
+- [Tentang Dompetku](#-tentang-dompetku)
 - [Fitur Utama](#-fitur-utama)
 - [Teknologi yang Digunakan](#️-teknologi-yang-digunakan)
 - [Arsitektur dan Struktur Proyek](#️-arsitektur-dan-struktur-proyek)
@@ -48,16 +48,16 @@ yang ingin memahami ke mana uangnya pergi.
 
 [![Download APK](https://img.shields.io/badge/Download-APK%20Release-00B894?logo=android&logoColor=white)](https://www.mediafire.com/file/iiatm96kfvosnfg/app-arm64-v8a-release.apk/file)
 
-Unduh file APK untuk menginstall Savu langsung di perangkat Android kamu.
+Unduh file APK untuk menginstall Dompetku langsung di perangkat Android kamu.
 
 1. Klik tombol download di atas.
 2. Buka file APK yang sudah terunduh.
 3. Izinkan install dari sumber tidak dikenal jika diminta.
-4. Buka aplikasi dan mulai gunakan Savu.
+4. Buka aplikasi dan mulai gunakan Dompetku.
 
-## 🚀 Tentang Savu
+## 🚀 Tentang Dompetku
 
-Savu adalah aplikasi mobile berbasis Flutter dan Firebase yang dibuat
+Dompetku adalah aplikasi mobile berbasis Flutter dan Firebase yang dibuat
 untuk membantu pengguna mencatat transaksi tanpa proses yang panjang. Fokus
 utamanya adalah mengurangi kebiasaan lupa mencatat, mendeteksi pengeluaran yang
 mulai berlebihan, dan membuat target tabungan terasa lebih terukur.
@@ -193,7 +193,7 @@ mulai berlebihan, dan membuat target tabungan terasa lebih terukur.
 
 ## 🏗️ Arsitektur dan Struktur Proyek
 
-Savu menerapkan Clean Architecture agar tampilan, aturan bisnis, dan
+Dompetku menerapkan Clean Architecture agar tampilan, aturan bisnis, dan
 akses database tidak tercampur. Ibarat sebuah restoran, **Presentation** adalah
 pelayan, **Domain** adalah resep dan aturan masakan, sedangkan **Data** adalah
 dapur yang berkomunikasi dengan pemasok atau database.
