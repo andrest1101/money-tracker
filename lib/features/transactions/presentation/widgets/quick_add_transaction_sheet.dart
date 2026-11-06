@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
@@ -91,8 +92,9 @@ class _QuickAddTransactionSheetState
         : ref.watch(hiddenIncomeCategoriesProvider);
     final all = <String>[
       ...base,
-      ...(_extraCategoriesByType[_selectedType] ?? const <String>[])
-          .where((category) => !hidden.contains(category)),
+      ...(_extraCategoriesByType[_selectedType] ?? const <String>[]).where(
+        (category) => !hidden.contains(category),
+      ),
     ];
     if (widget.transaction?.isAllocation == true) {
       return all;
@@ -214,10 +216,7 @@ class _QuickAddTransactionSheetState
                   : ref.read(incomeCategoriesProvider))
               .contains(trimmed);
       if (!alreadyExists) {
-        _extraCategoriesByType[_selectedType] = [
-          ...customCategories,
-          trimmed,
-        ];
+        _extraCategoriesByType[_selectedType] = [...customCategories, trimmed];
       }
       _selectedCategory = trimmed;
     });
@@ -295,7 +294,7 @@ class _QuickAddTransactionSheetState
                   child: FilledButton(
                     onPressed: () => Navigator.of(dialogContext).pop(true),
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.orange.shade700,
+                      backgroundColor: context.appColors.warningText,
                       minimumSize: const Size.fromHeight(48),
                     ),
                     child: const Text('Withdraw'),
@@ -373,8 +372,8 @@ class _QuickAddTransactionSheetState
     final isEdit = widget.isEditMode;
 
     final typeColor = _selectedType == TransactionType.expense
-        ? Colors.red.shade600
-        : Colors.green.shade700;
+        ? theme.colorScheme.error
+        : context.appColors.income;
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -519,10 +518,7 @@ class _QuickAddTransactionSheetState
                         size: 16,
                         color: typeColor,
                       ),
-                      label: Text(
-                        'Kelola',
-                        style: TextStyle(color: typeColor),
-                      ),
+                      label: Text('Kelola', style: TextStyle(color: typeColor)),
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       onPressed: () => ManageCategoriesSheet.show(

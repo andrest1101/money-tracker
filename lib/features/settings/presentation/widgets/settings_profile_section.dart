@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/firebase/auth_providers.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
@@ -277,7 +278,7 @@ class ProfileHeader extends ConsumerWidget {
                               size: 16,
                               color: isGuest
                                   ? cs.tertiary
-                                  : Colors.green.shade700,
+                                  : context.appColors.income,
                             ),
                             const SizedBox(width: 5),
                             Flexible(
@@ -289,7 +290,7 @@ class ProfileHeader extends ConsumerWidget {
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: isGuest
                                       ? cs.tertiary
-                                      : Colors.green.shade700,
+                                      : context.appColors.income,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -320,7 +321,7 @@ class AccountSessionCard extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         icon: Icon(
           isGuest ? Icons.warning_amber_rounded : Icons.logout_rounded,
-          color: isGuest ? Colors.orange.shade700 : null,
+          color: isGuest ? Theme.of(context).colorScheme.tertiary : null,
         ),
         title: Text(isGuest ? 'Keluar dari akun guest?' : 'Keluar dari akun?'),
         content: Text(
@@ -626,12 +627,13 @@ class SyncStatusBadge extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final lastSync = ref.watch(lastSuccessfulSyncProvider);
     final (label, icon, color, retry) = syncState.when(
       loading: () => (
         'Menyiapkan sinkronisasi',
         Icons.sync_rounded,
-        Colors.orange.shade800,
+        appColors.warningText,
         false,
       ),
       error: (_, __) => (
@@ -643,7 +645,7 @@ class SyncStatusBadge extends ConsumerWidget {
       data: (_) => (
         'Tersinkronisasi • ${_lastSyncLabel(lastSync)}',
         Icons.cloud_done_rounded,
-        Colors.green.shade800,
+        appColors.income,
         false,
       ),
     );

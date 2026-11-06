@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/presentation/providers/quick_add_controller.dart';
@@ -76,7 +77,7 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
         builder: (ctx) => AlertDialog(
           icon: Icon(
             Icons.undo_rounded,
-            color: Colors.orange.shade700,
+            color: context.appColors.warningText,
             size: 40,
           ),
           title: const Text('Tarik Semua Alokasi?'),
@@ -102,7 +103,7 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                     onPressed: () => Navigator.of(ctx).pop(true),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(48),
-                      backgroundColor: Colors.orange.shade700,
+                      backgroundColor: context.appColors.warningText,
                     ),
                     child: const Text('Tarik'),
                   ),
@@ -141,7 +142,7 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
             content: Text(
               'Alokasi ${formatRupiah(widget.transaction.amount)} berhasil ditarik ke saldo.',
             ),
-            backgroundColor: Colors.orange.shade700,
+            backgroundColor: context.appColors.warningText,
           ),
         );
       } else {

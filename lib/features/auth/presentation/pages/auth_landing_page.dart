@@ -41,6 +41,7 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     String? initialLink,
     String? initialEmail,
   }) async {
+    ref.read(authControllerProvider.notifier).clearError();
     final message = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -59,20 +60,9 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     final state = ref.watch(authControllerProvider);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          color: isDark ? colors.surface : null,
-          gradient: isDark
-              ? null
-              : LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [colors.primaryContainer, colors.surface],
-                  stops: const [0, .62],
-                ),
-        ),
+      body: ColoredBox(
+        color: colors.surface,
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
@@ -430,10 +420,14 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                 ),
               ],
               selected: {_mode},
-              onSelectionChanged: (value) => setState(() {
-                _mode = value.first;
-                _linkSent = false;
-              }),
+              onSelectionChanged: (value) {
+                ref.read(authControllerProvider.notifier).clearError();
+                setState(() {
+                  _mode = value.first;
+                  _linkSent = false;
+                  _successMessage = null;
+                });
+              },
             ),
             const SizedBox(height: 18),
             Form(

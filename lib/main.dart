@@ -19,18 +19,129 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  runApp(const _BootstrapApp());
+}
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  final sharedPreferences = await SharedPreferences.getInstance();
+/// Menyiapkan Firebase dan penyimpanan lokal sebelum UI utama tampil.
+///
+/// Jika salah satu gagal (misalnya konfigurasi Firebase tidak cocok atau
+/// perangkat sedang offline), pengguna melihat layar pemulihan yang bisa
+/// dicoba ulang alih-alih layar putih.
+class _BootstrapApp extends StatefulWidget {
+  const _BootstrapApp();
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      ],
-      child: const _AuthLinkHandler(child: _AuthGate()),
-    ),
-  );
+  @override
+  State<_BootstrapApp> createState() => _BootstrapAppState();
+}
+
+class _BootstrapAppState extends State<_BootstrapApp> {
+  late Future<SharedPreferences> _bootstrap = _initialize();
+
+  Future<SharedPreferences> _initialize() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    return SharedPreferences.getInstance();
+  }
+
+  void _retry() {
+    setState(() {
+      _bootstrap = _initialize();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<SharedPreferences>(
+      future: _bootstrap,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _BootstrapErrorApp(onRetry: _retry);
+        }
+        final preferences = snapshot.data;
+        if (preferences == null) {
+          return MaterialApp(
+            title: 'Savu',
+            debugShowCheckedModeBanner: false,
+            themeMode: ThemeMode.light,
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
+            home: const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+        return ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
+          child: const _AuthLinkHandler(child: _AuthGate()),
+        );
+      },
+    );
+  }
+}
+
+class _BootstrapErrorApp extends StatelessWidget {
+  const _BootstrapErrorApp({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Savu',
+      debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.light,
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      home: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          return Scaffold(
+            body: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.cloud_off_rounded,
+                          size: 48,
+                          color: theme.colorScheme.error,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Tidak dapat terhubung ke Firebase',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Periksa koneksi internet dan konfigurasi Firebase, lalu coba lagi.',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
+                          onPressed: onRetry,
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Coba lagi'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _AuthLinkHandler extends ConsumerStatefulWidget {

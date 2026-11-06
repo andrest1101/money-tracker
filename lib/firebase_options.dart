@@ -48,7 +48,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCyDoQbIeIphxftmo9RSXh5FAeSOud6QhU',
-    appId: '1:671219337997:android:44ec7894230a08241abe44',
+    appId: '1:671219337997:android:fca6b6a8d030d5831abe44',
     messagingSenderId: '671219337997',
     projectId: 'money-tracker-e22c0',
     storageBucket: 'money-tracker-e22c0.firebasestorage.app',

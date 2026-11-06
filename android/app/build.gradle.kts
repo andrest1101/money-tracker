@@ -35,14 +35,11 @@ android {
         versionName = flutter.versionName
     }
 
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("armeabi-v7a", "arm64-v8a")
-            isUniversalApk = false
-        }
-    }
+    // Catatan: jangan mengaktifkan `splits.abi` secara manual di sini.
+    // Flutter tool mencari satu APK bernama `app-<mode>.apk`, sehingga split
+    // manual membuat `flutter run` gagal dengan pesan
+    // "Gradle build failed to produce an .apk file".
+    // Gunakan `flutter build apk --split-per-abi` bila APK per-ABI dibutuhkan.
 
     buildTypes {
         release {

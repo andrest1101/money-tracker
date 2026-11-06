@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Dibutuhkan build release/profile. Build debug mendapat izin ini dari
+         src/debug/AndroidManifest.xml, tetapi tanpa entri di sini aplikasi
+         release tidak dapat menghubungi Firebase (login selalu gagal). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="Savu"
         android:name="${applicationName}"

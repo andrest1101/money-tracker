@@ -85,12 +85,12 @@ class FinancialSettingsCard extends ConsumerWidget {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.shade100,
+                  color: Theme.of(context).colorScheme.tertiaryContainer,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.calendar_month_outlined,
-                  color: Colors.orange.shade800,
+                  color: Theme.of(context).colorScheme.onTertiaryContainer,
                 ),
               ),
               title: Text(

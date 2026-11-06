@@ -82,22 +82,22 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   void _next() {
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 380);
     if (_index == _slides.length - 1) {
       _finish();
       return;
     }
-    _controller.nextPage(
-      duration: const Duration(milliseconds: 380),
-      curve: Curves.easeOutCubic,
-    );
+    _controller.nextPage(duration: duration, curve: Curves.easeOutCubic);
   }
 
   void _previous() {
     if (_index > 0) {
-      _controller.previousPage(
-        duration: const Duration(milliseconds: 380),
-        curve: Curves.easeOutCubic,
-      );
+      final duration = MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 380);
+      _controller.previousPage(duration: duration, curve: Curves.easeOutCubic);
     }
   }
 
