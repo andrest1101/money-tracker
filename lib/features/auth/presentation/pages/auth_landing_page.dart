@@ -85,10 +85,14 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
                         ),
                       ],
                     ),
-                    child: Icon(
-                      Icons.account_balance_wallet_rounded,
-                      size: 40,
-                      color: colors.onPrimary,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.asset(
+                        'assets/images/app_icon.png',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 34),
@@ -312,7 +316,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
     if (ref.read(authControllerProvider).hasValue &&
         (_mode != _EmailMode.link || _linkSent)) {
       final message = _mode == _EmailMode.register
-          ? 'Akun berhasil dibuat. Selamat datang di Savu.'
+          ? 'Akun berhasil dibuat. Selamat datang di Dompetku.'
           : _mode == _EmailMode.login
           ? 'Login berhasil. Selamat datang kembali.'
           : 'Link login berhasil diverifikasi.';
@@ -378,7 +382,7 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
     final isLink = _mode == _EmailMode.link;
     final title = switch (_mode) {
       _EmailMode.login => 'Selamat datang kembali',
-      _EmailMode.register => 'Buat akun Savu',
+      _EmailMode.register => 'Buat akun Dompetku',
       _EmailMode.link =>
         _linkSent ? 'Masukkan link login' : 'Login tanpa password',
     };

@@ -134,14 +134,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.account_balance_wallet_rounded,
-                            color: colors.primary,
-                            size: 18,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.asset(
+                              'assets/images/app_icon.png',
+                              width: 30,
+                              height: 30,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'SAVU',
+                            'DOMPETKU',
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.1,

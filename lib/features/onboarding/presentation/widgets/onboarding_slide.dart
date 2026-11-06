@@ -280,7 +280,7 @@ class _OnboardingInteractiveCardState extends State<OnboardingInteractiveCard> {
                             const SizedBox(width: 10),
                             Flexible(
                               child: Text(
-                                'Savu FinTech',
+                                'Dompetku',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.labelMedium

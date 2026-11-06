@@ -10,7 +10,7 @@ Future<Widget> buildApp() async {
   final prefs = await SharedPreferences.getInstance();
   return ProviderScope(
     overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-    child: const SavuApp(),
+    child: const DompetkuApp(),
   );
 }
 

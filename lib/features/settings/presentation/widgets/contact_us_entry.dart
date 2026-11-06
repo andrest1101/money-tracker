@@ -211,9 +211,9 @@ class _ContactUsSheet extends StatelessWidget {
   // ── Direct open: Gmail / WhatsApp / GitHub ────────────────────
 
   Future<void> _openEmail(BuildContext context) async {
-    const subject = 'Feedback Savu';
+    const subject = 'Feedback Dompetku';
     const body =
-        'Halo $_founderName,\n\nSaya ingin memberikan feedback tentang Savu:\n\n- Perangkat:\n- Android versi:\n- Deskripsi:\n\n';
+        'Halo $_founderName,\n\nSaya ingin memberikan feedback tentang Dompetku:\n\n- Perangkat:\n- Android versi:\n- Deskripsi:\n\n';
 
     // Android: try native Gmail intent first (direct Gmail compose).
     if (Platform.isAndroid) {
@@ -268,7 +268,7 @@ class _ContactUsSheet extends StatelessWidget {
 
   Future<void> _openWhatsApp(BuildContext context) async {
     const message =
-        'Halo $_founderName, saya ingin memberikan feedback tentang Savu.';
+        'Halo $_founderName, saya ingin memberikan feedback tentang Dompetku.';
     final enc = Uri.encodeComponent(message);
 
     if (Platform.isAndroid) {

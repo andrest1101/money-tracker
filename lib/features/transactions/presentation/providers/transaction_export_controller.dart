@@ -22,7 +22,7 @@ class TransactionExportController extends Notifier<AsyncValue<void>> {
         name: 'moneytracker-transaksi.csv',
       );
       await SharePlus.instance.share(
-        ShareParams(files: [file], subject: 'Ekspor transaksi Savu'),
+        ShareParams(files: [file], subject: 'Ekspor transaksi Dompetku'),
       );
       state = const AsyncData(null);
       return true;

@@ -62,7 +62,7 @@ class _BootstrapAppState extends State<_BootstrapApp> {
         final preferences = snapshot.data;
         if (preferences == null) {
           return MaterialApp(
-            title: 'Savu',
+            title: 'Dompetku',
             debugShowCheckedModeBanner: false,
             themeMode: ThemeMode.light,
             theme: AppTheme.light(),
@@ -89,7 +89,7 @@ class _BootstrapErrorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Savu',
+      title: 'Dompetku',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),
@@ -240,7 +240,7 @@ class _AuthGate extends ConsumerWidget {
     final auth = ref.watch(authStateChangesProvider);
     final animationsEnabled = !AppMotion.isReduced(context);
     return MaterialApp(
-      title: 'Savu',
+      title: 'Dompetku',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),
@@ -292,19 +292,19 @@ class _AuthContent extends StatelessWidget {
             ) &&
             !user.emailVerified;
         if (needsVerification) return EmailVerificationPage(user: user);
-        return const SavuApp();
+        return const DompetkuApp();
       },
     );
   }
 }
 
-class SavuApp extends ConsumerWidget {
-  const SavuApp({super.key});
+class DompetkuApp extends ConsumerWidget {
+  const DompetkuApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Savu',
+      title: 'Dompetku',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),

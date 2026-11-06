@@ -136,7 +136,7 @@ class _NoBudgetContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Belum ada batas anggaran. Tetapkan batas agar Savu bisa '
+          'Belum ada batas anggaran. Tetapkan batas agar Dompetku bisa '
           'mengingatkanmu sebelum pengeluaran berlebih.',
           style: theme.textTheme.bodySmall?.copyWith(
             color: colors.textSecondary,

@@ -81,6 +81,8 @@ flutter:
 
   # Plus Jakarta Sans di-bundle agar tidak butuh unduhan runtime.
   # Lisensi OFL tersedia di assets/fonts/OFL.txt.
+  assets:
+    - assets/images/app_icon.png
   fonts:
     - family: PlusJakartaSans
       fonts:
@@ -124,6 +126,7 @@ flutter:
 flutter_launcher_icons:
   android: "ic_launcher"
   ios: true
+  remove_alpha_ios: true
   image_path: "assets/images/app_icon.png"
   min_sdk_android: 21
   web:
