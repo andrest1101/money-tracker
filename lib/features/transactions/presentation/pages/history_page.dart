@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../../shared/widgets/app_entrance.dart';
 import '../../../../shared/widgets/amount_text.dart';
 import '../../../../shared/widgets/empty_state.dart';
@@ -426,8 +427,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 else
                   const SizedBox(height: AppSpacing.sm),
                 Expanded(
-                  child:
-                      allTransactionsAsync.hasError
+                  child: allTransactionsAsync.hasError
                       ? DashboardErrorView(
                           onRetry: () =>
                               ref.invalidate(transactionsStreamProvider),
@@ -662,111 +662,104 @@ class _DailyOverviewSheet extends StatelessWidget {
     final net = summary.income - summary.expense;
     final netColor = net >= 0 ? colors.tertiary : colors.error;
 
-    return SafeArea(
-      child: FractionallySizedBox(
-        heightFactor: 0.9,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Ringkasan Harian', style: theme.textTheme.labelLarge),
-                  const SizedBox(height: 3),
-                  Text(
-                    date,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+    return AppBottomSheetLayout(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Ringkasan Harian', style: theme.textTheme.labelLarge),
+                const SizedBox(height: 3),
+                Text(
+                  date,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _OverviewMetric(
-                          label: 'Pemasukan',
-                          value: formatRupiah(summary.income),
-                          color: colors.tertiary,
-                          icon: Icons.south_west_rounded,
-                        ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _OverviewMetric(
+                        label: 'Pemasukan',
+                        value: formatRupiah(summary.income),
+                        color: colors.tertiary,
+                        icon: Icons.south_west_rounded,
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _OverviewMetric(
-                          label: 'Pengeluaran',
-                          value: formatRupiah(summary.expense),
-                          color: colors.error,
-                          icon: Icons.north_east_rounded,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _OverviewMetric(
+                        label: 'Pengeluaran',
+                        value: formatRupiah(summary.expense),
+                        color: colors.error,
+                        icon: Icons.north_east_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: netColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Selisih bersih', style: theme.textTheme.labelLarge),
+                      Text(
+                        '${net >= 0 ? '+' : '-'}${formatRupiah(net.abs())}',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: netColor,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: netColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Selisih bersih',
-                          style: theme.textTheme.labelLarge,
-                        ),
-                        Text(
-                          '${net >= 0 ? '+' : '-'}${formatRupiah(net.abs())}',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: netColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Daftar transaksi',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                'Daftar transaksi',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+          ),
+          const SizedBox(height: 4),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screen,
+                0,
+                AppSpacing.screen,
+                AppSpacing.xl,
+              ),
+              itemCount: transactions.length,
+              itemBuilder: (context, index) => shared.TransactionTile(
+                category: transactions[index].category,
+                amount: transactions[index].amount,
+                isExpense: transactions[index].isExpense,
+                note: transactions[index].note,
+                timeLabel:
+                    '${transactions[index].date.hour.toString().padLeft(2, '0')}:${transactions[index].date.minute.toString().padLeft(2, '0')}',
+                onTap: () => onTransactionTap(transactions[index]),
+                onDismissed: () => onTransactionDismissed(transactions[index]),
+                dismissKey: transactions[index].id,
+                padding: EdgeInsets.zero,
               ),
             ),
-            const SizedBox(height: 4),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.screen,
-                  0,
-                  AppSpacing.screen,
-                  AppSpacing.xl,
-                ),
-                itemCount: transactions.length,
-                itemBuilder: (context, index) => shared.TransactionTile(
-                  category: transactions[index].category,
-                  amount: transactions[index].amount,
-                  isExpense: transactions[index].isExpense,
-                  note: transactions[index].note,
-                  timeLabel:
-                      '${transactions[index].date.hour.toString().padLeft(2, '0')}:${transactions[index].date.minute.toString().padLeft(2, '0')}',
-                  onTap: () => onTransactionTap(transactions[index]),
-                  onDismissed: () =>
-                      onTransactionDismissed(transactions[index]),
-                  dismissKey: transactions[index].id,
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

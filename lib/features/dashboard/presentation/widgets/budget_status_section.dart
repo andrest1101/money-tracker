@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../../shared/widgets/budget_progress.dart';
 import '../../../../shared/widgets/category_icon.dart';
 import '../../../settings/presentation/widgets/settings_financial_section.dart';
@@ -443,184 +444,168 @@ class BudgetOverviewSheet extends StatelessWidget {
         ? colors.onErrorContainer
         : colors.onPrimaryContainer;
 
-    return SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: AppLayout.maxContentWidth,
-          ),
-          child: FractionallySizedBox(
-            heightFactor: .9,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screen,
-                AppSpacing.xxs,
-                AppSpacing.screen,
-                AppSpacing.section,
+    return AppBottomSheetLayout(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screen,
+          AppSpacing.xxs,
+          AppSpacing.screen,
+          AppSpacing.section,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Overview Anggaran', style: theme.textTheme.labelLarge),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              '${formatDateShort(overview.periodStart)} – '
+              '${formatDateShort(overview.periodEnd)}',
+              style: theme.textTheme.headlineSmall,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: heroBackground,
+                borderRadius: BorderRadius.circular(AppRadius.hero),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Overview Anggaran', style: theme.textTheme.labelLarge),
-                  const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    '${formatDateShort(overview.periodStart)} – '
-                    '${formatDateShort(overview.periodEnd)}',
-                    style: theme.textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: heroBackground,
-                      borderRadius: BorderRadius.circular(AppRadius.hero),
+                    overview.isExceeded ? 'Melebihi batas' : 'Sisa anggaran',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: heroForeground.withValues(alpha: .72),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          overview.isExceeded
-                              ? 'Melebihi batas'
-                              : 'Sisa anggaran',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: heroForeground.withValues(alpha: .72),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            formatRupiah(overview.remaining.abs()),
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              color: heroForeground,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                          child: LinearProgressIndicator(
-                            value: overview.spentRatio.clamp(0.0, 1.0),
-                            minHeight: 8,
-                            backgroundColor: heroForeground.withValues(
-                              alpha: .16,
-                            ),
-                            color: statusColor,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          '${(overview.spentRatio * 100).round()}% digunakan '
-                          'dari ${formatRupiah(overview.budgetLimit)}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: heroForeground.withValues(alpha: .78),
-                          ),
-                        ),
-                      ],
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      formatRupiah(overview.remaining.abs()),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: heroForeground,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: BudgetMetric(
-                          label: 'Transaksi',
-                          value: '${overview.transactionCount}',
-                          icon: Icons.receipt_long_outlined,
-                          onTap: onOpenHistory == null
-                              ? null
-                              : () => onOpenHistory!(null),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Expanded(
-                        child: BudgetMetric(
-                          label: 'Rata-rata / hari',
-                          value: formatRupiah(overview.averageDailyExpense),
-                          icon: Icons.show_chart_rounded,
-                          onTap: () => _showMetricDetail(
-                            context,
-                            title: 'Rata-rata pengeluaran harian',
-                            message:
-                                'Angka ini dihitung dari total pengeluaran '
-                                'yang sudah terjadi dibagi jumlah hari yang '
-                                'telah berjalan pada siklus ini.',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  BudgetMetric(
-                    label: 'Estimasi akhir periode',
-                    value: formatRupiah(overview.projectedExpense),
-                    icon: Icons.insights_rounded,
-                    wide: true,
-                    onTap: () => _showMetricDetail(
-                      context,
-                      title: 'Estimasi akhir periode',
-                      message:
-                          'Proyeksi ini menggunakan rata-rata pengeluaran '
-                          'harian saat ini untuk memperkirakan total '
-                          'pengeluaran sampai akhir siklus.',
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                    child: LinearProgressIndicator(
+                      value: overview.spentRatio.clamp(0.0, 1.0),
+                      minHeight: 8,
+                      backgroundColor: heroForeground.withValues(alpha: .16),
+                      color: statusColor,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Text('Kategori terbesar', style: theme.textTheme.titleMedium),
                   const SizedBox(height: AppSpacing.xs),
-                  if (overview.topCategories.isEmpty)
-                    Text(
-                      'Belum ada pengeluaran pada periode ini.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: appColors.textSecondary,
-                      ),
-                    )
-                  else
-                    ...overview.topCategories.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.xs,
-                        ),
-                        child: Row(
-                          children: [
-                            CategoryIcon(category: item.category, size: 32),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Text(
-                                item.category,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.xs),
-                            Text(
-                              formatRupiah(item.amount),
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: appColors.danger,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: AppSpacing.md),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.check_rounded),
-                      label: const Text('Tutup'),
+                  Text(
+                    '${(overview.spentRatio * 100).round()}% digunakan '
+                    'dari ${formatRupiah(overview.budgetLimit)}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: heroForeground.withValues(alpha: .78),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: BudgetMetric(
+                    label: 'Transaksi',
+                    value: '${overview.transactionCount}',
+                    icon: Icons.receipt_long_outlined,
+                    onTap: onOpenHistory == null
+                        ? null
+                        : () => onOpenHistory!(null),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: BudgetMetric(
+                    label: 'Rata-rata / hari',
+                    value: formatRupiah(overview.averageDailyExpense),
+                    icon: Icons.show_chart_rounded,
+                    onTap: () => _showMetricDetail(
+                      context,
+                      title: 'Rata-rata pengeluaran harian',
+                      message:
+                          'Angka ini dihitung dari total pengeluaran '
+                          'yang sudah terjadi dibagi jumlah hari yang '
+                          'telah berjalan pada siklus ini.',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            BudgetMetric(
+              label: 'Estimasi akhir periode',
+              value: formatRupiah(overview.projectedExpense),
+              icon: Icons.insights_rounded,
+              wide: true,
+              onTap: () => _showMetricDetail(
+                context,
+                title: 'Estimasi akhir periode',
+                message:
+                    'Proyeksi ini menggunakan rata-rata pengeluaran '
+                    'harian saat ini untuk memperkirakan total '
+                    'pengeluaran sampai akhir siklus.',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text('Kategori terbesar', style: theme.textTheme.titleMedium),
+            const SizedBox(height: AppSpacing.xs),
+            if (overview.topCategories.isEmpty)
+              Text(
+                'Belum ada pengeluaran pada periode ini.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: appColors.textSecondary,
+                ),
+              )
+            else
+              ...overview.topCategories.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                  child: Row(
+                    children: [
+                      CategoryIcon(category: item.category, size: 32),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          item.category,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        formatRupiah(item.amount),
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: appColors.danger,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.check_rounded),
+                label: const Text('Tutup'),
+              ),
+            ),
+          ],
         ),
       ),
     );

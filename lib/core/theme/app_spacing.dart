@@ -46,4 +46,7 @@ abstract final class AppDuration {
 /// Batas lebar konten agar tidak melar di Windows/Web.
 abstract final class AppLayout {
   static const double maxContentWidth = 680;
+
+  /// Batas tinggi standar bottom sheet (87% viewport).
+  static const double bottomSheetHeightFactor = .87;
 }

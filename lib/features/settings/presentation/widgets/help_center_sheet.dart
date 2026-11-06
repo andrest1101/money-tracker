@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/app_bottom_sheet.dart';
+
 class HelpCenterSheet extends StatelessWidget {
   const HelpCenterSheet({super.key});
 
@@ -35,103 +37,100 @@ class HelpCenterSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return SafeArea(
-      child: FractionallySizedBox(
-        heightFactor: 0.88,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: colors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: colors.outlineVariant),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 25,
-                    backgroundColor: colors.primary,
-                    child: Icon(
-                      Icons.support_agent_rounded,
-                      color: colors.onPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Pusat Bantuan',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Jawaban singkat untuk membantu mengatur keuanganmu.',
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 22),
-            Text(
-              'Pertanyaan umum',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              margin: EdgeInsets.zero,
-              elevation: 0,
-              clipBehavior: Clip.antiAlias,
+    return AppBottomSheetLayout(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
               color: colors.surfaceContainerHigh,
-              child: Column(
-                children: [
-                  for (var i = 0; i < _faqs.length; i++) ...[
-                    ExpansionTile(
-                      leading: Icon(_faqs[i].$3, color: colors.primary),
-                      title: Text(
-                        _faqs[i].$1,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: colors.outlineVariant),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 25,
+                  backgroundColor: colors.primary,
+                  child: Icon(
+                    Icons.support_agent_rounded,
+                    color: colors.onPrimary,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pusat Bantuan',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _faqs[i].$2,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (i < _faqs.length - 1)
-                      const Divider(height: 1, indent: 72),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Text(
-                'Masih membutuhkan bantuan? Hubungi Andre.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Jawaban singkat untuk membantu mengatur keuanganmu.',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Pertanyaan umum',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            margin: EdgeInsets.zero,
+            elevation: 0,
+            clipBehavior: Clip.antiAlias,
+            color: colors.surfaceContainerHigh,
+            child: Column(
+              children: [
+                for (var i = 0; i < _faqs.length; i++) ...[
+                  ExpansionTile(
+                    leading: Icon(_faqs[i].$3, color: colors.primary),
+                    title: Text(
+                      _faqs[i].$1,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                    expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _faqs[i].$2,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (i < _faqs.length - 1)
+                    const Divider(height: 1, indent: 72),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: Text(
+              'Masih membutuhkan bantuan? Hubungi Andre.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

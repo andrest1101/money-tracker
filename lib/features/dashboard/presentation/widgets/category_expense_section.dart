@@ -8,6 +8,7 @@ import '../../../../core/theme/category_palette.dart';
 import '../../../../core/theme/app_motion.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/widgets/amount_text.dart';
+import '../../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../../shared/widgets/category_icon.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -428,154 +429,135 @@ class _CategoryExpenseDetailsSheet extends StatelessWidget {
         ? 0
         : ((category.amount / totalExpense) * 100).round();
 
-    return SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: AppLayout.maxContentWidth,
-          ),
-          child: FractionallySizedBox(
-            heightFactor: .88,
+    return AppBottomSheetLayout(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screen,
+              AppSpacing.xxs,
+              AppSpacing.screen,
+              AppSpacing.md,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screen,
-                    AppSpacing.xxs,
-                    AppSpacing.screen,
-                    AppSpacing.md,
+                Text('Detail pengeluaran', style: theme.textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(category.category, style: theme.textTheme.headlineSmall),
+                const SizedBox(height: AppSpacing.md),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.hero),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Detail pengeluaran',
-                        style: theme.textTheme.labelLarge,
+                        'Total bulan ini',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colors.onPrimaryContainer.withValues(
+                            alpha: .72,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      AmountText(
+                        amount: category.amount,
+                        color: colors.onPrimaryContainer,
+                        style: theme.textTheme.headlineSmall,
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       Text(
-                        category.category,
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        decoration: BoxDecoration(
-                          color: colors.primaryContainer,
-                          borderRadius: BorderRadius.circular(AppRadius.hero),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Total bulan ini',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: colors.onPrimaryContainer.withValues(
-                                  alpha: .72,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            AmountText(
-                              amount: category.amount,
-                              color: colors.onPrimaryContainer,
-                              style: theme.textTheme.headlineSmall,
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            Text(
-                              '${transactions.length} transaksi  •  '
-                              '$percent% dari total pengeluaran',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: colors.onPrimaryContainer.withValues(
-                                  alpha: .78,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _DetailMetric(
-                              label: 'Rata-rata',
-                              amount: average,
-                              icon: Icons.show_chart_rounded,
-                            ),
+                        '${transactions.length} transaksi  •  '
+                        '$percent% dari total pengeluaran',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.onPrimaryContainer.withValues(
+                            alpha: .78,
                           ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Expanded(
-                            child: _DetailMetric(
-                              label: 'Terbesar',
-                              amount: largest,
-                              icon: Icons.trending_up_rounded,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screen,
-                  ),
-                  child: Text(
-                    'Transaksi kategori ini',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                Expanded(
-                  child: transactions.isEmpty
-                      ? EmptyState(
-                          compact: true,
-                          icon: Icons.receipt_long_outlined,
-                          title: 'Belum ada transaksi',
-                          message:
-                              'Transaksi kategori ini akan muncul di sini.',
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.lg,
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                          itemCount: transactions.length,
-                          itemBuilder: (_, index) {
-                            final transaction = transactions[index];
-                            return TransactionTile(
-                              category: transaction.category,
-                              amount: transaction.amount,
-                              isExpense: transaction.isExpense,
-                              note: transaction.note,
-                              timeLabel: formatDateShort(transaction.date),
-                              showDivider: index != transactions.length - 1,
-                            );
-                          },
-                        ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screen,
-                    AppSpacing.xs,
-                    AppSpacing.screen,
-                    AppSpacing.md,
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Tutup'),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _DetailMetric(
+                        label: 'Rata-rata',
+                        amount: average,
+                        icon: Icons.show_chart_rounded,
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: _DetailMetric(
+                        label: 'Terbesar',
+                        amount: largest,
+                        icon: Icons.trending_up_rounded,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+            child: Text(
+              'Transaksi kategori ini',
+              style: theme.textTheme.titleMedium,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Expanded(
+            child: transactions.isEmpty
+                ? EmptyState(
+                    compact: true,
+                    icon: Icons.receipt_long_outlined,
+                    title: 'Belum ada transaksi',
+                    message: 'Transaksi kategori ini akan muncul di sini.',
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.lg,
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                    itemCount: transactions.length,
+                    itemBuilder: (_, index) {
+                      final transaction = transactions[index];
+                      return TransactionTile(
+                        category: transaction.category,
+                        amount: transaction.amount,
+                        isExpense: transaction.isExpense,
+                        note: transaction.note,
+                        timeLabel: formatDateShort(transaction.date),
+                        showDivider: index != transactions.length - 1,
+                      );
+                    },
+                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screen,
+              AppSpacing.xs,
+              AppSpacing.screen,
+              AppSpacing.md,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tutup'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
