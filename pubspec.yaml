@@ -83,6 +83,7 @@ flutter:
   # Lisensi OFL tersedia di assets/fonts/OFL.txt.
   assets:
     - assets/images/app_icon.png
+    - assets/images/google_logo_192.png
   fonts:
     - family: PlusJakartaSans
       fonts:
