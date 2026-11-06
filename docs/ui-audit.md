@@ -332,6 +332,45 @@ Select-String -CaseSensitive `
 
 ---
 
+### Catatan Batch 10 — Motion polish dan reduced motion (2026-11-06)
+
+- **Root cause animasi seolah tidak berjalan** bukan di mode build (Run Run Without
+  Debugging tetap debug JIT) melainkan pengaturan perangkat: pada `RR8X100CH5Z`,
+  `animator_duration_scale`, `transition_animation_scale`, dan `window_animation_scale`
+  semuanya `0.0`. Flutter membaca ini sebagai `AccessibilityFeatures.disableAnimations`,
+  sehingga semua animasi melesat ke posisi akhir. Perbaikan di perangkat:
+
+  ```powershell
+  $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+  & $adb -s RR8X100CH5Z shell settings put global window_animation_scale 1
+  & $adb -s RR8X100CH5Z shell settings put global transition_animation_scale 1
+  & $adb -s RR8X100CH5Z shell settings put global animator_duration_scale 1
+  ```
+
+  lalu restart aplikasi. Atau manual: Settings → Developer options → Animator duration
+  scale → 1x (plus Transition dan Window animation scale).
+- **Kualitas animasi dinilai di mode profile/release**, bukan debug:
+  `flutter run --profile -d RR8X100CH5Z` untuk menilai kehalusan, `--release` untuk hasil akhir.
+- `AppMotion` (`lib/core/theme/app_motion.dart`) menjadi satu pintu reduced motion:
+  `isReduced(context)`, `durationOf(context, base)` mengembalikan `Duration.zero` bila
+  reduced motion aktif; `AppMotion.standard` = `Curves.easeOutCubic`.
+- Widget baru `AppEntrance` (`lib/shared/widgets/app_entrance.dart`): fade + geser 8dp
+  sekali saat dipasang, 280 ms, menghormati reduced motion, dan melepas `Opacity` saat
+  selesai. Dipakai di keempat tab (Beranda, Target, Riwayat, Pengaturan).
+- Semua durasi animasi yang tersisa memakai helper/`AppDuration`: transisi
+  onboarding↔auth↔shell (420/280 ms), counter saldo (600 ms), progress bar anggaran dan
+  target (400 ms), kartu target, ilustrasi onboarding, pemicu seleksi grafik, sheet
+  avatar, animasi profil, dan confetti dialog (tidak diputar saat reduced motion).
+- Pindah tab tetap memakai `IndexedStack` (state dan posisi scroll tetap terjaga) dan
+  tidak diberi transisi tambahan. Indikator `NavigationBar` sudah animatif secara default.
+- Dasar verifikasi: `flutter analyze` bersih, `flutter test` 134/134 lulus (2 test motion
+  ditambahkan), `test/app_theme_test.dart` tetap hijau.
+- _Device verification pending:_ A15 terputus saat eksekusi adb; perbaikan device ini wajib
+  diverifikasi manual pada perangkat sebelum batch dianggap selesai. Test automatis tidak
+  bisa mengecek Skala animator Samsung.
+
+---
+
 ## 10. Keputusan yang Menunggu Konfirmasi User
 
 1. Setuju menghapus **semua** gradient, termasuk swipe-to-delete?
