@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/category_icon.dart';
 import '../../domain/entities/transaction_entity.dart';
-import 'category_icon.dart';
 
 class CategoryFilterSheet extends StatefulWidget {
   const CategoryFilterSheet({
@@ -174,8 +174,6 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                           title: category,
                           subtitle: '${widget.counts[category] ?? 0} transaksi',
                           category: category,
-                          type:
-                              widget.types[category] ?? TransactionType.expense,
                           selected: widget.selectedCategory == category,
                           onTap: () => Navigator.pop(context, category),
                         );
@@ -198,7 +196,6 @@ class _CategoryOption extends StatelessWidget {
     this.icon,
     this.iconColor,
     this.category,
-    this.type,
   });
 
   final String title;
@@ -208,7 +205,6 @@ class _CategoryOption extends StatelessWidget {
   final IconData? icon;
   final Color? iconColor;
   final String? category;
-  final TransactionType? type;
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +220,7 @@ class _CategoryOption extends StatelessWidget {
           child: Row(
             children: [
               category != null
-                  ? CategoryIcon(category: category!, type: type!, size: 42)
+                  ? CategoryIcon(category: category!, size: 42)
                   : Container(
                       width: 42,
                       height: 42,

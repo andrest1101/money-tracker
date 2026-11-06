@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../../shared/widgets/empty_state.dart';
 import '../../domain/entities/balance_trend_point_entity.dart';
 import '../providers/analytics_providers.dart';
 
@@ -39,14 +40,22 @@ class BalanceTrendChartCard extends ConsumerWidget {
                 height: 200,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (_, __) => const SizedBox(
-                height: 200,
-                child: Center(child: Text('Tren saldo belum tersedia.')),
+              error: (_, __) => EmptyState(
+                compact: true,
+                icon: Icons.cloud_off_outlined,
+                title: 'Tren saldo belum tersedia',
+                message: 'Periksa koneksi lalu coba lagi.',
+                actionLabel: 'Coba lagi',
+                onAction: () => ref.invalidate(balanceTrendPointsProvider),
+                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
               data: (points) => points.isEmpty
-                  ? const SizedBox(
-                      height: 200,
-                      child: Center(child: Text('Belum ada data saldo.')),
+                  ? const EmptyState(
+                      compact: true,
+                      icon: Icons.show_chart_rounded,
+                      title: 'Belum ada data saldo',
+                      message: 'Saldo akan terlihat setelah ada transaksi.',
+                      padding: EdgeInsets.symmetric(vertical: 24),
                     )
                   : _TrendContent(points: points),
             ),

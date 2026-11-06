@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../savings/presentation/providers/savings_providers.dart';
 import '../../../transactions/presentation/providers/transaction_export_controller.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
@@ -16,14 +17,12 @@ class DataManagementCard extends ConsumerWidget {
   }
 
   Future<void> _showDeleteAllDialog(BuildContext context, WidgetRef ref) async {
+    final danger = context.appColors.danger;
+    final onDanger = Theme.of(context).colorScheme.onError;
     final firstConfirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(
-          Icons.warning_amber_rounded,
-          size: 48,
-          color: Colors.red,
-        ),
+        icon: Icon(Icons.warning_amber_rounded, size: 48, color: danger),
         title: const Text('Hapus Semua Data?'),
         content: const SingleChildScrollView(
           child: Text(
@@ -47,11 +46,8 @@ class DataManagementCard extends ConsumerWidget {
                 child: FilledButton(
                   onPressed: () => Navigator.pop(context, true),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor:
-                        Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : null,
+                    backgroundColor: danger,
+                    foregroundColor: onDanger,
                     minimumSize: const Size.fromHeight(48),
                   ),
                   child: const Text('Ya, Hapus Semua'),
@@ -88,6 +84,7 @@ class DataManagementCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final danger = context.appColors.danger;
     final transactions = ref.watch(transactionsStreamProvider);
     final isExporting = ref
         .watch(transactionExportControllerProvider)
@@ -143,16 +140,10 @@ class DataManagementCard extends ConsumerWidget {
             const Divider(height: 1, indent: 56),
             ListTile(
               onTap: () => _showDeleteAllDialog(context, ref),
-              leading: const Icon(
-                Icons.delete_forever_rounded,
-                color: Colors.red,
-              ),
-              title: const Text(
+              leading: Icon(Icons.delete_forever_rounded, color: danger),
+              title: Text(
                 'Hapus Seluruh Data',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: danger, fontWeight: FontWeight.w600),
               ),
               subtitle: const Text('Reset akun dan mulai dari nol'),
             ),
@@ -177,8 +168,10 @@ class _FinalDeleteConfirmationDialogState
 
   @override
   Widget build(BuildContext context) {
+    final danger = context.appColors.danger;
+    final onDanger = Theme.of(context).colorScheme.onError;
     return AlertDialog(
-      icon: const Icon(Icons.gpp_maybe_rounded, color: Colors.red, size: 44),
+      icon: Icon(Icons.gpp_maybe_rounded, color: danger, size: 44),
       title: const Text('Konfirmasi terakhir'),
       content: SingleChildScrollView(
         child: Column(
@@ -222,11 +215,8 @@ class _FinalDeleteConfirmationDialogState
                     ? () => Navigator.pop(context, true)
                     : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor:
-                      Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : null,
+                  backgroundColor: danger,
+                  foregroundColor: onDanger,
                   minimumSize: const Size.fromHeight(48),
                 ),
                 child: const Text('HAPUS SEMUA'),

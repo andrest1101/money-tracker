@@ -236,7 +236,7 @@ class _OnboardingInteractiveCardState extends State<OnboardingInteractiveCard> {
             borderRadius: BorderRadius.circular(28),
             child: Stack(
               children: [
-                // Ambient Glow
+                // Accent circle keeps the illustration expressive without a gradient.
                 Positioned(
                   top: -50,
                   right: -40,
@@ -245,12 +245,7 @@ class _OnboardingInteractiveCardState extends State<OnboardingInteractiveCard> {
                     height: 170,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          accent.withValues(alpha: .18),
-                          accent.withValues(alpha: 0.0),
-                        ],
-                      ),
+                      color: accent.withValues(alpha: .10),
                     ),
                   ),
                 ),

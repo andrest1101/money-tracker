@@ -59,20 +59,9 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     final state = ref.watch(authControllerProvider);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          color: isDark ? colors.surface : null,
-          gradient: isDark
-              ? null
-              : LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [colors.primaryContainer, colors.surface],
-                  stops: const [0, .62],
-                ),
-        ),
+      body: ColoredBox(
+        color: colors.surface,
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),

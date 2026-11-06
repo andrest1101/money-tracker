@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/rupiah_formatter.dart';
+import '../../../../shared/widgets/empty_state.dart';
 import '../../domain/entities/cash_flow_point_entity.dart';
 import '../providers/analytics_providers.dart';
 
@@ -63,11 +64,13 @@ class CashFlowChartCard extends ConsumerWidget {
                 action: () => ref.invalidate(cashFlowPointsProvider),
               ),
               data: (points) => points.every((point) => !point.hasActivity)
-                  ? const _ChartMessage(
+                  ? const EmptyState(
+                      compact: true,
                       icon: Icons.insights_outlined,
                       title: 'Belum ada arus kas',
                       message:
                           'Catat transaksi untuk melihat pergerakan uangmu.',
+                      padding: EdgeInsets.symmetric(vertical: 24),
                     )
                   : _ChartContent(points: points),
             ),
