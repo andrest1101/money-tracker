@@ -41,6 +41,7 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
     String? initialLink,
     String? initialEmail,
   }) async {
+    ref.read(authControllerProvider.notifier).clearError();
     final message = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -419,10 +420,14 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                 ),
               ],
               selected: {_mode},
-              onSelectionChanged: (value) => setState(() {
-                _mode = value.first;
-                _linkSent = false;
-              }),
+              onSelectionChanged: (value) {
+                ref.read(authControllerProvider.notifier).clearError();
+                setState(() {
+                  _mode = value.first;
+                  _linkSent = false;
+                  _successMessage = null;
+                });
+              },
             ),
             const SizedBox(height: 18),
             Form(

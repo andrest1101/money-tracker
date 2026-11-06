@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../errors/app_error_message.dart';
 import '../local_storage/settings_providers.dart';
 
 const _pendingEmailLinkEmailKey = 'pending_email_link_email';
@@ -42,6 +43,14 @@ class AuthController extends Notifier<AsyncValue<void>> {
 
   @override
   AsyncValue<void> build() => const AsyncData(null);
+
+  /// Menghapus error dari percobaan login sebelumnya agar tidak terbawa
+  /// saat pengguna berganti metode autentikasi.
+  void clearError() {
+    if (!state.isLoading && state.hasError) {
+      state = const AsyncData(null);
+    }
+  }
 
   Future<void> continueAsGuest() async {
     state = const AsyncLoading();
@@ -299,17 +308,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
   }
 
   String _googlePlatformMessage(PlatformException error) {
-    final code = error.code;
-    if (code == '10' || code == 'sign_in_failed') {
-      return 'Google Sign-In gagal (kode $code). Periksa SHA-1/SHA-256, package name, dan OAuth client Android di Firebase Console.';
-    }
-    if (code == '12501' || code == 'sign_in_canceled') {
-      return 'Login Google dibatalkan.';
-    }
-    if (code == '7' || code == 'network_error') {
-      return 'Google Sign-In tidak menemukan koneksi internet.';
-    }
-    return 'Google Sign-In gagal (kode $code). ${error.message ?? 'Periksa konfigurasi Firebase.'}';
+    return googleSignInErrorMessage(error);
   }
 
   Future<void> linkWithEmail({
@@ -350,25 +349,6 @@ class AuthController extends Notifier<AsyncValue<void>> {
   }
 
   String _messageFor(FirebaseAuthException error) {
-    return switch (error.code) {
-      'credential-already-in-use' || 'email-already-in-use' =>
-        'Email tersebut sudah terdaftar. Gunakan email lain.',
-      'weak-password' => 'Password terlalu mudah. Gunakan minimal 6 karakter.',
-      'invalid-email' => 'Format email belum benar.',
-      'user-not-found' ||
-      'wrong-password' ||
-      'invalid-credential' => 'Email atau password tidak sesuai.',
-      'user-disabled' => 'Akun ini dinonaktifkan.',
-      'expired-action-code' ||
-      'invalid-action-code' => 'Link login tidak valid atau sudah kedaluwarsa.',
-      'account-exists-with-different-credential' =>
-        'Email sudah terhubung dengan metode login lain.',
-      'network-request-failed' => 'Koneksi bermasalah. Coba lagi.',
-      'too-many-requests' =>
-        'Terlalu banyak percobaan dari perangkat ini. Tunggu beberapa saat sebelum mencoba lagi.',
-      'popup-closed-by-user' || 'canceled' => 'Login dibatalkan.',
-      'already-linked' => 'Akun ini sudah diamankan.',
-      _ => error.message ?? 'Autentikasi gagal. Coba lagi.',
-    };
+    return authErrorMessage(error);
   }
 }
