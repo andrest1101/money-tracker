@@ -49,4 +49,22 @@ abstract final class AppLayout {
 
   /// Batas tinggi standar bottom sheet (87% viewport).
   static const double bottomSheetHeightFactor = .87;
+
+  /// Kolom form autentikasi. Lebih sempit dari konten biasa agar field dan
+  /// tombol tidak terlihat melar di tablet maupun desktop.
+  static const double authFormMaxWidth = 440;
+
+  /// Panel brand di samping form mulai muncul pada lebar ini.
+  static const double authWideBreakpoint = 900;
+
+  /// Lebar maksimum gabungan panel brand dan form.
+  static const double authWideMaxWidth = 1040;
+
+  /// Tinggi minimum tombol utama autentikasi. Memakai minimum, bukan tinggi
+  /// tetap, supaya tombol boleh tumbuh saat text scale diperbesar.
+  static const double authButtonHeight = 52;
+
+  /// Viewport pendek (misalnya ponsel landscape) memakai padding vertikal
+  /// yang lebih rapat.
+  static const double authShortViewport = 680;
 }
