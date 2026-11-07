@@ -5,6 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/firebase/auth_providers.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../utils/auth_error_text.dart';
+import '../widgets/auth_button.dart';
+import '../widgets/auth_message_banner.dart';
+import '../widgets/auth_scaffold.dart';
 
 class EmailVerificationPage extends ConsumerStatefulWidget {
   const EmailVerificationPage({super.key, required this.user});
@@ -19,6 +24,8 @@ class EmailVerificationPage extends ConsumerStatefulWidget {
 class _EmailVerificationPageState extends ConsumerState<EmailVerificationPage> {
   Timer? _cooldownTimer;
   int _secondsRemaining = 0;
+  String? _statusMessage;
+  AuthMessageTone _statusTone = AuthMessageTone.info;
 
   @override
   void dispose() {
@@ -28,11 +35,19 @@ class _EmailVerificationPageState extends ConsumerState<EmailVerificationPage> {
 
   Future<void> _resend() async {
     if (_secondsRemaining > 0) return;
+    setState(() => _statusMessage = null);
+
     await ref.read(authControllerProvider.notifier).sendEmailVerification();
     if (!mounted) return;
     final state = ref.read(authControllerProvider);
     if (state.hasError) return;
-    setState(() => _secondsRemaining = 60);
+
+    setState(() {
+      _secondsRemaining = 60;
+      _statusTone = AuthMessageTone.success;
+      _statusMessage =
+          'Email verifikasi baru sudah dikirim. Periksa Inbox atau Spam.';
+    });
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -45,14 +60,11 @@ class _EmailVerificationPageState extends ConsumerState<EmailVerificationPage> {
         setState(() => _secondsRemaining--);
       }
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Email verifikasi dikirim. Cek Inbox atau Spam.'),
-      ),
-    );
   }
 
   Future<void> _checkVerification() async {
+    setState(() => _statusMessage = null);
+
     final verified = await ref
         .read(authControllerProvider.notifier)
         .reloadCurrentUser();
@@ -61,16 +73,15 @@ class _EmailVerificationPageState extends ConsumerState<EmailVerificationPage> {
       ref.invalidate(authStateChangesProvider);
       return;
     }
+
     final state = ref.read(authControllerProvider);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          state.hasError
-              ? state.error.toString()
-              : 'Email belum terverifikasi. Buka link di email terlebih dahulu.',
-        ),
-      ),
-    );
+    if (state.hasError) return;
+
+    setState(() {
+      _statusTone = AuthMessageTone.info;
+      _statusMessage =
+          'Email belum terverifikasi. Buka tautan di email terlebih dahulu.';
+    });
   }
 
   Future<void> _signOut() async {
@@ -81,105 +92,123 @@ class _EmailVerificationPageState extends ConsumerState<EmailVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final authState = ref.watch(authControllerProvider);
+    final error = authErrorText(authState);
+    final isLoading = authState.isLoading;
     final email = widget.user.email ?? 'email akunmu';
 
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 36,
-                        backgroundColor: colors.primaryContainer,
-                        child: Icon(
-                          Icons.mark_email_unread_rounded,
-                          size: 38,
-                          color: colors.onPrimaryContainer,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Verifikasi emailmu',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Kami mengirim link verifikasi ke:',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: colors.onSurfaceVariant),
-                      ),
-                      const SizedBox(height: 4),
-                      SelectableText(
-                        email,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        'Klik link tersebut untuk memastikan email ini benar-benar milikmu. Jika tidak ada di Inbox, periksa folder Spam atau Promosi.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: colors.onSurfaceVariant),
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: authState.isLoading
-                              ? null
-                              : _checkVerification,
-                          icon: const Icon(Icons.refresh_rounded),
-                          label: const Text('Saya sudah verifikasi'),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed:
-                              authState.isLoading || _secondsRemaining > 0
-                              ? null
-                              : _resend,
-                          icon: const Icon(Icons.send_rounded),
-                          label: Text(
-                            _secondsRemaining > 0
-                                ? 'Kirim ulang dalam ${_secondsRemaining}s'
-                                : 'Kirim ulang email verifikasi',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton.icon(
-                        onPressed: authState.isLoading ? null : _signOut,
-                        icon: const Icon(Icons.logout_rounded),
-                        label: const Text('Gunakan akun lain'),
-                      ),
-                      if (authState.hasError)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            authState.error.toString(),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: colors.error),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+    return AuthScaffold(
+      showBack: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: scheme.primaryContainer,
+                shape: BoxShape.circle,
+                border: Border.all(color: scheme.outlineVariant),
+              ),
+              child: Icon(
+                Icons.mark_email_unread_rounded,
+                size: 32,
+                color: scheme.onPrimaryContainer,
               ),
             ),
           ),
-        ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Verifikasi emailmu',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.6,
+              height: 1.15,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Satu langkah lagi sebelum kamu bisa memakai Dompetku.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: scheme.onSurfaceVariant,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(AppRadius.control),
+              border: Border.all(color: scheme.outlineVariant),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.alternate_email_rounded,
+                  size: 20,
+                  color: scheme.primary,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: SelectableText(
+                    email,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const AuthMessageBanner(
+            message:
+                'Klik tautan verifikasi di email. Jika tidak ada di Inbox, cek folder Spam atau Promosi.',
+            tone: AuthMessageTone.info,
+            icon: Icons.mark_email_read_outlined,
+          ),
+          if (error != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            AuthMessageBanner(message: error),
+          ],
+          if (_statusMessage != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            AuthMessageBanner(
+              message: _statusMessage!,
+              tone: _statusTone,
+            ),
+          ],
+          const SizedBox(height: AppSpacing.xl),
+          AuthPrimaryButton(
+            label: 'Saya sudah verifikasi',
+            icon: Icons.refresh_rounded,
+            isLoading: isLoading,
+            onPressed: _checkVerification,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AuthSecondaryButton(
+            label: _secondsRemaining > 0
+                ? 'Kirim ulang dalam ${_secondsRemaining}s'
+                : 'Kirim ulang email verifikasi',
+            icon: Icons.send_rounded,
+            onPressed: isLoading || _secondsRemaining > 0 ? null : _resend,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          TextButton.icon(
+            onPressed: isLoading ? null : _signOut,
+            style: TextButton.styleFrom(
+              minimumSize: const Size.fromHeight(44),
+            ),
+            icon: const Icon(Icons.logout_rounded, size: 18),
+            label: const Text('Gunakan akun lain'),
+          ),
+        ],
       ),
     );
   }

@@ -9,6 +9,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../../shared/widgets/amount_text.dart';
+import '../../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../../shared/widgets/category_icon.dart';
 import '../../../../shared/widgets/stat_inline.dart';
 import '../../domain/entities/monthly_summary_entity.dart';
@@ -240,148 +241,133 @@ class BalanceOverviewSheet extends StatelessWidget {
     String amount(double value) =>
         isPrivacy ? 'Rp •••••••' : formatRupiah(value);
 
-    return SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: AppLayout.maxContentWidth,
-          ),
-          child: FractionallySizedBox(
-            heightFactor: .86,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screen,
-                AppSpacing.xxs,
-                AppSpacing.screen,
-                AppSpacing.section,
+    return AppBottomSheetLayout(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screen,
+          AppSpacing.xxs,
+          AppSpacing.screen,
+          AppSpacing.section,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Ringkasan saldo', style: theme.textTheme.labelLarge),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              'Siklus anggaran berjalan',
+              style: theme.textTheme.headlineSmall,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: colors.primaryContainer,
+                borderRadius: BorderRadius.circular(AppRadius.card),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Ringkasan saldo', style: theme.textTheme.labelLarge),
+                  Text(
+                    'Saldo bersih',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.onPrimaryContainer.withValues(alpha: .72),
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    'Siklus anggaran berjalan',
-                    style: theme.textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: colors.primaryContainer,
-                      borderRadius: BorderRadius.circular(AppRadius.card),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Saldo bersih',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: colors.onPrimaryContainer.withValues(
-                              alpha: .72,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          amount(summary.balance),
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            color: summary.balance >= 0
-                                ? colors.onPrimaryContainer
-                                : colors.error,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: BalanceOverviewMetric(
-                          label: 'Pemasukan',
-                          value: amount(summary.totalIncome),
-                          icon: Icons.south_west_rounded,
-                          color: appColors.income,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Expanded(
-                        child: BalanceOverviewMetric(
-                          label: 'Pengeluaran',
-                          value: amount(summary.totalExpense),
-                          icon: Icons.north_east_rounded,
-                          color: colors.error,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  BalanceOverviewMetric(
-                    label: 'Transaksi tercatat',
-                    value: '${summary.transactionCount} transaksi',
-                    icon: Icons.receipt_long_outlined,
-                    color: colors.primary,
-                    wide: true,
-                  ),
-                  if (largestExpense != null) ...[
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'Pengeluaran terbesar',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      children: [
-                        CategoryIcon(category: largestExpense.category),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                largestExpense.category,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                largestExpense.note.isEmpty
-                                    ? 'Transaksi terbesar pada siklus ini'
-                                    : largestExpense.note,
-                                style: theme.textTheme.bodySmall,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          amount(largestExpense.amount),
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            color: colors.error,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Tutup ringkasan'),
+                    amount(summary.balance),
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: summary.balance >= 0
+                          ? colors.onPrimaryContainer
+                          : colors.error,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: BalanceOverviewMetric(
+                    label: 'Pemasukan',
+                    value: amount(summary.totalIncome),
+                    icon: Icons.south_west_rounded,
+                    color: appColors.income,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: BalanceOverviewMetric(
+                    label: 'Pengeluaran',
+                    value: amount(summary.totalExpense),
+                    icon: Icons.north_east_rounded,
+                    color: colors.error,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            BalanceOverviewMetric(
+              label: 'Transaksi tercatat',
+              value: '${summary.transactionCount} transaksi',
+              icon: Icons.receipt_long_outlined,
+              color: colors.primary,
+              wide: true,
+            ),
+            if (largestExpense != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              Text('Pengeluaran terbesar', style: theme.textTheme.titleMedium),
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                children: [
+                  CategoryIcon(category: largestExpense.category),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          largestExpense.category,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          largestExpense.note.isEmpty
+                              ? 'Transaksi terbesar pada siklus ini'
+                              : largestExpense.note,
+                          style: theme.textTheme.bodySmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    amount(largestExpense.amount),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: colors.error,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tutup ringkasan'),
+              ),
+            ),
+          ],
         ),
       ),
     );

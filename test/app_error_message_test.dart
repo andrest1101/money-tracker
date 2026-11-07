@@ -97,6 +97,74 @@ void main() {
     });
   });
 
+  group('emailPasswordSignInErrorMessage', () {
+    test('maps uppercase INVALID_LOGIN_CREDENTIALS from Firebase', () {
+      expect(
+        emailPasswordSignInErrorMessage(
+          FirebaseAuthException(
+            code: 'INVALID_LOGIN_CREDENTIALS',
+            message:
+                'An internal error has occurred. [ INVALID_LOGIN_CREDENTIALS ]',
+          ),
+        ),
+        'Email atau password salah. Periksa kembali lalu coba lagi.',
+      );
+    });
+
+    test(
+      'maps every credential code variant to the same actionable message',
+      () {
+        const codes = [
+          'invalid-credential',
+          'invalid-credentials',
+          'invalid-login-credentials',
+          'invalid_login_credentials',
+          'wrong-password',
+          'user-not-found',
+          'invalid-password',
+        ];
+
+        for (final code in codes) {
+          expect(
+            emailPasswordSignInErrorMessage(FirebaseAuthException(code: code)),
+            'Email atau password salah. Periksa kembali lalu coba lagi.',
+            reason: code,
+          );
+        }
+      },
+    );
+
+    test('detects a credential failure from the server message', () {
+      expect(
+        emailPasswordSignInErrorMessage(
+          FirebaseAuthException(
+            code: 'internal-error',
+            message: 'INVALID_LOGIN_CREDENTIALS',
+          ),
+        ),
+        'Email atau password salah. Periksa kembali lalu coba lagi.',
+      );
+    });
+
+    test('keeps system and network failures distinct from input errors', () {
+      expect(
+        emailPasswordSignInErrorMessage(
+          FirebaseAuthException(
+            code: 'internal-error',
+            message: 'private implementation detail',
+          ),
+        ),
+        'Login gagal karena kendala sistem. Coba lagi.',
+      );
+      expect(
+        emailPasswordSignInErrorMessage(
+          FirebaseAuthException(code: 'network-request-failed'),
+        ),
+        'Koneksi bermasalah. Coba lagi.',
+      );
+    });
+  });
+
   group('googleSignInErrorMessage', () {
     test('turns DEVELOPER_ERROR into SHA registration guidance', () {
       final message = googleSignInErrorMessage(

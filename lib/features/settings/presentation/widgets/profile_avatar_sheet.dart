@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_motion.dart';
+import '../../../../shared/widgets/app_bottom_sheet.dart';
 
 enum PresetAvatarCategory { general, people }
 
@@ -284,68 +285,59 @@ class _ProfileAvatarSheetState extends ConsumerState<ProfileAvatarSheet> {
         .where((avatar) => avatar.category == _category)
         .toList();
 
-    return SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final maxHeight = MediaQuery.sizeOf(context).height * .78;
-          return ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: maxHeight),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Avatar profil', style: theme.textTheme.labelLarge),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Pilih gaya yang paling menggambarkanmu',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    'Pilih avatar manusia atau gaya umum. Kamu dapat menggantinya kapan saja.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  _CategorySelector(
-                    category: _category,
-                    onChanged: (category) =>
-                        setState(() => _category = category),
-                  ),
-                  const SizedBox(height: 14),
-                  LayoutBuilder(
-                    builder: (context, gridConstraints) {
-                      final columns = gridConstraints.maxWidth < 360 ? 3 : 4;
-                      return GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: avatars.length,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: columns,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                          mainAxisExtent: 100,
-                        ),
-                        itemBuilder: (context, index) {
-                          final avatar = avatars[index];
-                          return _AvatarChoice(
-                            avatar: avatar,
-                            selected: avatar.id == selectedId,
-                            onTap: () => _selectAvatar(avatar.id),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
+    return AppBottomSheetLayout(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Avatar profil', style: theme.textTheme.labelLarge),
+            const SizedBox(height: 4),
+            Text(
+              'Pilih gaya yang paling menggambarkanmu',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
               ),
             ),
-          );
-        },
+            const SizedBox(height: 7),
+            Text(
+              'Pilih avatar manusia atau gaya umum. Kamu dapat menggantinya kapan saja.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 14),
+            _CategorySelector(
+              category: _category,
+              onChanged: (category) => setState(() => _category = category),
+            ),
+            const SizedBox(height: 14),
+            LayoutBuilder(
+              builder: (context, gridConstraints) {
+                final columns = gridConstraints.maxWidth < 360 ? 3 : 4;
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: avatars.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    mainAxisExtent: 100,
+                  ),
+                  itemBuilder: (context, index) {
+                    final avatar = avatars[index];
+                    return _AvatarChoice(
+                      avatar: avatar,
+                      selected: avatar.id == selectedId,
+                      onTap: () => _selectAvatar(avatar.id),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

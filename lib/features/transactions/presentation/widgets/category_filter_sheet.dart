@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../../shared/widgets/category_icon.dart';
 import '../../domain/entities/transaction_entity.dart';
 
@@ -46,142 +47,139 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
         .where((category) => category.toLowerCase().contains(query))
         .toList();
 
-    return SafeArea(
-      child: FractionallySizedBox(
-        heightFactor: 0.88,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Filter kategori',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Pilih kategori untuk menyaring riwayat transaksi.',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Tutup',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
-              child: TextField(
-                controller: _searchController,
-                autofocus: false,
-                onChanged: (value) => setState(() => _query = value),
-                decoration: InputDecoration(
-                  hintText: 'Cari kategori...',
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  suffixIcon: _query.isEmpty
-                      ? null
-                      : IconButton(
-                          tooltip: 'Hapus pencarian',
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _query = '');
-                          },
-                          icon: const Icon(Icons.clear_rounded),
-                        ),
-                  filled: true,
-                  fillColor: colors.surfaceContainerHigh,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                '${filteredCategories.length} kategori tersedia',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Expanded(
-              child: filteredCategories.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.search_off_rounded,
-                              size: 52,
-                              color: colors.onSurfaceVariant,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Kategori tidak ditemukan',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Coba gunakan kata kunci lain.',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
+    return AppBottomSheetLayout(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Filter kategori',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(12, 4, 12, 20),
-                      itemCount: filteredCategories.length + 1,
-                      separatorBuilder: (_, __) => const SizedBox(height: 4),
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return _CategoryOption(
-                            title: 'Semua kategori',
-                            subtitle: 'Tampilkan seluruh transaksi',
-                            icon: Icons.all_inclusive_rounded,
-                            iconColor: colors.primary,
-                            selected: widget.selectedCategory == null,
-                            onTap: () => Navigator.pop(context, ''),
-                          );
-                        }
-
-                        final category = filteredCategories[index - 1];
-                        return _CategoryOption(
-                          title: category,
-                          subtitle: '${widget.counts[category] ?? 0} transaksi',
-                          category: category,
-                          selected: widget.selectedCategory == category,
-                          onTap: () => Navigator.pop(context, category),
-                        );
-                      },
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Pilih kategori untuk menyaring riwayat transaksi.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Tutup',
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+            child: TextField(
+              controller: _searchController,
+              autofocus: false,
+              onChanged: (value) => setState(() => _query = value),
+              decoration: InputDecoration(
+                hintText: 'Cari kategori...',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Hapus pencarian',
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _query = '');
+                        },
+                        icon: const Icon(Icons.clear_rounded),
+                      ),
+                filled: true,
+                fillColor: colors.surfaceContainerHigh,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              '${filteredCategories.length} kategori tersedia',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Expanded(
+            child: filteredCategories.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 52,
+                            color: colors.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Kategori tidak ditemukan',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Coba gunakan kata kunci lain.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 20),
+                    itemCount: filteredCategories.length + 1,
+                    separatorBuilder: (_, __) => const SizedBox(height: 4),
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return _CategoryOption(
+                          title: 'Semua kategori',
+                          subtitle: 'Tampilkan seluruh transaksi',
+                          icon: Icons.all_inclusive_rounded,
+                          iconColor: colors.primary,
+                          selected: widget.selectedCategory == null,
+                          onTap: () => Navigator.pop(context, ''),
+                        );
+                      }
+
+                      final category = filteredCategories[index - 1];
+                      return _CategoryOption(
+                        title: category,
+                        subtitle: '${widget.counts[category] ?? 0} transaksi',
+                        category: category,
+                        selected: widget.selectedCategory == category,
+                        onTap: () => Navigator.pop(context, category),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }

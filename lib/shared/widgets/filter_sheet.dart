@@ -4,6 +4,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/date_formatter.dart';
+import 'app_bottom_sheet.dart';
 
 /// Periode cepat pada [FilterSheet].
 enum FilterPeriod { all, last7Days, last30Days, custom }
@@ -106,143 +107,137 @@ class _FilterSheetState extends State<FilterSheet> {
     final colors = context.appColors;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Align(
-      alignment: Alignment.topCenter,
-      heightFactor: 1,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.screen,
-            0,
-            AppSpacing.screen,
-            AppSpacing.lg + bottomInset,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        AppStrings.filterTitle,
-                        style: theme.textTheme.titleLarge,
-                      ),
+    return AppBottomSheetLayout(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.screen,
+          0,
+          AppSpacing.screen,
+          AppSpacing.lg + bottomInset,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      AppStrings.filterTitle,
+                      style: theme.textTheme.titleLarge,
                     ),
-                    IconButton(
-                      tooltip: AppStrings.cancel,
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ],
+                  ),
+                  IconButton(
+                    tooltip: AppStrings.cancel,
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              Text(
+                AppStrings.filterDescription,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
                 ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              _SectionLabel(text: AppStrings.period),
+              const SizedBox(height: AppSpacing.xs),
+              Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                children: [
+                  _periodChip(
+                    label: AppStrings.allTime,
+                    period: FilterPeriod.all,
+                  ),
+                  _periodChip(
+                    label: AppStrings.last7Days,
+                    period: FilterPeriod.last7Days,
+                  ),
+                  _periodChip(
+                    label: AppStrings.last30Days,
+                    period: FilterPeriod.last30Days,
+                  ),
+                  _periodChip(
+                    label: _rangeChipLabel,
+                    period: FilterPeriod.custom,
+                  ),
+                ],
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: AppSpacing.xs),
                 Text(
-                  AppStrings.filterDescription,
+                  _error!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.danger,
+                  ),
+                ),
+              ],
+              const SizedBox(height: AppSpacing.lg),
+              _SectionLabel(text: AppStrings.category),
+              const SizedBox(height: AppSpacing.xs),
+              Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                children: [
+                  ChoiceChip(
+                    label: const Text(AppStrings.allCategories),
+                    selected: _category == null,
+                    onSelected: (_) => setState(() => _category = null),
+                  ),
+                  for (final category in widget.categories)
+                    ChoiceChip(
+                      label: Text(
+                        category,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      selected: _category == category,
+                      onSelected: (_) {
+                        setState(() {
+                          _category = _category == category ? null : category;
+                        });
+                      },
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _activeCycleOnly,
+                onChanged: (value) => setState(() => _activeCycleOnly = value),
+                title: Text(
+                  AppStrings.activeCycle,
+                  style: theme.textTheme.titleSmall,
+                ),
+                subtitle: Text(
+                  AppStrings.activeCycleDescription,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                _SectionLabel(text: AppStrings.period),
-                const SizedBox(height: AppSpacing.xs),
-                Wrap(
-                  spacing: AppSpacing.xs,
-                  runSpacing: AppSpacing.xs,
-                  children: [
-                    _periodChip(
-                      label: AppStrings.allTime,
-                      period: FilterPeriod.all,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _reset,
+                      child: const Text(AppStrings.reset),
                     ),
-                    _periodChip(
-                      label: AppStrings.last7Days,
-                      period: FilterPeriod.last7Days,
-                    ),
-                    _periodChip(
-                      label: AppStrings.last30Days,
-                      period: FilterPeriod.last30Days,
-                    ),
-                    _periodChip(
-                      label: _rangeChipLabel,
-                      period: FilterPeriod.custom,
-                    ),
-                  ],
-                ),
-                if (_error != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    _error!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.danger,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _canApply ? _apply : null,
+                      child: const Text(AppStrings.apply),
                     ),
                   ),
                 ],
-                const SizedBox(height: AppSpacing.lg),
-                _SectionLabel(text: AppStrings.category),
-                const SizedBox(height: AppSpacing.xs),
-                Wrap(
-                  spacing: AppSpacing.xs,
-                  runSpacing: AppSpacing.xs,
-                  children: [
-                    ChoiceChip(
-                      label: const Text(AppStrings.allCategories),
-                      selected: _category == null,
-                      onSelected: (_) => setState(() => _category = null),
-                    ),
-                    for (final category in widget.categories)
-                      ChoiceChip(
-                        label: Text(
-                          category,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        selected: _category == category,
-                        onSelected: (_) {
-                          setState(() {
-                            _category = _category == category ? null : category;
-                          });
-                        },
-                      ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: _activeCycleOnly,
-                  onChanged: (value) =>
-                      setState(() => _activeCycleOnly = value),
-                  title: Text(
-                    AppStrings.activeCycle,
-                    style: theme.textTheme.titleSmall,
-                  ),
-                  subtitle: Text(
-                    AppStrings.activeCycleDescription,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.textSecondary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _reset,
-                        child: const Text(AppStrings.reset),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: _canApply ? _apply : null,
-                        child: const Text(AppStrings.apply),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

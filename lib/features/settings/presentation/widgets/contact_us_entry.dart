@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../shared/widgets/app_bottom_sheet.dart';
+
 const _founderEmail = 'andresilitonga1101@gmail.com';
 const _founderWhatsAppDisplay = '0895338891504';
 const _founderWhatsAppIntl = '62895338891504';
@@ -87,122 +89,117 @@ class _ContactUsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return SafeArea(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * .82,
+    return AppBottomSheetLayout(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          4,
+          20,
+          20 + MediaQuery.viewInsetsOf(context).bottom,
         ),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            4,
-            20,
-            20 + MediaQuery.viewInsetsOf(context).bottom,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Hubungi Kami', style: theme.textTheme.labelLarge),
-              const SizedBox(height: 4),
-              Text(
-                'Terhubung langsung dengan founder',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -.4,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Hubungi Kami', style: theme.textTheme.labelLarge),
+            const SizedBox(height: 4),
+            Text(
+              'Terhubung langsung dengan founder',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -.4,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap salah satu card untuk langsung membuka aplikasi tujuannya. Setiap card juga bisa disalin.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 18),
+            _ContactChannelCard(
+              icon: Icons.email_outlined,
+              title: 'Email Founder',
+              subtitle: _founderEmail,
+              description: 'Buka Gmail • penerima & pesan terisi otomatis',
+              badge: 'Gmail',
+              color: const Color(0xFFD93025),
+              onTap: () => _openEmail(context),
+              onCopy: () => _copy(context, _founderEmail, 'Email disalin.'),
+            ),
+            const SizedBox(height: 10),
+            _ContactChannelCard(
+              icon: Icons.chat_bubble_outline_rounded,
+              title: 'WhatsApp Founder',
+              subtitle: _founderWhatsAppDisplay,
+              description: 'Buka room chat • pesan pembuka terisi',
+              badge: 'Chat',
+              color: const Color(0xFF128C7E),
+              onTap: () => _openWhatsApp(context),
+              onCopy: () => _copy(
+                context,
+                _founderWhatsAppDisplay,
+                'Nomor WhatsApp disalin.',
+              ),
+            ),
+            const SizedBox(height: 10),
+            _ContactChannelCard(
+              icon: Icons.code_rounded,
+              title: 'GitHub Founder',
+              subtitle: 'github.com/andrest1101',
+              description: 'Buka profil GitHub di browser',
+              badge: 'Website',
+              color: colors.onSurface,
+              onTap: () => _openGitHub(context),
+              onCopy: () =>
+                  _copy(context, _founderGitHub, 'Link GitHub disalin.'),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: colors.outlineVariant.withValues(alpha: .35),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Tap salah satu card untuk langsung membuka aplikasi tujuannya. Setiap card juga bisa disalin.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  height: 1.45,
-                ),
-              ),
-              const SizedBox(height: 18),
-              _ContactChannelCard(
-                icon: Icons.email_outlined,
-                title: 'Email Founder',
-                subtitle: _founderEmail,
-                description: 'Buka Gmail • penerima & pesan terisi otomatis',
-                badge: 'Gmail',
-                color: const Color(0xFFD93025),
-                onTap: () => _openEmail(context),
-                onCopy: () => _copy(context, _founderEmail, 'Email disalin.'),
-              ),
-              const SizedBox(height: 10),
-              _ContactChannelCard(
-                icon: Icons.chat_bubble_outline_rounded,
-                title: 'WhatsApp Founder',
-                subtitle: _founderWhatsAppDisplay,
-                description: 'Buka room chat • pesan pembuka terisi',
-                badge: 'Chat',
-                color: const Color(0xFF128C7E),
-                onTap: () => _openWhatsApp(context),
-                onCopy: () => _copy(
-                  context,
-                  _founderWhatsAppDisplay,
-                  'Nomor WhatsApp disalin.',
-                ),
-              ),
-              const SizedBox(height: 10),
-              _ContactChannelCard(
-                icon: Icons.code_rounded,
-                title: 'GitHub Founder',
-                subtitle: 'github.com/andrest1101',
-                description: 'Buka profil GitHub di browser',
-                badge: 'Website',
-                color: colors.onSurface,
-                onTap: () => _openGitHub(context),
-                onCopy: () =>
-                    _copy(context, _founderGitHub, 'Link GitHub disalin.'),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: colors.outlineVariant.withValues(alpha: .35),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.verified_outlined,
+                    color: colors.primary,
+                    size: 20,
                   ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.verified_outlined,
-                      color: colors.primary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tips laporan cepat',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tips laporan cepat',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Sertakan tipe HP, versi Android, dan langkah kejadian biar lebih cepat dibantu.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurfaceVariant,
-                              height: 1.4,
-                            ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Sertakan tipe HP, versi Android, dan langkah kejadian biar lebih cepat dibantu.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                            height: 1.4,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

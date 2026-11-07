@@ -82,7 +82,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
       );
       state = const AsyncData(null);
     } on FirebaseAuthException catch (error, stackTrace) {
-      state = AsyncError(_messageFor(error), stackTrace);
+      state = AsyncError(emailPasswordSignInErrorMessage(error), stackTrace);
     } catch (error, stackTrace) {
       state = AsyncError(
         'Login gagal. Periksa koneksi lalu coba lagi.',

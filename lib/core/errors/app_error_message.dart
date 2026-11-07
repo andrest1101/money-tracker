@@ -33,6 +33,48 @@ String appErrorMessage(Object error, {String fallback = _defaultFallback}) {
   return fallback;
 }
 
+/// Pesan untuk kegagalan masuk memakai email dan password.
+///
+/// Proyek Firebase dengan email enumeration protection dapat mengembalikan
+/// kode `INVALID_LOGIN_CREDENTIALS` (huruf besar) alih-alih
+/// `invalid-credential`. Kode tersebut tidak tertangkap oleh
+/// [authErrorMessage] sehingga sebelumnya jatuh ke fallback generik.
+///
+/// Semua varian kredensial dipetakan ke satu pesan yang bisa ditindaklanjuti
+/// tanpa membocorkan apakah email terdaftar atau password-nya yang salah.
+String emailPasswordSignInErrorMessage(FirebaseAuthException error) {
+  final code = error.code.toLowerCase();
+  final message = (error.message ?? '').toLowerCase();
+
+  const credentialCodes = {
+    'invalid-credential',
+    'invalid-credentials',
+    'invalid-login-credentials',
+    'invalid_login_credentials',
+    'wrong-password',
+    'user-not-found',
+    'invalid-password',
+  };
+
+  final looksLikeCredentialFailure =
+      credentialCodes.contains(code) ||
+      message.contains('invalid_login_credentials') ||
+      message.contains('invalid login credentials') ||
+      message.contains('invalid_password') ||
+      message.contains('wrong password') ||
+      message.contains('email_not_found') ||
+      message.contains('user not found');
+
+  if (looksLikeCredentialFailure) {
+    return 'Email atau password salah. Periksa kembali lalu coba lagi.';
+  }
+
+  return authErrorMessage(
+    error,
+    fallback: 'Login gagal karena kendala sistem. Coba lagi.',
+  );
+}
+
 /// Pesan khusus kegagalan [FirebaseAuthException].
 String authErrorMessage(
   FirebaseAuthException error, {
