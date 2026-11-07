@@ -18,7 +18,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Atur ulang password'), findsOneWidget);
+    expect(find.text('Lupa password?'), findsOneWidget);
     expect(find.text('Kirim tautan reset'), findsOneWidget);
     expect(find.text('Buka Gmail'), findsNothing);
 

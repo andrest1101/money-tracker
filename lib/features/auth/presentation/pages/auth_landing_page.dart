@@ -5,8 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/widgets/app_page_background.dart';
-import '../widgets/auth_error_message.dart';
+import '../utils/auth_error_text.dart';
+import '../widgets/auth_brand_lockup.dart';
+import '../widgets/auth_brand_panel.dart';
+import '../widgets/auth_button.dart';
+import '../widgets/auth_footer.dart';
+import '../widgets/auth_message_banner.dart';
+import '../widgets/auth_scaffold.dart';
+import '../widgets/auth_value_props.dart';
 import 'email_auth_page.dart';
 
 class AuthLandingPage extends ConsumerStatefulWidget {
@@ -61,218 +67,184 @@ class _AuthLandingPageState extends ConsumerState<AuthLandingPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
+    final error = authErrorText(state);
+    final isLoading = state.isLoading;
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return AppPageBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxHeight < 700;
-              final horizontalPadding = constraints.maxWidth < 380
-                  ? 20.0
-                  : 28.0;
+    final scheme = theme.colorScheme;
 
-              return SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: compact ? 24 : 40,
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: (constraints.maxHeight - (compact ? 48 : 80))
-                        .clamp(0.0, double.infinity),
-                  ),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 500),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: Image.asset(
-                                  'assets/images/app_icon.png',
-                                  width: 48,
-                                  height: 48,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.sm),
-                              Text(
-                                'DOMPETKU',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: compact ? 32 : 44),
-                          Text(
-                            'Keuangan lebih teratur.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              height: 1.12,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            'Satu tempat untuk transaksi, anggaran, dan tabunganmu.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: colors.onSurfaceVariant,
-                              height: 1.45,
-                            ),
-                          ),
-                          SizedBox(height: compact ? 24 : 32),
-                          Container(
-                            padding: EdgeInsets.all(compact ? 18 : 24),
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.hero,
-                              ),
-                              border: Border.all(color: colors.outlineVariant),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                if (state.hasError) ...[
-                                  AuthErrorMessage(
-                                    message: state.error.toString(),
-                                  ),
-                                  const SizedBox(height: AppSpacing.md),
-                                ],
-                                _GoogleSignInButton(
-                                  isLoading: state.isLoading,
-                                  onPressed: _google,
-                                ),
-                                const SizedBox(height: AppSpacing.md),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Divider(
-                                        color: colors.outlineVariant,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.md,
-                                      ),
-                                      child: Text(
-                                        'atau',
-                                        style: theme.textTheme.labelMedium
-                                            ?.copyWith(
-                                              color: colors.onSurfaceVariant,
-                                            ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Divider(
-                                        color: colors.outlineVariant,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: AppSpacing.md),
-                                OutlinedButton.icon(
-                                  onPressed: state.isLoading
-                                      ? null
-                                      : _showEmailAuth,
-                                  icon: const Icon(Icons.mail_outline_rounded),
-                                  label: const Text('Lanjutkan dengan email'),
-                                  style: OutlinedButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(54),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        AppRadius.control,
-                                      ),
-                                    ),
-                                    side: BorderSide(
-                                      color: colors.outlineVariant,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.xs),
-                                TextButton(
-                                  onPressed: state.isLoading ? null : _guest,
-                                  child: const Text('Jelajahi tanpa akun'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+    final actionCard = _AuthActionCard(
+      isLoading: isLoading,
+      error: error,
+      onGoogle: () => _google(),
+      onEmail: () => _showEmailAuth(),
+      onGuest: () => _guest(),
+    );
+
+    final compact = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const AuthBrandLockup(size: AuthBrandSize.hero, centered: true),
+        const SizedBox(height: AppSpacing.xxl),
+        Text.rich(
+          TextSpan(
+            children: [
+              const TextSpan(text: 'Keuangan lebih '),
+              TextSpan(
+                text: 'teratur.',
+                style: TextStyle(color: scheme.primary),
+              ),
+            ],
+          ),
+          textAlign: TextAlign.center,
+          style: theme.textTheme.headlineLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            height: 1.12,
+            letterSpacing: -0.6,
           ),
         ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          'Satu tempat untuk transaksi, anggaran, dan tabunganmu.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: scheme.onSurfaceVariant,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.section),
+        const AuthValueProps(),
+        const SizedBox(height: AppSpacing.xl),
+        actionCard,
+        const SizedBox(height: AppSpacing.lg),
+        const AuthFooter(),
+      ],
+    );
+
+    final wide = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Masuk atau daftar',
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          'Pilih cara masuk. Catatanmu tetap tersinkron ke semua perangkat.',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: scheme.onSurfaceVariant,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        actionCard,
+        const SizedBox(height: AppSpacing.lg),
+        const AuthFooter(),
+      ],
+    );
+
+    return AuthScaffold(
+      showAppBar: false,
+      panel: const AuthBrandPanel(
+        description: 'Satu akun untuk transaksi, anggaran, dan target tabunganmu.',
       ),
+      wideChild: wide,
+      child: compact,
     );
   }
 }
 
-class _GoogleSignInButton extends StatelessWidget {
-  const _GoogleSignInButton({required this.isLoading, required this.onPressed});
+class _AuthActionCard extends StatelessWidget {
+  const _AuthActionCard({
+    required this.isLoading,
+    required this.error,
+    required this.onGoogle,
+    required this.onEmail,
+    required this.onGuest,
+  });
 
   final bool isLoading;
-  final Future<void> Function() onPressed;
+  final String? error;
+  final VoidCallback onGoogle;
+  final VoidCallback onEmail;
+  final VoidCallback onGuest;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return Material(
-      color: scheme.surface,
-      borderRadius: BorderRadius.circular(16),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: isLoading ? null : () => onPressed(),
-        child: Container(
-          height: 56,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: scheme.outlineVariant),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.hero),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (error != null) ...[
+            AuthMessageBanner(message: error!),
+            const SizedBox(height: AppSpacing.md),
+          ],
+          AuthSocialButton(
+            label: isLoading
+                ? 'Menghubungkan…'
+                : 'Lanjutkan dengan Google',
+            isLoading: isLoading,
+            onPressed: onGoogle,
+            leading: Image.asset(
+              'assets/images/google_logo_192.png',
+              fit: BoxFit.contain,
+              excludeFromSemantics: true,
+            ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 18),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Semantics(
-                image: true,
-                label: 'Google',
-                child: Image.asset(
-                  'assets/images/google_logo_192.png',
-                  width: 23,
-                  height: 23,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                isLoading ? 'Menghubungkan…' : 'Lanjutkan dengan Google',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: scheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+          const SizedBox(height: AppSpacing.md),
+          _OrDivider(),
+          const SizedBox(height: AppSpacing.md),
+          AuthSecondaryButton(
+            label: 'Lanjutkan dengan email',
+            icon: Icons.mail_outline_rounded,
+            onPressed: onEmail,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          TextButton(
+            onPressed: onGuest,
+            style: TextButton.styleFrom(
+              minimumSize: const Size.fromHeight(44),
+            ),
+            child: const Text('Jelajahi tanpa akun'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Row(
+      children: [
+        Expanded(child: Divider(color: scheme.outlineVariant)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Text(
+            'atau',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ),
-      ),
+        Expanded(child: Divider(color: scheme.outlineVariant)),
+      ],
     );
   }
 }
