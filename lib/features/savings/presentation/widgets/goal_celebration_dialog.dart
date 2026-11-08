@@ -1,6 +1,7 @@
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_motion.dart';
 
 class GoalCelebrationDialog extends StatefulWidget {
@@ -39,11 +40,7 @@ class _GoalCelebrationDialogState extends State<GoalCelebrationDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-
-    final isDark = theme.brightness == Brightness.dark;
-    final greenColor = isDark
-        ? const Color(0xFF34D399)
-        : const Color(0xFF047857);
+    final successColor = context.appColors.success;
 
     return Stack(
       alignment: Alignment.topCenter,
@@ -52,13 +49,13 @@ class _GoalCelebrationDialogState extends State<GoalCelebrationDialog> {
           icon: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: greenColor.withValues(alpha: 0.15),
+              color: successColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.emoji_events_rounded,
               size: 42,
-              color: greenColor,
+              color: successColor,
             ),
           ),
           title: const Text('Yeay! Target Tercapai!'),

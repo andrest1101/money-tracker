@@ -277,7 +277,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                     const SizedBox(width: AppSpacing.xs),
                     _TabBadge(
                       count: completedCount,
-                      color: context.appColors.income,
+                      color: context.appColors.success,
                     ),
                   ],
                 ],
