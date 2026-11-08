@@ -121,7 +121,7 @@ class _RangeSelector extends ConsumerWidget {
                   child: Text(
                     item.$2,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    style: Theme.of(context).textTheme.labelSmall!.copyWith(
                       color: range == item.$1
                           ? colors.onPrimaryContainer
                           : colors.onSurfaceVariant,
@@ -217,9 +217,8 @@ class _ChartContentState extends State<_ChartContent> {
                   getTooltipItem: (group, groupIndex, rod, rodIndex) =>
                       BarTooltipItem(
                         '${rodIndex == 0 ? 'Masuk' : 'Keluar'}\n${formatRupiah(rod.toY)}',
-                        TextStyle(
+                        Theme.of(context).textTheme.labelSmall!.copyWith(
                           color: colors.onInverseSurface,
-                          fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -367,7 +366,7 @@ class _LegendDot extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: Theme.of(
                 context,
-              ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
+              ).textTheme.labelSmall!.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
         ],
