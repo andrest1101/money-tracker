@@ -424,7 +424,6 @@ class _ContactChannelCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w800,
-                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -446,7 +445,6 @@ class _ContactChannelCard extends StatelessWidget {
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: color,
                               fontWeight: FontWeight.w800,
-                              fontSize: 10,
                               letterSpacing: .2,
                             ),
                           ),
@@ -489,7 +487,6 @@ class _ContactChannelCard extends StatelessWidget {
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: colors.primary,
                               fontWeight: FontWeight.w700,
-                              fontSize: 11,
                             ),
                           ),
                         ),

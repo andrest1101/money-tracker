@@ -6,6 +6,7 @@ import '../../../../core/theme/app_motion.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/on_color.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
@@ -130,9 +131,7 @@ class ProfileHeader extends ConsumerWidget {
     final isGuest = authUser?.isAnonymous ?? true;
     final avatarId = ref.watch(profileAvatarProvider);
     final avatar = presetAvatarFor(avatarId);
-    final avatarForeground = avatar.color.computeLuminance() > .5
-        ? AppColors.light.textPrimary
-        : AppColors.light.surface;
+    final avatarForeground = onArbitraryColor(avatar.color);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -286,7 +285,7 @@ class ProfileHeader extends ConsumerWidget {
                               size: 16,
                               color: isGuest
                                   ? cs.tertiary
-                                  : context.appColors.income,
+                                  : context.appColors.success,
                             ),
                             const SizedBox(width: 5),
                             Flexible(
@@ -298,7 +297,7 @@ class ProfileHeader extends ConsumerWidget {
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: isGuest
                                       ? cs.tertiary
-                                      : context.appColors.income,
+                                      : context.appColors.success,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
