@@ -320,7 +320,6 @@ class _OnboardingInteractiveCardState extends State<OnboardingInteractiveCard> {
                                           .labelSmall
                                           ?.copyWith(
                                             color: accent,
-                                            fontSize: 10,
                                             fontWeight: FontWeight.w700,
                                           ),
                                     ),
@@ -449,7 +448,6 @@ class _InteractiveTransactionsPreview extends StatelessWidget {
                       item.time,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colors.onSurfaceVariant,
-                        fontSize: 10,
                       ),
                     ),
                   ],
@@ -560,7 +558,6 @@ class _InteractiveBudgetPreview extends StatelessWidget {
                     current.status,
                     style: TextStyle(
                       color: current.color,
-                      fontSize: 11,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -604,7 +601,6 @@ class _InteractiveBudgetPreview extends StatelessWidget {
                 style: TextStyle(
                   color: current.color,
                   fontWeight: FontWeight.w700,
-                  fontSize: 12,
                 ),
               ),
             ),
@@ -715,7 +711,6 @@ class _InteractiveSavingsPreview extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: colors.onSurface,
                     fontWeight: FontWeight.w900,
-                    fontSize: 11,
                   ),
                 ),
               ),
@@ -743,7 +738,6 @@ class _InteractiveSavingsPreview extends StatelessWidget {
                 style: TextStyle(
                   color: current.color,
                   fontWeight: FontWeight.w700,
-                  fontSize: 13,
                 ),
               ),
               Text(
@@ -769,7 +763,6 @@ class _InteractiveSavingsPreview extends StatelessWidget {
                       style: TextStyle(
                         color: colors.onSurface,
                         fontWeight: FontWeight.w700,
-                        fontSize: 10,
                       ),
                     ),
                   ],
