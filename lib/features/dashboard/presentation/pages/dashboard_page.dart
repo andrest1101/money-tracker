@@ -6,6 +6,7 @@ import '../../../../core/firebase/auth_providers.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/navigation/navigation_providers.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/on_color.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../settings/presentation/widgets/profile_avatar_sheet.dart';
@@ -176,9 +177,7 @@ class DashboardHeader extends ConsumerWidget {
         ? 'Kamu'
         : userName.trim().split(' ').first;
     final avatar = presetAvatarFor(ref.watch(profileAvatarProvider));
-    final avatarIconColor = avatar.color.computeLuminance() > .5
-        ? AppColors.light.textPrimary
-        : AppColors.light.surface;
+    final avatarIconColor = onArbitraryColor(avatar.color);
 
     return Row(
       children: [
