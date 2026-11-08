@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// Sumber kebenaran warna peran (primary, surface, outline, dll.) tetap
 /// [ColorScheme]. Kelas ini hanya menyimpan warna yang punya arti khusus
-/// di produk: pemasukan, bahaya, dan peringatan.
+/// di produk: pemasukan, penanda target selesai, bahaya, dan peringatan.
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
@@ -15,6 +15,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.textPrimary,
     required this.textSecondary,
     required this.income,
+    required this.success,
     required this.danger,
     required this.warning,
     required this.warningText,
@@ -27,8 +28,12 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color textPrimary;
   final Color textSecondary;
 
-  /// Pemasukan, progres target yang tercapai, status aman.
+  /// Pemasukan dan nilai aman.
   final Color income;
+
+  /// Penanda target tercapai. Dipakai sparingly: ikon, progress bar penuh,
+  /// dan label kecil. Area besar (banner, kartu) tetap netral.
+  final Color success;
 
   /// Overspending, hapus data, error.
   final Color danger;
@@ -47,6 +52,7 @@ class AppColors extends ThemeExtension<AppColors> {
     textPrimary: Color(0xFF151B23),
     textSecondary: Color(0xFF596575),
     income: Color(0xFF12804A),
+    success: Color(0xFF047857),
     danger: Color(0xFFC73A32),
     warning: Color(0xFFE8A317),
     warningText: Color(0xFF8A5A12),
@@ -60,6 +66,7 @@ class AppColors extends ThemeExtension<AppColors> {
     textPrimary: Color(0xFFE9EDF2),
     textSecondary: Color(0xFFA0AAB6),
     income: Color(0xFF65C58A),
+    success: Color(0xFF34D399),
     danger: Color(0xFFFF8A80),
     warning: Color(0xFFF5C451),
     warningText: Color(0xFFF5C451),
@@ -83,6 +90,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? textPrimary,
     Color? textSecondary,
     Color? income,
+    Color? success,
     Color? danger,
     Color? warning,
     Color? warningText,
@@ -95,6 +103,7 @@ class AppColors extends ThemeExtension<AppColors> {
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       income: income ?? this.income,
+      success: success ?? this.success,
       danger: danger ?? this.danger,
       warning: warning ?? this.warning,
       warningText: warningText ?? this.warningText,
@@ -112,6 +121,7 @@ class AppColors extends ThemeExtension<AppColors> {
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       income: Color.lerp(income, other.income, t)!,
+      success: Color.lerp(success, other.success, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       warningText: Color.lerp(warningText, other.warningText, t)!,
