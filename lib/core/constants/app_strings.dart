@@ -27,14 +27,4 @@ abstract final class AppStrings {
   static const String allCategories = 'Semua kategori';
   static const String rangeTooLong = 'Rentang maksimal 31 hari.';
   static const String rangeRequired = 'Pilih rentang tanggal dulu.';
-
-  // Target tabungan
-  static const String editGoal = 'Edit target';
-  static const String archiveGoal = 'Arsipkan target';
-  static const String unarchiveGoal = 'Kembalikan dari arsip';
-  static const String deleteGoal = 'Hapus target';
-  static const String allocateFund = 'Alokasikan dana';
-  static const String goalActions = 'Aksi target';
-  static const String goalCompleted = 'Target tercapai!';
-  static const String goalOverdue = 'Tenggat terlewat';
 }
