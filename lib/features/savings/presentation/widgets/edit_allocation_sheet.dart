@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/presentation/providers/quick_add_controller.dart';
@@ -175,12 +176,8 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isSaving = ref.watch(quickAddControllerProvider).isLoading;
-    final accentColor = theme.brightness == Brightness.dark
-        ? AppColors.dark.income
-        : AppColors.light.income;
-    final accentForeground = accentColor.computeLuminance() > .5
-        ? AppColors.light.textPrimary
-        : AppColors.light.surface;
+    final accentColor = theme.colorScheme.primary;
+    final accentForeground = theme.colorScheme.onPrimary;
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -275,17 +272,12 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                   validator: _validateAmount,
                   autofocus: true,
                   textInputAction: TextInputAction.next,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.amountInput,
                   decoration: InputDecoration(
                     labelText: 'Nominal Baru',
                     hintText: '50.000',
                     prefixText: 'Rp ',
-                    prefixStyle: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    prefixStyle: AppTextStyles.amountInput.copyWith(
                       color: accentColor,
                     ),
                     helperText: 'Isi 0 untuk menarik semua alokasi',
@@ -371,10 +363,6 @@ class _EditAllocationSheetState extends ConsumerState<EditAllocationSheet> {
                             : const Icon(Icons.check_rounded),
                         label: Text(
                           isSaving ? 'Menyimpan...' : 'Perbarui',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
                         ),
                       ),
                     ),
