@@ -518,6 +518,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                                               const SizedBox(height: 3),
                                               Text(
                                                 '${transactions.length} transaksi · Ketuk untuk ringkasan',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                                 style: theme
                                                     .textTheme
                                                     .labelSmall

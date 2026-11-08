@@ -96,7 +96,7 @@ class FinancialInsightOverviewSheet extends StatelessWidget {
                   ),
                   child: Text(
                     'Ringkasan',
-                    style: theme.textTheme.labelSmall?.copyWith(
+                    style: theme.textTheme.labelSmall!.copyWith(
                       color: colors.primary,
                       fontWeight: FontWeight.w800,
                     ),
@@ -333,7 +333,7 @@ class _ExpenseFlowSummary extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       peakLabel,
-                      style: theme.textTheme.labelSmall?.copyWith(
+                      style: theme.textTheme.labelSmall!.copyWith(
                         color: colors.onSurfaceVariant,
                         fontWeight: FontWeight.w700,
                       ),
@@ -449,7 +449,6 @@ class _CashFlowChartState extends State<_CashFlowChart> {
   @override
   Widget build(BuildContext context) {
     final colors = widget.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     final days = List.generate(7, (index) {
       final date = DateTime(now.year, now.month, now.day - (6 - index));
@@ -500,17 +499,13 @@ class _CashFlowChartState extends State<_CashFlowChart> {
                   setState(() => _selectedIndex = index);
                 },
                 touchTooltipData: BarTouchTooltipData(
-                  getTooltipColor: (_) =>
-                      isDark ? const Color(0xFF6B252A) : colors.inverseSurface,
+                  getTooltipColor: (_) => colors.inverseSurface,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) =>
                       BarTooltipItem(
                         '${days[groupIndex].day}/${days[groupIndex].month}\nPengeluaran ${formatRupiah(rod.toY)}',
-                        TextStyle(
-                          color: isDark
-                              ? const Color(0xFFFFD9DA)
-                              : colors.onInverseSurface,
+                        Theme.of(context).textTheme.labelSmall!.copyWith(
+                          color: colors.onInverseSurface,
                           fontWeight: FontWeight.w700,
-                          fontSize: 12,
                         ),
                       ),
                 ),
@@ -572,17 +567,14 @@ class _SelectedExpenseDay extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(12, 9, 6, 9),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF5A2528) : colors.errorContainer,
+        color: colors.errorContainer,
         borderRadius: BorderRadius.circular(13),
         border: Border.all(
-          color: isDark
-              ? const Color(0xFF9E454A)
-              : colors.error.withValues(alpha: .2),
+          color: colors.error.withValues(alpha: .2),
         ),
       ),
       child: Row(
@@ -590,16 +582,14 @@ class _SelectedExpenseDay extends StatelessWidget {
           Icon(
             Icons.touch_app_rounded,
             size: 17,
-            color: isDark ? const Color(0xFFFF8A8F) : colors.error,
+            color: colors.error,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               '${date.day}/${date.month}/${date.year}  •  Pengeluaran ${formatRupiah(amount)}',
               style: theme.textTheme.labelMedium?.copyWith(
-                color: isDark
-                    ? const Color(0xFFFFD9DA)
-                    : colors.onErrorContainer,
+                color: colors.onErrorContainer,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -635,14 +625,6 @@ class _InsightOverviewMetric extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-
-    // Use brighter, high-contrast colors so numbers stand out on card background
-    final displayColor = color == colors.error
-        ? (isDark ? const Color(0xFFFF6B6B) : const Color(0xFFE53935))
-        : color == colors.primary
-        ? (isDark ? const Color(0xFF5EEAD4) : const Color(0xFF0D9488))
-        : (isDark ? const Color(0xFF34D399) : const Color(0xFF059669));
 
     return Container(
       width: wide ? double.infinity : null,
@@ -650,11 +632,11 @@ class _InsightOverviewMetric extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: displayColor.withValues(alpha: .3)),
+        border: Border.all(color: color.withValues(alpha: .3)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: displayColor, size: 19),
+          Icon(icon, color: color, size: 19),
           const SizedBox(width: 9),
           Expanded(
             child: Column(
@@ -668,7 +650,7 @@ class _InsightOverviewMetric extends StatelessWidget {
                   child: Text(
                     value,
                     style: theme.textTheme.labelLarge?.copyWith(
-                      color: displayColor,
+                      color: color,
                       fontWeight: FontWeight.w800,
                     ),
                   ),

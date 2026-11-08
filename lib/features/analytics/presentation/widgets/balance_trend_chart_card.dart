@@ -114,10 +114,9 @@ class _TrendContentState extends State<_TrendContent> {
               .map(
                 (spot) => LineTooltipItem(
                   formatRupiah(spot.y),
-                  TextStyle(
+                  Theme.of(context).textTheme.labelSmall!.copyWith(
                     color: colors.onInverseSurface,
                     fontWeight: FontWeight.w700,
-                    fontSize: 12,
                   ),
                 ),
               )

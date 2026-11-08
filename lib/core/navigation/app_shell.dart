@@ -93,11 +93,12 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (index == ShellTabIndex.settings) return null;
 
     final isSavingsTab = index == ShellTabIndex.savings;
-    return FloatingActionButton(
+    return FloatingActionButton.extended(
       key: ValueKey('fab-$index'),
       tooltip: isSavingsTab ? 'Buat target' : 'Catat transaksi',
       onPressed: isSavingsTab ? _openAddGoal : _openAddTransaction,
-      child: const Icon(Icons.add_rounded),
+      icon: const Icon(Icons.add_rounded),
+      label: Text(isSavingsTab ? 'Buat target' : 'Catat transaksi'),
     );
   }
 

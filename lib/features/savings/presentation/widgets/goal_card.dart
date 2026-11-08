@@ -86,17 +86,13 @@ class _GoalCardState extends ConsumerState<GoalCard>
     );
   }
 
-  Color _progressColor(double progress, ColorScheme cs, bool isDark) {
-    if (progress >= 1.0) {
-      // Keep completion green readable without tinting the entire card.
-      return isDark ? const Color(0xFF34D399) : const Color(0xFF047857);
-    }
-    if (progress >= 0.5) {
-      // >= 50% (Mencapai 50% ke atas): Biru Terang yang Tebal
-      return isDark ? const Color(0xFF38BDF8) : const Color(0xFF2563EB);
-    }
-    // < 50%: Accent Primary
-    return cs.primary;
+  /// Warna aksen kartu.
+  ///
+  /// Selesai → [AppColors.success]: hijau penanda tercapai, dipakai secukupnya
+  /// (ikon, bar progres, label kecil). Kartu dan banner tetap netral.
+  /// Berjalan → [ColorScheme.primary] agar konsisten dengan brand.
+  Color _accentColor(bool isCompleted, ColorScheme cs, AppColors colors) {
+    return isCompleted ? colors.success : cs.primary;
   }
 
   ({String label, Color color, IconData icon}) _deadlineStatus(
@@ -129,13 +125,13 @@ class _GoalCardState extends ConsumerState<GoalCard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.appColors;
     final goal = widget.goal;
     final isCompleted = goal.isCompleted;
     final allocations = ref.watch(allocationTransactionsProvider(goal.id));
     final allocationSummary = ref.watch(allocationSummaryProvider(goal.id));
     final progress = goal.progress;
-    final progressColor = _progressColor(progress, cs, isDark);
+    final progressColor = _accentColor(isCompleted, cs, colors);
     final deadlineStatus = _deadlineStatus(goal, cs, context);
 
     return Card(
@@ -143,17 +139,9 @@ class _GoalCardState extends ConsumerState<GoalCard>
       shadowColor: cs.shadow.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: isCompleted
-            ? BorderSide(
-                color: progressColor.withValues(alpha: 0.28),
-                width: 1.2,
-              )
-            : BorderSide(
-                color: progress >= 0.5
-                    ? progressColor.withValues(alpha: 0.3)
-                    : cs.outlineVariant.withValues(alpha: 0.3),
-                width: progress >= 0.5 ? 1.2 : 1,
-              ),
+        side: BorderSide(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+        ),
       ),
       color: cs.surface,
       child: Column(
@@ -322,7 +310,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 8,
-                    backgroundColor: progressColor.withValues(alpha: 0.12),
+                    backgroundColor: cs.surfaceContainerHighest,
                     valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                   ),
                 ),
@@ -331,62 +319,76 @@ class _GoalCardState extends ConsumerState<GoalCard>
                 // Amount row
                 Row(
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          formatRupiah(goal.currentAmount),
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: progressColor,
-                          ),
-                        ),
-                        Text(
-                          'dari ${formatRupiah(goal.targetAmount)}',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    if (!isCompleted)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            formatRupiah(goal.remainingAmount),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                            formatRupiah(goal.currentAmount),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
                               color: cs.onSurface,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
                             ),
                           ),
                           Text(
-                            'lagi',
+                            'dari ${formatRupiah(goal.targetAmount)}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: cs.onSurfaceVariant,
                             ),
                           ),
                         ],
                       ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    if (!isCompleted)
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              formatRupiah(goal.remainingAmount),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: cs.onSurface,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              'lagi',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 14),
 
-                // Action area: Completion badge for finished target or Allocate button for active target
+                // Action area: Completion chip for finished target or Allocate button for active target
                 if (isCompleted)
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
+                      vertical: 10,
+                      horizontal: AppSpacing.md,
                     ),
                     decoration: BoxDecoration(
-                      color: progressColor.withValues(alpha: 0.09),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: progressColor.withValues(alpha: 0.24),
-                      ),
+                      color: cs.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(AppRadius.control),
+                      border: Border.all(color: cs.outlineVariant),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -394,14 +396,14 @@ class _GoalCardState extends ConsumerState<GoalCard>
                         Icon(
                           Icons.verified_rounded,
                           color: progressColor,
-                          size: 20,
+                          size: 18,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.xs),
                         Text(
-                          'Target Selesai 🎉',
+                          'Target tercapai',
                           style: theme.textTheme.titleSmall?.copyWith(
-                            color: progressColor,
-                            fontWeight: FontWeight.bold,
+                            color: cs.onSurface,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
@@ -452,13 +454,17 @@ class _GoalCardState extends ConsumerState<GoalCard>
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.history_rounded, size: 16, color: progressColor),
+                    Icon(
+                      Icons.history_rounded,
+                      size: 16,
+                      color: cs.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Aktivitas Alokasi',
                       style: theme.textTheme.labelLarge?.copyWith(
-                        color: progressColor,
-                        fontWeight: FontWeight.w600,
+                        color: cs.onSurface,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -468,13 +474,13 @@ class _GoalCardState extends ConsumerState<GoalCard>
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: progressColor.withValues(alpha: 0.12),
+                        color: cs.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '${allocationSummary.count}',
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: progressColor,
+                          color: cs.onSurfaceVariant,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -489,7 +495,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 20,
-                        color: progressColor,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -500,19 +506,31 @@ class _GoalCardState extends ConsumerState<GoalCard>
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: Row(
                 children: [
-                  Text(
-                    'Total ${formatRupiah(allocationSummary.totalAmount)}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: progressColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (allocationSummary.latest != null)
-                    Text(
-                      'Terakhir ${formatDateShort(allocationSummary.latest!.date)}',
+                  Expanded(
+                    child: Text(
+                      'Total ${formatRupiah(allocationSummary.totalAmount)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: cs.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        fontFeatures: const [
+                          FontFeature.tabularFigures(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  if (allocationSummary.latest != null)
+                    Flexible(
+                      child: Text(
+                        'Terakhir ${formatDateShort(allocationSummary.latest!.date)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ),
                 ],
@@ -553,13 +571,13 @@ class _GoalCardState extends ConsumerState<GoalCard>
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: progressColor.withValues(alpha: 0.1),
+                                color: cs.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
                                 Icons.savings_outlined,
                                 size: 18,
-                                color: progressColor,
+                                color: cs.onSurfaceVariant,
                               ),
                             ),
                             const SizedBox(width: 12),

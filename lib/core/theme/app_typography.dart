@@ -120,6 +120,15 @@ abstract final class AppTextStyles {
     fontFeatures: [FontFeature.tabularFigures()],
   );
 
+  /// Nominal pada field input transaksi dengan digit sejajar.
+  static const TextStyle amountInput = TextStyle(
+    fontFamily: AppTypography.fontFamily,
+    fontSize: 18,
+    height: 24 / 18,
+    fontWeight: FontWeight.w600,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
   static const TextStyle label = TextStyle(
     fontFamily: AppTypography.fontFamily,
     fontSize: 12,

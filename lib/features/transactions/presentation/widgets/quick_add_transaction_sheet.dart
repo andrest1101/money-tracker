@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/on_color.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../core/utils/thousands_separator_input_formatter.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
@@ -374,9 +376,7 @@ class _QuickAddTransactionSheetState
     final typeColor = _selectedType == TransactionType.expense
         ? theme.colorScheme.error
         : context.appColors.income;
-    final typeForeground = typeColor.computeLuminance() > .5
-        ? AppColors.light.textPrimary
-        : AppColors.light.surface;
+    final typeForeground = onArbitraryColor(typeColor);
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -420,17 +420,12 @@ class _QuickAddTransactionSheetState
                   inputFormatters: [ThousandsSeparatorInputFormatter()],
                   validator: _validateAmount,
                   textInputAction: TextInputAction.next,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.amountInput,
                   decoration: InputDecoration(
                     labelText: 'Nominal',
                     hintText: '25.000',
                     prefixText: 'Rp ',
-                    prefixStyle: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    prefixStyle: AppTextStyles.amountInput.copyWith(
                       color: typeColor,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
@@ -632,10 +627,6 @@ class _QuickAddTransactionSheetState
                     isSaving
                         ? (isEdit ? 'Memperbarui...' : 'Menyimpan...')
                         : (isEdit ? 'Perbarui' : 'Simpan'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
                   ),
                 ),
               ],

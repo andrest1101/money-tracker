@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/local_storage/settings_providers.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/on_color.dart';
 import '../../../../core/theme/app_motion.dart';
 import '../../../../shared/widgets/app_bottom_sheet.dart';
 
@@ -398,9 +398,7 @@ class _AvatarChoice extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final avatarForeground = avatar.color.computeLuminance() > .5
-        ? AppColors.light.textPrimary
-        : AppColors.light.surface;
+    final avatarForeground = onArbitraryColor(avatar.color);
     return Semantics(
       button: true,
       selected: selected,

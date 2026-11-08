@@ -158,10 +158,17 @@ class _AllocateFundSheetState extends ConsumerState<AllocateFundSheet> {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Saldo utama: ${formatRupiah(_availableBalance)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                    Expanded(
+                      child: Text(
+                        'Saldo utama: ${formatRupiah(_availableBalance)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontFeatures: const [
+                            FontFeature.tabularFigures(),
+                          ],
+                        ),
                       ),
                     ),
                   ],

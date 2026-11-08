@@ -10,7 +10,6 @@ import 'package:savu/shared/widgets/budget_progress.dart';
 import 'package:savu/shared/widgets/category_icon.dart';
 import 'package:savu/shared/widgets/empty_state.dart';
 import 'package:savu/shared/widgets/filter_sheet.dart';
-import 'package:savu/shared/widgets/goal_card.dart';
 import 'package:savu/shared/widgets/section_header.dart';
 import 'package:savu/shared/widgets/stat_inline.dart';
 import 'package:savu/shared/widgets/transaction_tile.dart';
@@ -349,80 +348,6 @@ void main() {
     });
   });
 
-  group('GoalCard', () {
-    for (final brightness in _brightnesses) {
-      testWidgets('menampilkan progres dan aksi alokasi ($brightness)', (
-        tester,
-      ) async {
-        var allocated = false;
-        await tester.pumpWidget(
-          _app(
-            brightness,
-            GoalCard(
-              title: 'Laptop',
-              currentAmount: 250000,
-              targetAmount: 1000000,
-              deadline: DateTime(2026, 11, 19),
-              daysUntilDeadline: 47,
-              onAllocate: () => allocated = true,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('Laptop'), findsOneWidget);
-        expect(find.text('25%'), findsOneWidget);
-        expect(find.text('Rp 250.000 terkumpul'), findsOneWidget);
-        expect(find.text('Rp 750.000 lagi'), findsOneWidget);
-        expect(find.text('19 Nov 2026 · 47 hari lagi'), findsOneWidget);
-
-        await tester.tap(find.text(AppStrings.allocateFund));
-        expect(allocated, isTrue);
-      });
-    }
-
-    testWidgets('deadline dekat memakai warna warning', (tester) async {
-      await tester.pumpWidget(
-        _app(
-          Brightness.light,
-          GoalCard(
-            title: 'Laptop',
-            currentAmount: 250000,
-            targetAmount: 1000000,
-            deadline: DateTime(2026, 11, 19),
-            daysUntilDeadline: 10,
-          ),
-        ),
-      );
-
-      final text = tester.widget<Text>(find.text('19 Nov 2026 · 10 hari lagi'));
-      expect(text.style?.color, AppColors.light.warningText);
-    });
-
-    testWidgets('target selesai menampilkan badge dan tanpa tombol', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _app(
-          Brightness.dark,
-          GoalCard(
-            title: 'Laptop',
-            currentAmount: 1000000,
-            targetAmount: 1000000,
-            deadline: DateTime(2026, 11, 19),
-            daysUntilDeadline: 47,
-            isCompleted: true,
-            onAllocate: () {},
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text(AppStrings.goalCompleted), findsOneWidget);
-      expect(find.text(AppStrings.allocateFund), findsNothing);
-    });
-  });
-
   group('EmptyState', () {
     for (final brightness in _brightnesses) {
       testWidgets('menampilkan pesan dan tombol ($brightness)', (tester) async {
@@ -554,15 +479,6 @@ void main() {
               body: SingleChildScrollView(
                 child: Column(
                   children: [
-                    GoalCard(
-                      title: 'Laptop Kerja Baru',
-                      currentAmount: 250000,
-                      targetAmount: 1000000,
-                      deadline: DateTime(2026, 11, 19),
-                      daysUntilDeadline: 10,
-                      onAllocate: () {},
-                    ),
-                    const SizedBox(height: 16),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: BudgetProgress(

@@ -277,7 +277,7 @@ class _SavingsPageState extends ConsumerState<SavingsPage>
                     const SizedBox(width: AppSpacing.xs),
                     _TabBadge(
                       count: completedCount,
-                      color: context.appColors.income,
+                      color: context.appColors.success,
                     ),
                   ],
                 ],
@@ -354,10 +354,10 @@ class _TabBadge extends StatelessWidget {
       ),
       child: Text(
         '$count',
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w800,
           color: color,
+          height: 1.2,
         ),
       ),
     );
