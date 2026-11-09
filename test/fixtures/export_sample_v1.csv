@@ -1,0 +1,44 @@
+ID,Tanggal,Tipe,Kategori,Nominal,Catatan
+1794147328405701,2026-08-29T09:00:00.000,income,Gaji Part-time,5000000.00,Gaji Agustus
+1794147328405702,2026-08-29T12:00:00.000,expense,Makanan,100000.00,Makan siang
+1794147328405703,2026-08-29T20:00:00.000,expense,Alokasi Tabungan,100000.00,Menabung untuk Mouse
+1794147328405704,2026-08-29T20:05:00.000,expense,Alokasi Tabungan,100000.00,menabung untuk mouse
+1794147328405705,2026-08-29T20:10:00.000,expense,Alokasi Tabungan,100000.00,Menabung untuk Mouse
+1794147328405706,2026-08-30T10:00:00.000,expense,Belanja,200000.00,Beli alat tulis
+1794147328405707,2026-08-30T20:00:00.000,expense,Alokasi Tabungan,100000.00,menabung untuk mouse
+1794147328405708,2026-08-30T20:05:00.000,expense,Alokasi Tabungan,100000.00,Menabung untuk Mouse
+1794147328405709,2026-08-31T08:00:00.000,expense,Transportasi,75000.00,Ongkos ojek
+1794147328405710,2026-08-31T20:00:00.000,expense,Alokasi Tabungan,100000.00,Menabung untuk Mouse
+1794147328405711,2026-08-31T20:05:00.000,expense,Alokasi Tabungan,100000.00,menabung untuk mouse
+1794147328405712,2026-09-01T08:00:00.000,income,Uang Kiriman,3000000.00,Kiriman orang tua
+1794147328405713,2026-09-01T07:00:00.000,expense,Kos & Tagihan,350000.00,Bayar kos September
+1794147328405714,2026-09-01T20:00:00.000,expense,Alokasi Tabungan,100000.00,Menabung untuk Mouse
+1794147328405715,2026-09-01T20:05:00.000,expense,Alokasi Tabungan,100000.00,menabung untuk mouse
+1794147328405716,2026-09-01T20:10:00.000,expense,Alokasi Tabungan,100000.00,Menabung untuk Mouse
+1794147328405717,2026-09-05T10:00:00.000,income,Beasiswa,2725000.00,Beasiswa semester
+1794147328405718,2026-09-05T15:00:00.000,expense,Belanja,150000.00,Beli buku
+1794147328405719,2026-09-05T21:00:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Laptop
+1794147328405720,2026-09-05T21:05:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Laptop
+1794147328405721,2026-09-05T21:10:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Laptop
+1794147328405722,2026-09-12T12:00:00.000,expense,Makanan,100000.00,Makan siang
+1794147328405723,2026-09-12T14:00:00.000,expense,Belanja,180000.00,Beli pakaian
+1794147328405724,2026-09-12T21:00:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Laptop
+1794147328405725,2026-09-12T21:05:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Laptop
+1794147328405726,2026-09-12T21:10:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Laptop
+1794147328405727,2026-09-20T08:00:00.000,expense,Transportasi,75000.00,Ongkos ojek
+1794147328405728,2026-09-20T19:00:00.000,expense,Hiburan,122000.00,Nonton film
+1794147328405729,2026-09-20T21:00:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Laptop
+1794147328405730,2026-09-20T21:05:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Dana Darurat
+1794147328405731,2026-09-20T21:10:00.000,expense,Alokasi Tabungan,95000.00,Menabung untuk Dana Darurat
+1794147328405732,2026-11-01T09:00:00.000,income,Gaji Part-time,1000000.00,Gaji November
+1794147328405733,2026-11-01T08:00:00.000,expense,Kos & Tagihan,350000.00,Bayar kos November
+1794147328405734,2026-11-01T11:00:00.000,expense,Belanja,120000.00,Beli kebutuhan kamar
+1794147328405735,2026-11-01T21:00:00.000,expense,Alokasi Tabungan,80000.00,
+1794147328405736,2026-11-01T21:05:00.000,expense,Alokasi Tabungan,80000.00,
+1794147328405737,2026-11-05T13:00:00.000,expense,Belanja,80000.00,Beli snack
+1794147328405738,2026-11-05T21:00:00.000,expense,Alokasi Tabungan,80000.00,
+1794147328405739,2026-11-05T21:05:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Dana Darurat
+1794147328405740,2026-11-08T18:00:00.000,income,Uang Kiriman,1000000.00,Kiriman tambahan
+1794147328405741,2026-11-08T12:00:00.000,expense,Makanan,100000.00,Makan siang
+1794147328405742,2026-11-08T21:00:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Dana Darurat
+1794147328405743,2026-11-08T21:05:00.000,expense,Alokasi Tabungan,80000.00,Menabung untuk Dana Darurat
