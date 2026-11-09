@@ -14,18 +14,20 @@ import 'package:savu/shared/widgets/section_header.dart';
 import 'package:savu/shared/widgets/stat_inline.dart';
 import 'package:savu/shared/widgets/transaction_tile.dart';
 
-const _brightnesses = [Brightness.light, Brightness.dark];
-
 Widget _app(Brightness brightness, Widget child) {
   return MaterialApp(
-    theme: brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+    theme: AppTheme.light(),
     home: Scaffold(body: child),
   );
 }
 
-Color _expectedColor(Brightness brightness, Color light, Color dark) {
-  return brightness == Brightness.dark ? dark : light;
-}
+Color _expectedColor(Brightness brightness, Color color) => color;
+
+/// Satu langkah saja: Dompetku hanya punya tema terang.
+///
+/// Parameter loop dipertahankan agar struktur test mudah dibaca; hanya ada
+/// satu varian yang dijalankan.
+const _brightnesses = [Brightness.light];
 
 void main() {
   group('formatRupiahSpoken', () {
@@ -72,19 +74,11 @@ void main() {
 
         expect(
           income.style?.color,
-          _expectedColor(
-            brightness,
-            AppColors.light.income,
-            AppColors.dark.income,
-          ),
+          _expectedColor(brightness, AppColors.light.income),
         );
         expect(
           expense.style?.color,
-          _expectedColor(
-            brightness,
-            AppColors.light.textPrimary,
-            AppColors.dark.textPrimary,
-          ),
+          _expectedColor(brightness, AppColors.light.textPrimary),
         );
         expect(income.style?.fontFeatures, isNotEmpty);
       });
@@ -199,7 +193,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _app(
-          Brightness.dark,
+          Brightness.light,
           const BudgetProgress(spent: 1200000, limit: 1000000),
         ),
       );
@@ -241,8 +235,8 @@ void main() {
           find.byIcon(Icons.more_horiz_rounded),
         );
 
-        expect(food.color, CategoryPalette.color('Makanan', brightness));
-        expect(other.color, CategoryTone.slate.colorFor(brightness));
+        expect(food.color, CategoryPalette.color('Makanan'));
+        expect(other.color, CategoryTone.slate.color);
       });
     }
 
@@ -264,7 +258,7 @@ void main() {
           .toList(growable: false);
       expect(icons, hasLength(2));
       expect(icons.first.color, icons.last.color);
-      expect(icons.first.color, isNot(CategoryTone.slate.light));
+      expect(icons.first.color, isNot(CategoryTone.slate.color));
     });
   });
 
@@ -288,11 +282,7 @@ void main() {
         final text = tester.widget<Text>(find.text('+Rp 50.000'));
         expect(
           text.style?.color,
-          _expectedColor(
-            brightness,
-            AppColors.light.income,
-            AppColors.dark.income,
-          ),
+          _expectedColor(brightness, AppColors.light.income),
         );
       });
     }
