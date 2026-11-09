@@ -158,7 +158,9 @@ mulai berlebihan, dan membuat target tabungan terasa lebih terukur.
 - Filter berdasarkan kategori transaksi.
 - Filter berdasarkan pemasukan, pengeluaran, atau siklus anggaran aktif.
 - Buka ringkasan harian berisi pemasukan, pengeluaran, dan selisih bersih.
-- Ekspor transaksi ke CSV melalui system share sheet.
+- Ekspor laporan ke Excel (5 sheet) atau data transaksi ke CSV melalui system
+  share sheet, dengan pilihan periode dan pemisah CSV. Formatnya didokumentasikan
+  di `docs/export-format.md`.
 - Hapus seluruh transaksi dan target dengan konfirmasi berlapis.
 
 ### 🎨 Personalisasi dan Pengalaman Pengguna
@@ -183,7 +185,8 @@ mulai berlebihan, dan membuat target tabungan terasa lebih terukur.
 | Database | Cloud Firestore | Menyimpan transaksi dan target secara real-time |
 | Local Storage | SharedPreferences | Menyimpan tema, budget, privacy, dan preferensi sederhana |
 | Chart | fl_chart 1.0.0 | Menampilkan donut chart pengeluaran |
-| Sharing | share_plus | Membagikan file CSV melalui system share sheet |
+| Sharing | share_plus | Membagikan laporan Excel dan CSV melalui system share sheet |
+| Laporan Excel | excel_community 1.0.10 | Membuat laporan XLSX 5 sheet |
 | Deep Link | app_links | Menerima email link pada Android dan platform terkait |
 | Testing | flutter_test | Unit test dan widget test |
 
@@ -221,10 +224,11 @@ savu/
 │       ├── analytics/               # Cash flow, balance trend, expense flow
 │       ├── auth/                    # Landing page dan email verification
 │       ├── dashboard/               # Summary, budget, chart, dan insight
+│       ├── export/                      # Laporan Excel 5 sheet dan CSV Data
 │       ├── onboarding/              # Pengantar aplikasi untuk pengguna baru
 │       ├── savings/                 # Target dan alokasi tabungan
 │       ├── settings/                # Pengaturan dan manajemen data
-│       └── transactions/            # Quick Add, History, filter, dan CSV
+│       └── transactions/            # Quick Add, History, filter
 ├── test/                            # Unit test dan widget test
 ├── firestore.rules                  # Firestore Security Rules
 ├── firebase.json                    # Konfigurasi Firebase Hosting dan Rules
