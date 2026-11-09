@@ -37,6 +37,10 @@ class DataManagementCard extends ConsumerWidget {
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   child: const Text('Batal'),
                 ),
@@ -49,8 +53,12 @@ class DataManagementCard extends ConsumerWidget {
                     backgroundColor: danger,
                     foregroundColor: onDanger,
                     minimumSize: const Size.fromHeight(48),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  child: const Text('Ya, Hapus Semua'),
+                  child: const Text('Hapus Semua'),
                 ),
               ),
             ],
@@ -204,6 +212,10 @@ class _FinalDeleteConfirmationDialogState
                 onPressed: () => Navigator.pop(context, false),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  textStyle: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 child: const Text('Batal'),
               ),
@@ -218,8 +230,12 @@ class _FinalDeleteConfirmationDialogState
                   backgroundColor: danger,
                   foregroundColor: onDanger,
                   minimumSize: const Size.fromHeight(48),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  textStyle: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
-                child: const Text('HAPUS SEMUA'),
+                child: const Text('Hapus Semua'),
               ),
             ),
           ],
