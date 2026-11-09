@@ -134,183 +134,238 @@ class ProfileHeader extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Card(
-        elevation: 0,
-        color: cs.primaryContainer,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: InkWell(
-          onTap: () => _showProfileDetails(
-            context,
-            ref,
-            userName: userName,
-            profileType: profileType,
-            budgetLimit: budgetLimit,
-            budgetCycle: budgetCycle,
-            privacyMode: privacyMode,
+      child: Tooltip(
+        message: 'Buka detail profil',
+        child: Card(
+          elevation: 0,
+          clipBehavior: Clip.antiAlias,
+          color: cs.surfaceContainerHigh,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  child: InkWell(
+          child: InkWell(
+            onTap: () => _showProfileDetails(
+              context,
+              ref,
+              userName: userName,
+              profileType: profileType,
+              budgetLimit: budgetLimit,
+              budgetCycle: budgetCycle,
+              privacyMode: privacyMode,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _ProfileAvatarButton(
+                    avatar: avatar,
+                    avatarForeground: avatarForeground,
                     onTap: () => ProfileAvatarSheet.show(context),
-                    customBorder: const CircleBorder(),
-                    child: Stack(
-                      clipBehavior: Clip.none,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AnimatedSwitcher(
-                          duration: AppMotion.durationOf(
-                            context,
-                            AppDuration.enter,
+                        Text(
+                          'Halo, $userName',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            height: 1.15,
                           ),
-                          switchInCurve: Curves.easeOutBack,
-                          switchOutCurve: Curves.easeIn,
-                          transitionBuilder: (child, animation) =>
-                              FadeTransition(
-                                opacity: animation,
-                                child: ScaleTransition(
-                                  scale: animation,
-                                  child: child,
-                                ),
-                              ),
-                          child: CircleAvatar(
-                            key: ValueKey(avatar.id),
-                            radius: 32,
-                            backgroundColor: avatar.color,
-                            child: Icon(
-                              avatar.icon,
-                              color: avatarForeground,
-                              size: 31,
-                            ),
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        Positioned(
-                          right: -2,
-                          bottom: -2,
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: cs.primary,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Theme.of(
-                                  context,
-                                ).scaffoldBackgroundColor,
-                                width: 2.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: cs.shadow.withValues(alpha: 0.15),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.camera_alt_rounded,
-                              size: 14,
-                              color: cs.onPrimary,
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          profileType,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.xs,
+                          runSpacing: AppSpacing.xs,
+                          children: [
+                            SyncStatusBadge(syncState: syncState),
+                            _AccountStatusChip(
+                              isGuest: isGuest,
+                              onTap: isGuest
+                                  ? () => showAccountSecuritySheet(context)
+                                  : null,
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 28,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileAvatarButton extends StatelessWidget {
+  const _ProfileAvatarButton({
+    required this.avatar,
+    required this.avatarForeground,
+    required this.onTap,
+  });
+
+  final PresetAvatar avatar;
+  final Color avatarForeground;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Semantics(
+      button: true,
+      label: 'Ganti avatar ${avatar.label}',
+      child: Tooltip(
+        message: 'Ganti avatar',
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            onTap: onTap,
+            customBorder: const CircleBorder(),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedSwitcher(
+                  duration: AppMotion.durationOf(
+                    context,
+                    AppDuration.enter,
+                  ),
+                  switchInCurve: Curves.easeOutBack,
+                  switchOutCurve: Curves.easeIn,
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    key: ValueKey(avatar.id),
+                    radius: 34,
+                    backgroundColor: avatar.color,
+                    child: Icon(
+                      avatar.icon,
+                      color: avatarForeground,
+                      size: 32,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Halo, $userName',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          IconButton(
-                            icon: const Icon(Icons.edit_rounded, size: 18),
-                            onPressed: () => _showProfileDetails(
-                              context,
-                              ref,
-                              userName: userName,
-                              profileType: profileType,
-                              budgetLimit: budgetLimit,
-                              budgetCycle: budgetCycle,
-                              privacyMode: privacyMode,
-                            ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            color: cs.primary,
-                          ),
-                        ],
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: scheme.surface,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.scaffoldBackgroundColor,
+                        width: 2,
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '$profileType  •  Ketuk avatar untuk mengganti',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      SyncStatusBadge(syncState: syncState),
-                      const SizedBox(height: 8),
-                      InkWell(
-                        onTap: isGuest
-                            ? () => showAccountSecuritySheet(context)
-                            : null,
-                        borderRadius: BorderRadius.circular(30),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isGuest
-                                  ? Icons.person_outline_rounded
-                                  : Icons.verified_user_rounded,
-                              size: 16,
-                              color: isGuest
-                                  ? cs.tertiary
-                                  : context.appColors.success,
-                            ),
-                            const SizedBox(width: 5),
-                            Flexible(
-                              child: Text(
-                                isGuest
-                                    ? 'Akun guest • Amankan sekarang'
-                                    : 'Akun terhubung',
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: isGuest
-                                      ? cs.tertiary
-                                      : context.appColors.success,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
+                    child: Icon(
+                      Icons.camera_alt_rounded,
+                      size: 13,
+                      color: scheme.primary,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AccountStatusChip extends StatelessWidget {
+  const _AccountStatusChip({required this.isGuest, this.onTap});
+
+  final bool isGuest;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final appColors = context.appColors;
+    final accent = isGuest ? scheme.tertiary : appColors.success;
+    final background = accent.withValues(alpha: 0.12);
+    final label = isGuest ? 'Akun guest • Amankan' : 'Akun terhubung';
+
+    final content = Container(
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isGuest ? Icons.person_outline_rounded : Icons.verified_user_rounded,
+              size: 14,
+              color: accent,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: accent,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (onTap != null) ...[
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right_rounded, size: 13, color: accent),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    if (onTap == null) return content;
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: content,
       ),
     );
   }

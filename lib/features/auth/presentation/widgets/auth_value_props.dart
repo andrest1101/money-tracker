@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 
-/// Tiga nilai produk yang menjelaskan isi Dompetku tanpa menambah kartu baru.
+/// Tiga nilai produk yang dijelaskan sebagai perjalanan, bukan daftar polos.
 class AuthValueProps extends StatelessWidget {
   const AuthValueProps({super.key, this.axis = Axis.horizontal});
 
@@ -16,120 +16,236 @@ class AuthValueProps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (axis == Axis.vertical) return const _VerticalValueProps();
+    if (axis == Axis.vertical) return const _VerticalJourney();
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final textScale = MediaQuery.textScalerOf(context).scale(12);
-        final stack = constraints.maxWidth < 340 || textScale > 16;
-        if (stack) return const _VerticalValueProps();
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var index = 0; index < _items.length; index++) ...[
-              if (index > 0) const SizedBox(width: AppSpacing.sm),
-              Expanded(child: _ValuePropColumn(item: _items[index])),
-            ],
-          ],
-        );
+        final scaledBody = MediaQuery.textScalerOf(context).scale(12);
+        if (constraints.maxWidth < 288 || scaledBody > 18) {
+          return const _VerticalJourney();
+        }
+        return const _HorizontalJourney();
       },
     );
   }
 }
 
-class _VerticalValueProps extends StatelessWidget {
-  const _VerticalValueProps();
+class _HorizontalJourney extends StatelessWidget {
+  const _HorizontalJourney();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var index = 0; index < AuthValueProps._items.length; index++) ...[
-          if (index > 0) const SizedBox(height: AppSpacing.sm),
-          _ValuePropRow(item: AuthValueProps._items[index]),
+    return Semantics(
+      container: true,
+      label: 'Perjalanan menggunakan Dompetku',
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          for (var index = 0; index < AuthValueProps._items.length; index++) ...[
+            if (index > 0) const _HorizontalConnector(),
+            Expanded(
+              child: _JourneyStep(
+                index: index,
+                item: AuthValueProps._items[index],
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
 
-class _ValuePropColumn extends StatelessWidget {
-  const _ValuePropColumn({required this.item});
-
-  final ({IconData icon, String label}) item;
+class _HorizontalConnector extends StatelessWidget {
+  const _HorizontalConnector();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _ValueIcon(icon: item.icon),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          item.label,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-            height: 1.3,
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      child: Container(
+        width: 12,
+        height: 2,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
-      ],
+      ),
     );
   }
 }
 
-class _ValuePropRow extends StatelessWidget {
-  const _ValuePropRow({required this.item});
+class _JourneyStep extends StatelessWidget {
+  const _JourneyStep({required this.index, required this.item});
 
+  final int index;
   final ({IconData icon, String label}) item;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
-    return Row(
-      children: [
-        _ValueIcon(icon: item.icon),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Text(
+    return Semantics(
+      label: 'Langkah ${index + 1} dari 3: ${item.label}',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _JourneyIcon(number: index + 1, icon: item.icon, size: 44),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
             item.label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: scheme.onSurface,
+              fontWeight: FontWeight.w800,
+              height: 1.25,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _ValueIcon extends StatelessWidget {
-  const _ValueIcon({required this.icon});
-
-  final IconData icon;
+class _VerticalJourney extends StatelessWidget {
+  const _VerticalJourney();
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: scheme.primaryContainer,
-        borderRadius: BorderRadius.circular(AppRadius.control),
+    return Semantics(
+      container: true,
+      label: 'Perjalanan menggunakan Dompetku',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var index = 0; index < AuthValueProps._items.length; index++) ...[
+            _VerticalJourneyStep(
+              index: index,
+              item: AuthValueProps._items[index],
+            ),
+            if (index < AuthValueProps._items.length - 1)
+              const _VerticalConnector(),
+          ],
+        ],
       ),
-      child: Icon(icon, size: 19, color: scheme.onPrimaryContainer),
+    );
+  }
+}
+
+class _VerticalConnector extends StatelessWidget {
+  const _VerticalConnector();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 17),
+      child: Container(
+        width: 2,
+        height: 16,
+        color: Theme.of(context).colorScheme.outlineVariant,
+      ),
+    );
+  }
+}
+
+class _VerticalJourneyStep extends StatelessWidget {
+  const _VerticalJourneyStep({required this.index, required this.item});
+
+  final int index;
+  final ({IconData icon, String label}) item;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Semantics(
+      label: 'Langkah ${index + 1} dari 3: ${item.label}',
+      child: Row(
+        children: [
+          _JourneyIcon(number: index + 1, icon: item.icon, size: 36),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              item.label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurface,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _JourneyIcon extends StatelessWidget {
+  const _JourneyIcon({
+    required this.number,
+    required this.icon,
+    required this.size,
+  });
+
+  final int number;
+  final IconData icon;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: size * 0.46,
+              color: scheme.onPrimaryContainer,
+            ),
+          ),
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              width: 17,
+              height: 17,
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: theme.scaffoldBackgroundColor,
+                  width: 2,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '$number',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: scheme.onPrimary,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
