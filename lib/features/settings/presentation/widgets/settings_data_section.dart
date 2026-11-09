@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../features/export/presentation/providers/export_controller.dart';
+import '../../../../features/export/presentation/widgets/export_sheet.dart';
 import '../../../savings/presentation/providers/savings_providers.dart';
-import '../../../transactions/presentation/providers/transaction_export_controller.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import 'settings_snack_bar.dart';
 
@@ -94,9 +95,7 @@ class DataManagementCard extends ConsumerWidget {
     final cs = theme.colorScheme;
     final danger = context.appColors.danger;
     final transactions = ref.watch(transactionsStreamProvider);
-    final isExporting = ref
-        .watch(transactionExportControllerProvider)
-        .isLoading;
+    final isExporting = ref.watch(exportControllerProvider).isLoading;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -118,24 +117,19 @@ class DataManagementCard extends ConsumerWidget {
                   );
                   return;
                 }
-                final shared = await ref
-                    .read(transactionExportControllerProvider.notifier)
-                    .export(items);
-                if (!context.mounted) return;
+                final shared = await ExportSheet.show(context);
+                if (!context.mounted || shared != true) return;
                 showSettingsSnackBar(
                   context,
-                  message: shared
-                      ? 'CSV transaksi siap dibagikan.'
-                      : 'Ekspor CSV gagal. Coba lagi.',
-                  isError: !shared,
+                  message: 'Laporan siap dibagikan.',
                 );
               },
-              leading: Icon(Icons.download_rounded, color: cs.primary),
-              title: const Text('Ekspor Data ke CSV'),
+              leading: Icon(Icons.ios_share_rounded, color: cs.primary),
+              title: const Text('Ekspor Data'),
               subtitle: Text(
                 isExporting
                     ? 'Menyiapkan file...'
-                    : 'Bagikan riwayat transaksi sebagai spreadsheet',
+                    : 'Laporan Excel atau CSV transaksi',
               ),
               trailing: isExporting
                   ? const SizedBox(
