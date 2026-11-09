@@ -136,6 +136,7 @@ class BalanceHeroCard extends ConsumerWidget {
                         valueColor: heroText,
                         labelColor: heroMuted,
                         isMasked: isPrivacy,
+                        alignment: CrossAxisAlignment.end,
                       ),
                     ),
                   ],

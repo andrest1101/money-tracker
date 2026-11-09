@@ -148,7 +148,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
         children: [
           // ── Main Card Content ──────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -348,7 +348,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     if (!isCompleted)
-                      Flexible(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -356,6 +356,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                               formatRupiah(goal.remainingAmount),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: cs.onSurface,
@@ -366,6 +367,7 @@ class _GoalCardState extends ConsumerState<GoalCard>
                             ),
                             Text(
                               'lagi',
+                              textAlign: TextAlign.end,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: cs.onSurfaceVariant,
                               ),

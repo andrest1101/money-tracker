@@ -48,11 +48,11 @@ class OnboardingSlide extends StatelessWidget {
         children: [
           // ── Interactive Feature Card ──────────────────────────────────────
           SizedBox(
-            height: 290,
+            height: 246,
             width: double.infinity,
             child: OnboardingInteractiveCard(data: data, onTap: onCardTap),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 18),
 
           // ── Badge & Eyebrow ───────────────────────────────────────────────
           Row(
@@ -397,9 +397,11 @@ class _InteractiveTransactionsPreview extends StatelessWidget {
       ),
     ];
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(items.length, (idx) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(items.length, (idx) {
         final item = items[idx];
         final isSelected = selectedIndex == idx;
         final color = item.isIncome ? colors.primary : colors.error;
@@ -470,6 +472,7 @@ class _InteractiveTransactionsPreview extends StatelessWidget {
           ),
         );
       }),
+    ),
     );
   }
 }
@@ -520,15 +523,17 @@ class _InteractiveBudgetPreview extends StatelessWidget {
 
     final current = scenarios[stateIndex % scenarios.length];
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Batas Anggaran Bulanan',
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Batas Anggaran Bulanan',
               style: Theme.of(
                 context,
               ).textTheme.labelSmall?.copyWith(color: colors.onSurfaceVariant),
@@ -619,6 +624,7 @@ class _InteractiveBudgetPreview extends StatelessWidget {
           ],
         ),
       ],
+      ),
     );
   }
 }
@@ -666,7 +672,9 @@ class _InteractiveSavingsPreview extends StatelessWidget {
 
     final current = goals[allocationStep % goals.length];
 
-    return Row(
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Row(
       children: [
         // Circular progress indicator with celebration spark
         SizedBox(
@@ -770,6 +778,7 @@ class _InteractiveSavingsPreview extends StatelessWidget {
           ),
         ),
       ],
+      ),
     );
   }
 }
