@@ -59,10 +59,7 @@ void main() {
     await tester.tap(navBarLabel('Riwayat'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.byWidgetPredicate((widget) => widget is SegmentedButton),
-      findsOneWidget,
-    );
+    expect(find.byKey(const ValueKey('history-type-filter')), findsOneWidget);
     await tester.tap(find.byTooltip('Cari transaksi'));
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsOneWidget);

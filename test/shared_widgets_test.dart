@@ -6,6 +6,7 @@ import 'package:savu/core/theme/app_theme.dart';
 import 'package:savu/core/theme/category_palette.dart';
 import 'package:savu/core/utils/rupiah_formatter.dart';
 import 'package:savu/shared/widgets/amount_text.dart';
+import 'package:savu/shared/widgets/app_segmented_control.dart';
 import 'package:savu/shared/widgets/budget_progress.dart';
 import 'package:savu/shared/widgets/category_icon.dart';
 import 'package:savu/shared/widgets/empty_state.dart';
@@ -450,6 +451,59 @@ void main() {
       expect(selection?.category, isNull);
       expect(selection?.period, FilterPeriod.all);
       expect(selection?.activeCycleOnly, isFalse);
+    });
+  });
+
+  group('AppSegmentedControl', () {
+    testWidgets('label satu baris dengan ukuran seragam di 360dp', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(360, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      var selected = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          home: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(1.3)),
+            child: Scaffold(
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: AppSegmentedControl(
+                  labels: const ['Semua', 'Pemasukan', 'Pengeluaran'],
+                  selectedIndex: selected,
+                  onChanged: (index) => selected = index,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final labels = tester
+          .widgetList<Text>(
+            find.descendant(
+              of: find.byType(AppSegmentedControl),
+              matching: find.byType(Text),
+            ),
+          )
+          .toList(growable: false);
+
+      expect(labels, hasLength(3));
+      expect(
+        labels.map((label) => label.style?.fontSize).toSet(),
+        hasLength(1),
+      );
+      for (final label in labels) {
+        expect(label.maxLines, 1);
+        expect(label.softWrap, isFalse);
+      }
+
+      await tester.tap(find.text('Pengeluaran'));
+      expect(selected, 2);
+      expect(tester.takeException(), isNull);
     });
   });
 
