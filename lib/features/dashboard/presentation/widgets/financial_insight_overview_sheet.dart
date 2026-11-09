@@ -265,7 +265,6 @@ class _ExpenseFlowSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final peakLabel = insight.peakDay == null
         ? 'Belum ada puncak pengeluaran'
         : '${formatDateShort(insight.peakDay!)} • ${formatRupiah(insight.peakAmount)}';
@@ -299,9 +298,8 @@ class _ExpenseFlowSummary extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isDark ? colors.surface : colors.primaryContainer,
+            color: colors.primaryContainer,
             borderRadius: BorderRadius.circular(16),
-            border: isDark ? Border.all(color: colors.outlineVariant) : null,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -573,17 +571,11 @@ class _SelectedExpenseDay extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.errorContainer,
         borderRadius: BorderRadius.circular(13),
-        border: Border.all(
-          color: colors.error.withValues(alpha: .2),
-        ),
+        border: Border.all(color: colors.error.withValues(alpha: .2)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.touch_app_rounded,
-            size: 17,
-            color: colors.error,
-          ),
+          Icon(Icons.touch_app_rounded, size: 17, color: colors.error),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

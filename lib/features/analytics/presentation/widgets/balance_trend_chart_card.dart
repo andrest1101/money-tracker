@@ -166,18 +166,13 @@ class _SelectedBalancePoint extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 11, 8, 11),
       decoration: BoxDecoration(
-        color: isDark ? colors.surfaceContainerHigh : colors.primaryContainer,
+        color: colors.primaryContainer,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark
-              ? colors.outlineVariant
-              : colors.primary.withValues(alpha: .18),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: .18)),
       ),
       child: Row(
         children: [

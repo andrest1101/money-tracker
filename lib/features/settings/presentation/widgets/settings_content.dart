@@ -47,10 +47,7 @@ class SettingsContent extends ConsumerWidget {
               ProfileHeader(syncState: syncState),
               const AccountSessionCard(),
               const SizedBox(height: 16),
-              const SettingsSectionTitle(
-                title: 'PREFERENSI TAMPILAN & PRIVASI',
-              ),
-              const ThemeSelectionCard(),
+              const SettingsSectionTitle(title: 'PRIVASI'),
               const PrivacyCard(),
               const SizedBox(height: 24),
               const SettingsSectionTitle(title: 'PENGELOLAAN KEUANGAN'),

@@ -38,9 +38,8 @@ class CategoryIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final color = CategoryPalette.color(category, brightness);
-    final background = CategoryPalette.background(category, brightness);
+    final color = CategoryPalette.color(category);
+    final background = CategoryPalette.background(category);
     final resolvedIcon = icon ?? _categoryIcons[category] ?? Icons.receipt_long;
 
     return Semantics(

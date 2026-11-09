@@ -694,9 +694,7 @@ class _InteractiveSavingsPreview extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? colors.surfaceContainerHigh
-                      : colors.surface,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: current.color, width: 1.5),
                   boxShadow: [
