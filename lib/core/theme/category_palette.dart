@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
 
-/// Delapan hue redup untuk kategori.
+/// Delapan hue redup untuk kategori (tema terang Dompetku).
 ///
 /// Pemetaan kategori ke warna harus stabil agar ikon, legenda, dan segmen
 /// bagan selalu memakai warna yang sama. "Lainnya" selalu slate.
 enum CategoryTone {
-  terracotta(Color(0xFFD9685A), Color(0xFFE8897D)),
-  blue(Color(0xFF3E86C8), Color(0xFF6BA5DC)),
-  amber(Color(0xFFE0A030), Color(0xFFEDBB62)),
-  green(Color(0xFF6FAE5B), Color(0xFF8FC97E)),
-  violet(Color(0xFF8B73C9), Color(0xFFA996DA)),
-  teal(Color(0xFF2FA9A0), Color(0xFF55C4BC)),
-  rose(Color(0xFFD9709A), Color(0xFFE894B4)),
-  slate(Color(0xFF7C8A96), Color(0xFF9AA7B2));
+  terracotta(Color(0xFFD9685A)),
+  blue(Color(0xFF3E86C8)),
+  amber(Color(0xFFE0A030)),
+  green(Color(0xFF6FAE5B)),
+  violet(Color(0xFF8B73C9)),
+  teal(Color(0xFF2FA9A0)),
+  rose(Color(0xFFD9709A)),
+  slate(Color(0xFF7C8A96));
 
-  const CategoryTone(this.light, this.dark);
+  const CategoryTone(this.color);
 
-  final Color light;
-  final Color dark;
-
-  Color colorFor(Brightness brightness) {
-    return brightness == Brightness.dark ? dark : light;
-  }
+  final Color color;
 }
 
 abstract final class CategoryPalette {
@@ -64,13 +59,10 @@ abstract final class CategoryPalette {
     return _fallback[index];
   }
 
-  static Color color(String category, Brightness brightness) {
-    return toneFor(category).colorFor(brightness);
-  }
+  static Color color(String category) => toneFor(category).color;
 
-  static Color background(String category, Brightness brightness) {
-    return color(category, brightness).withValues(alpha: backgroundOpacity);
-  }
+  static Color background(String category) =>
+      color(category).withValues(alpha: backgroundOpacity);
 
   static String _normalize(String value) {
     return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');

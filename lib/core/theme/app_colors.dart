@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Warna semantik yang tidak disediakan langsung oleh [ColorScheme].
+/// Satu-satunya warna semantik produk (tema terang Dompetku).
 ///
 /// Sumber kebenaran warna peran (primary, surface, outline, dll.) tetap
 /// [ColorScheme]. Kelas ini hanya menyimpan warna yang punya arti khusus
@@ -44,6 +44,7 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Versi [warning] yang aman dibaca sebagai teks di atas surface.
   final Color warningText;
 
+  /// Satu-satunya set warna semantik Dompetku (tema terang).
   static const AppColors light = AppColors(
     background: Color(0xFFF6F7F9),
     surface: Color(0xFFFFFFFF),
@@ -58,27 +59,10 @@ class AppColors extends ThemeExtension<AppColors> {
     warningText: Color(0xFF8A5A12),
   );
 
-  static const AppColors dark = AppColors(
-    background: Color(0xFF0E1218),
-    surface: Color(0xFF171C23),
-    surfaceVariant: Color(0xFF202833),
-    outline: Color(0xFF303B48),
-    textPrimary: Color(0xFFE9EDF2),
-    textSecondary: Color(0xFFA0AAB6),
-    income: Color(0xFF65C58A),
-    success: Color(0xFF34D399),
-    danger: Color(0xFFFF8A80),
-    warning: Color(0xFFF5C451),
-    warningText: Color(0xFFF5C451),
-  );
-
   static AppColors of(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>();
     assert(colors != null, 'AppColors belum terdaftar di ThemeData.');
-    return colors ??
-        (Theme.of(context).brightness == Brightness.dark
-            ? AppColors.dark
-            : AppColors.light);
+    return colors ?? AppColors.light;
   }
 
   @override

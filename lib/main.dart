@@ -68,7 +68,6 @@ class _BootstrapAppState extends State<_BootstrapApp> {
             debugShowCheckedModeBanner: false,
             themeMode: ThemeMode.light,
             theme: AppTheme.light(),
-            darkTheme: AppTheme.dark(),
             home: const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             ),
@@ -95,7 +94,6 @@ class _BootstrapErrorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
       home: Builder(
         builder: (context) {
           final theme = Theme.of(context);
@@ -271,7 +269,6 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
         debugShowCheckedModeBanner: false,
         themeMode: ThemeMode.light,
         theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
         home: PasswordResetActionPage(
           actionCode: _passwordResetCode!,
           onContinue: () => setState(() => _passwordResetCode = null),
@@ -284,7 +281,6 @@ class _AuthLinkHandlerState extends ConsumerState<_AuthLinkHandler> {
         debugShowCheckedModeBanner: false,
         themeMode: ThemeMode.light,
         theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
         home: PasswordResetSuccessPage(
           onContinue: () => setState(() => _passwordResetSucceeded = false),
         ),
@@ -313,7 +309,6 @@ class _AuthGate extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
       home: AnimatedSwitcher(
         duration: animationsEnabled
             ? const Duration(milliseconds: 420)
@@ -377,23 +372,17 @@ class DompetkuApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
       builder: (context, child) {
         final theme = Theme.of(context);
-        final isDark = theme.brightness == Brightness.dark;
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
             systemNavigationBarColor: theme.colorScheme.surface,
             systemNavigationBarDividerColor: theme.colorScheme.surface,
-            systemNavigationBarIconBrightness: isDark
-                ? Brightness.light
-                : Brightness.dark,
+            systemNavigationBarIconBrightness: Brightness.dark,
             systemNavigationBarContrastEnforced: false,
             statusBarColor: Colors.transparent,
-            statusBarIconBrightness: isDark
-                ? Brightness.light
-                : Brightness.dark,
-            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
           ),
           child: child ?? const SizedBox.shrink(),
         );

@@ -4,7 +4,7 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// Tema Dompetku v2.
+/// Tema Dompetku v2. Satu tema: terang.
 ///
 /// Prinsip:
 /// - Satu sumber kebenaran warna peran di [ColorScheme].
@@ -12,14 +12,11 @@ import 'app_typography.dart';
 /// - Tanpa gradient. Kedalaman dari tone permukaan dan hairline.
 /// - Tanpa elevation pada kartu.
 abstract final class AppTheme {
-  static ThemeData light() => _build(brightness: Brightness.light);
+  static ThemeData light() => _build();
 
-  static ThemeData dark() => _build(brightness: Brightness.dark);
-
-  static ThemeData _build({required Brightness brightness}) {
-    final isDark = brightness == Brightness.dark;
-    final colors = isDark ? AppColors.dark : AppColors.light;
-    final scheme = isDark ? _darkScheme() : _lightScheme();
+  static ThemeData _build() {
+    final colors = AppColors.light;
+    final scheme = _lightScheme();
     final textTheme = AppTypography.textTheme(
       primaryText: colors.textPrimary,
       secondaryText: colors.textSecondary,
@@ -27,7 +24,7 @@ abstract final class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      brightness: brightness,
+      brightness: Brightness.light,
       colorScheme: scheme,
       fontFamily: AppTypography.fontFamily,
       textTheme: textTheme,
@@ -267,45 +264,6 @@ abstract final class AppTheme {
       inverseSurface: Color(0xFF121A18),
       onInverseSurface: Color(0xFFF7F8F7),
       inversePrimary: Color(0xFF8DB4D4),
-    );
-  }
-
-  static ColorScheme _darkScheme() {
-    return const ColorScheme(
-      brightness: Brightness.dark,
-      primary: Color(0xFF6F9CC2),
-      onPrimary: Color(0xFF101D2A),
-      primaryContainer: Color(0xFF172B40),
-      onPrimaryContainer: Color(0xFFF1F5F9),
-      secondary: Color(0xFF91A9BE),
-      onSecondary: Color(0xFF17232F),
-      secondaryContainer: Color(0xFF253646),
-      onSecondaryContainer: Color(0xFFE1E8EF),
-      tertiary: Color(0xFF79B88F),
-      onTertiary: Color(0xFF102A1A),
-      tertiaryContainer: Color(0xFF244333),
-      onTertiaryContainer: Color(0xFFD4EBDD),
-      error: Color(0xFFFF8A80),
-      onError: Color(0xFF3B0907),
-      errorContainer: Color(0xFF5C1A1A),
-      onErrorContainer: Color(0xFFFFDAD6),
-      surface: Color(0xFF171C23),
-      onSurface: Color(0xFFE9EDF2),
-      onSurfaceVariant: Color(0xFFA0AAB6),
-      surfaceContainerLowest: Color(0xFF0B0F14),
-      surfaceContainerLow: Color(0xFF12171E),
-      surfaceContainer: Color(0xFF1A2028),
-      surfaceContainerHigh: Color(0xFF202833),
-      surfaceContainerHighest: Color(0xFF27313D),
-      surfaceDim: Color(0xFF0E1218),
-      surfaceBright: Color(0xFF293441),
-      outline: Color(0xFF303B48),
-      outlineVariant: Color(0xFF252E39),
-      shadow: Color(0xFF000000),
-      scrim: Color(0x8A000000),
-      inverseSurface: Color(0xFFE9EDF2),
-      onInverseSurface: Color(0xFF11161D),
-      inversePrimary: Color(0xFF315B7D),
     );
   }
 }
