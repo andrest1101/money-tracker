@@ -18,7 +18,13 @@ class ReportShareService {
       name: name,
     );
     await SharePlus.instance.share(
-      ShareParams(files: [file], subject: subject),
+      ShareParams(
+        files: [file],
+        subject: subject,
+        // `XFile.name` diabaikan di Android/iOS, jadi nama eksplisit diberikan
+        // lewat override ini agar WhatsApp/Excel menerima nama file yang jelas.
+        fileNameOverrides: [name],
+      ),
     );
   }
 }
