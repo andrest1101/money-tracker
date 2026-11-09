@@ -18,6 +18,12 @@ const _colorAllowlist = <String>{
   'lib/features/settings/presentation/widgets/contact_us_entry.dart',
 };
 
+/// Spreadsheet XLSX memakai ukuran font dalam satuan poin, bukan textTheme
+/// Flutter. Allowlist ini hanya untuk writer laporan Excel.
+const _fontSizeAllowlist = <String>{
+  'lib/features/export/data/exporters/xlsx_exporter.dart',
+};
+
 /// Beranda dijalankan oleh test runner Flutter dari root proyek.
 final _libFiles = Directory('lib')
     .listSync(recursive: true)
@@ -60,14 +66,17 @@ void main() {
   test('tidak ada fontSize: literal di luar core/theme', () {
     final violations = _violations(
       'fontSize:',
-      (path) => path.startsWith('lib/core/theme/'),
+      (path) =>
+          path.startsWith('lib/core/theme/') ||
+          _fontSizeAllowlist.contains(path),
     );
     expect(
       violations,
       isEmpty,
       reason:
           'Gunakan textTheme / AppTextStyles dari lib/core/theme, bukan fontSize '
-          'mentah.\n${violations.join('\n')}',
+          'mentah. Untuk writer XLSX lihat _fontSizeAllowlist.\n'
+          '${violations.join('\n')}',
     );
   });
 
