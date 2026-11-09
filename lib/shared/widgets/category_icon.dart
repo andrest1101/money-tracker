@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/finance_categories.dart';
 import '../../core/theme/category_palette.dart';
 
 const Map<String, IconData> _categoryIcons = {
@@ -15,7 +16,7 @@ const Map<String, IconData> _categoryIcons = {
   'Uang Kiriman': Icons.account_balance_rounded,
   'Beasiswa': Icons.school_rounded,
   'Gaji Part-time': Icons.work_rounded,
-  'Alokasi Tabungan': Icons.savings_rounded,
+  FinanceCategories.savingsAllocation: Icons.savings_rounded,
 };
 
 /// Lingkaran tonal 40dp berisi ikon kategori.

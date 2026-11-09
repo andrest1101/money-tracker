@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/finance_categories.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../domain/entities/transaction_entity.dart';
 
@@ -82,14 +83,16 @@ class ManageCategoriesSheet extends ConsumerWidget {
               ...visible.map(
                 (category) => _CategoryManageTile(
                   category: category,
-                  icon: category == 'Alokasi Tabungan'
+                  icon:
+                      category == FinanceCategories.savingsAllocation
                       ? Icons.lock_outline_rounded
                       : Icons.visibility_outlined,
-                  actionLabel: category == 'Alokasi Tabungan'
+                  actionLabel:
+                      category == FinanceCategories.savingsAllocation
                       ? 'Kategori sistem'
                       : 'Sembunyikan',
                   accent: accent,
-                  onPressed: category == 'Alokasi Tabungan'
+                  onPressed: category == FinanceCategories.savingsAllocation
                       ? null
                       : () => _toggle(context, ref, category),
                 ),
@@ -122,7 +125,7 @@ class ManageCategoriesSheet extends ConsumerWidget {
     WidgetRef ref,
     String category,
   ) async {
-    if (category == 'Alokasi Tabungan') return;
+    if (category == FinanceCategories.savingsAllocation) return;
     final hidden = type == TransactionType.expense
         ? ref.read(hiddenExpenseCategoriesProvider)
         : ref.read(hiddenIncomeCategoriesProvider);

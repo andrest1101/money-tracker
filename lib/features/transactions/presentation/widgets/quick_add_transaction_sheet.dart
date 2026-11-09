@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/finance_categories.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/on_color.dart';
@@ -101,7 +102,9 @@ class _QuickAddTransactionSheetState
     if (widget.transaction?.isAllocation == true) {
       return all;
     }
-    return all.where((c) => c != 'Alokasi Tabungan').toList();
+    return all
+        .where((c) => c != FinanceCategories.savingsAllocation)
+        .toList();
   }
 
   List<String> get _allCategoriesForManagement {
@@ -132,7 +135,7 @@ class _QuickAddTransactionSheetState
       'Uang Kiriman': 'kiriman dari orang tua',
       'Beasiswa': 'beasiswa bulan ini',
       'Gaji Part-time': 'gaji kerja part-time',
-      'Alokasi Tabungan': 'alokasi dana ke target tabungan',
+      FinanceCategories.savingsAllocation: 'alokasi dana ke target tabungan',
     };
     final example = examples[_selectedCategory];
     if (example != null) return 'Contoh: $example';
