@@ -7,6 +7,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/rupiah_formatter.dart';
 import '../../../../shared/widgets/app_bottom_sheet.dart';
 import '../../../../shared/widgets/app_entrance.dart';
+import '../../../../shared/widgets/app_segmented_control.dart';
 import '../../../../shared/widgets/amount_text.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/filter_sheet.dart';
@@ -259,6 +260,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       dateRange: dateRange,
     );
     final hasAnyFilters = filter != null || hasSecondaryFilters;
+    final typeIndex = switch (filter) {
+      null => 0,
+      TransactionType.income => 1,
+      TransactionType.expense => 2,
+    };
     final sortedDays = grouped.entries.toList()
       ..sort((a, b) {
         final aDate = a.value
@@ -360,27 +366,19 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.screen,
                   ),
-                  child: SegmentedButton<TransactionType?>(
+                  child: AppSegmentedControl(
                     key: const ValueKey('history-type-filter'),
-                    showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment<TransactionType?>(
-                        value: null,
-                        label: Text('Semua'),
-                      ),
-                      ButtonSegment<TransactionType?>(
-                        value: TransactionType.income,
-                        label: Text('Pemasukan'),
-                      ),
-                      ButtonSegment<TransactionType?>(
-                        value: TransactionType.expense,
-                        label: Text('Pengeluaran'),
-                      ),
-                    ],
-                    selected: {filter},
-                    onSelectionChanged: (selection) => ref
-                        .read(historyFilterProvider.notifier)
-                        .setType(selection.first),
+                    semanticLabel: 'Filter jenis transaksi',
+                    labels: const ['Semua', 'Pemasukan', 'Pengeluaran'],
+                    selectedIndex: typeIndex,
+                    onChanged: (index) {
+                      final type = switch (index) {
+                        1 => TransactionType.income,
+                        2 => TransactionType.expense,
+                        _ => null,
+                      };
+                      ref.read(historyFilterProvider.notifier).setType(type);
+                    },
                   ),
                 ),
                 if (hasAnyFilters)

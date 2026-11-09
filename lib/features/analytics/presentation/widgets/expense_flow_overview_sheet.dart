@@ -13,7 +13,6 @@ class ExpenseFlowOverviewSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final colors = theme.colorScheme;
     return AppBottomSheetLayout(
       child: SingleChildScrollView(
@@ -90,29 +89,22 @@ class ExpenseFlowOverviewSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark
-                    ? colors.surfaceContainerHigh
-                    : colors.primaryContainer,
+                color: colors.primaryContainer,
                 borderRadius: BorderRadius.circular(18),
-                border: isDark
-                    ? Border.all(color: colors.outlineVariant)
-                    : null,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
                     Icons.lightbulb_outline_rounded,
-                    color: isDark ? colors.primary : colors.onPrimaryContainer,
+                    color: colors.onPrimaryContainer,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       insight.recommendation,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isDark
-                            ? colors.onSurface
-                            : colors.onPrimaryContainer,
+                        color: colors.onPrimaryContainer,
                         height: 1.45,
                         fontWeight: FontWeight.w600,
                       ),

@@ -216,7 +216,6 @@ class _CategoryStackedBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
     final semantics = categories
         .map(
           (item) =>
@@ -250,11 +249,9 @@ class _CategoryStackedBar extends StatelessWidget {
                         color: item.category == selectedCategory
                             ? CategoryPalette.color(
                                 item.category,
-                                brightness,
                               ).withValues(alpha: .90)
                             : CategoryPalette.color(
                                 item.category,
-                                brightness,
                               ).withValues(alpha: .45),
                         child: InkWell(
                           onTap: () => onSelected(item.category),
@@ -268,7 +265,6 @@ class _CategoryStackedBar extends StatelessWidget {
                                   ? Border.all(
                                       color: CategoryPalette.color(
                                         item.category,
-                                        brightness,
                                       ).withValues(alpha: .8),
                                       width: 1,
                                     )
@@ -318,7 +314,6 @@ class _CategoryRow extends StatelessWidget {
               color: selected
                   ? CategoryPalette.background(
                       category.category,
-                      theme.brightness,
                     ).withValues(alpha: .15)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(AppRadius.control),

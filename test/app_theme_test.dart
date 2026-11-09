@@ -7,14 +7,11 @@ import 'package:savu/core/theme/category_palette.dart';
 
 void main() {
   group('AppTheme', () {
-    test('mendaftarkan AppColors pada kedua brightness', () {
+    test('mendaftarkan AppColors pada tema', () {
       final light = AppTheme.light();
-      final dark = AppTheme.dark();
 
       expect(light.extension<AppColors>(), AppColors.light);
-      expect(dark.extension<AppColors>(), AppColors.dark);
       expect(light.brightness, Brightness.light);
-      expect(dark.brightness, Brightness.dark);
     });
 
     test('memakai Plus Jakarta Sans yang di-bundle', () {
@@ -23,88 +20,53 @@ void main() {
         AppTheme.light().textTheme.bodyMedium?.fontFamily,
         AppTypography.fontFamily,
       );
-      expect(
-        AppTheme.dark().textTheme.bodyMedium?.fontFamily,
-        AppTypography.fontFamily,
-      );
     });
 
     test('kartu tidak memakai elevation', () {
       expect(AppTheme.light().cardTheme.elevation, 0);
-      expect(AppTheme.dark().cardTheme.elevation, 0);
     });
 
     test('kontras teks inti memenuhi minimal 4.5:1', () {
       final cases = <({String label, Color foreground, Color background})>[
         (
-          label: 'light textPrimary / background',
+          label: 'textPrimary / background',
           foreground: AppColors.light.textPrimary,
           background: AppColors.light.background,
         ),
         (
-          label: 'light textSecondary / surface',
+          label: 'textSecondary / surface',
           foreground: AppColors.light.textSecondary,
           background: AppColors.light.surface,
         ),
         (
-          label: 'light onPrimary / primary',
+          label: 'onPrimary / primary',
           foreground: AppTheme.light().colorScheme.onPrimary,
           background: AppTheme.light().colorScheme.primary,
         ),
         (
-          label: 'light income / surface',
+          label: 'income / surface',
           foreground: AppColors.light.income,
           background: AppColors.light.surface,
         ),
         (
-          label: 'light danger / surface',
+          label: 'success / surface',
+          foreground: AppColors.light.success,
+          background: AppColors.light.surface,
+        ),
+        (
+          label: 'danger / surface',
           foreground: AppColors.light.danger,
           background: AppColors.light.surface,
         ),
         (
-          label: 'light warningText / surface',
+          label: 'warningText / surface',
           foreground: AppColors.light.warningText,
           background: AppColors.light.surface,
         ),
         (
-          label: 'dark textPrimary / background',
-          foreground: AppColors.dark.textPrimary,
-          background: AppColors.dark.background,
-        ),
-        (
-          label: 'dark textSecondary / surface',
-          foreground: AppColors.dark.textSecondary,
-          background: AppColors.dark.surface,
-        ),
-        (
-          label: 'dark onPrimary / primary',
-          foreground: AppTheme.dark().colorScheme.onPrimary,
-          background: AppTheme.dark().colorScheme.primary,
-        ),
-        (
-          label: 'light hero text / primary container',
+          label: 'hero text / primary container',
           foreground: AppTheme.light().colorScheme.onPrimaryContainer,
           background: AppTheme.light().colorScheme.primaryContainer,
-        ),
-        (
-          label: 'dark hero text / primary container',
-          foreground: AppTheme.dark().colorScheme.onPrimaryContainer,
-          background: AppTheme.dark().colorScheme.primaryContainer,
-        ),
-        (
-          label: 'dark income / surface',
-          foreground: AppColors.dark.income,
-          background: AppColors.dark.surface,
-        ),
-        (
-          label: 'dark danger / surface',
-          foreground: AppColors.dark.danger,
-          background: AppColors.dark.surface,
-        ),
-        (
-          label: 'dark warningText / surface',
-          foreground: AppColors.dark.warningText,
-          background: AppColors.dark.surface,
         ),
       ];
 
@@ -138,18 +100,8 @@ void main() {
       expect(first, isNot(CategoryTone.slate));
     });
 
-    test('varian gelap lebih terang dari varian terang', () {
-      for (final tone in CategoryTone.values) {
-        expect(
-          tone.dark.computeLuminance(),
-          greaterThan(tone.light.computeLuminance()),
-          reason: tone.name,
-        );
-      }
-    });
-
     test('latar ikon memakai opasitas 14 persen', () {
-      final color = CategoryPalette.background('Makanan', Brightness.light);
+      final color = CategoryPalette.background('Makanan');
       expect(color.a, closeTo(CategoryPalette.backgroundOpacity, 0.001));
     });
   });

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/finance_categories.dart';
 import '../../../../core/errors/app_error_message.dart';
 import '../../../../core/local_storage/settings_providers.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
@@ -224,9 +225,9 @@ class SavingsActionsController extends Notifier<AsyncValue<void>> {
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         amount: amount,
         type: TransactionType.expense,
-        category: 'Alokasi Tabungan',
+        category: FinanceCategories.savingsAllocation,
         date: DateTime.now(),
-        note: 'Menabung untuk ${goal.title}',
+        note: FinanceCategories.savingsAllocationNote(goal.title),
         goalId: goal.id,
       );
 

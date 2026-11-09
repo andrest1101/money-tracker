@@ -126,7 +126,6 @@ class ProfileHeader extends ConsumerWidget {
     final privacyMode = ref.watch(privacyModeProvider);
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final authUser = ref.watch(currentUserProvider);
     final isGuest = authUser?.isAnonymous ?? true;
     final avatarId = ref.watch(profileAvatarProvider);
@@ -137,7 +136,7 @@ class ProfileHeader extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(
         elevation: 0,
-        color: isDark ? cs.surfaceContainerHigh : cs.primaryContainer,
+        color: cs.primaryContainer,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: InkWell(

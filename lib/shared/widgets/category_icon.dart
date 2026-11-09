@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/finance_categories.dart';
 import '../../core/theme/category_palette.dart';
 
 const Map<String, IconData> _categoryIcons = {
@@ -15,7 +16,7 @@ const Map<String, IconData> _categoryIcons = {
   'Uang Kiriman': Icons.account_balance_rounded,
   'Beasiswa': Icons.school_rounded,
   'Gaji Part-time': Icons.work_rounded,
-  'Alokasi Tabungan': Icons.savings_rounded,
+  FinanceCategories.savingsAllocation: Icons.savings_rounded,
 };
 
 /// Lingkaran tonal 40dp berisi ikon kategori.
@@ -38,9 +39,8 @@ class CategoryIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final color = CategoryPalette.color(category, brightness);
-    final background = CategoryPalette.background(category, brightness);
+    final color = CategoryPalette.color(category);
+    final background = CategoryPalette.background(category);
     final resolvedIcon = icon ?? _categoryIcons[category] ?? Icons.receipt_long;
 
     return Semantics(

@@ -6,6 +6,7 @@ import 'package:savu/core/theme/app_theme.dart';
 import 'package:savu/core/theme/category_palette.dart';
 import 'package:savu/core/utils/rupiah_formatter.dart';
 import 'package:savu/shared/widgets/amount_text.dart';
+import 'package:savu/shared/widgets/app_segmented_control.dart';
 import 'package:savu/shared/widgets/budget_progress.dart';
 import 'package:savu/shared/widgets/category_icon.dart';
 import 'package:savu/shared/widgets/empty_state.dart';
@@ -14,18 +15,20 @@ import 'package:savu/shared/widgets/section_header.dart';
 import 'package:savu/shared/widgets/stat_inline.dart';
 import 'package:savu/shared/widgets/transaction_tile.dart';
 
-const _brightnesses = [Brightness.light, Brightness.dark];
-
 Widget _app(Brightness brightness, Widget child) {
   return MaterialApp(
-    theme: brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+    theme: AppTheme.light(),
     home: Scaffold(body: child),
   );
 }
 
-Color _expectedColor(Brightness brightness, Color light, Color dark) {
-  return brightness == Brightness.dark ? dark : light;
-}
+Color _expectedColor(Brightness brightness, Color color) => color;
+
+/// Satu langkah saja: Dompetku hanya punya tema terang.
+///
+/// Parameter loop dipertahankan agar struktur test mudah dibaca; hanya ada
+/// satu varian yang dijalankan.
+const _brightnesses = [Brightness.light];
 
 void main() {
   group('formatRupiahSpoken', () {
@@ -72,19 +75,11 @@ void main() {
 
         expect(
           income.style?.color,
-          _expectedColor(
-            brightness,
-            AppColors.light.income,
-            AppColors.dark.income,
-          ),
+          _expectedColor(brightness, AppColors.light.income),
         );
         expect(
           expense.style?.color,
-          _expectedColor(
-            brightness,
-            AppColors.light.textPrimary,
-            AppColors.dark.textPrimary,
-          ),
+          _expectedColor(brightness, AppColors.light.textPrimary),
         );
         expect(income.style?.fontFeatures, isNotEmpty);
       });
@@ -199,7 +194,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _app(
-          Brightness.dark,
+          Brightness.light,
           const BudgetProgress(spent: 1200000, limit: 1000000),
         ),
       );
@@ -241,8 +236,8 @@ void main() {
           find.byIcon(Icons.more_horiz_rounded),
         );
 
-        expect(food.color, CategoryPalette.color('Makanan', brightness));
-        expect(other.color, CategoryTone.slate.colorFor(brightness));
+        expect(food.color, CategoryPalette.color('Makanan'));
+        expect(other.color, CategoryTone.slate.color);
       });
     }
 
@@ -264,7 +259,7 @@ void main() {
           .toList(growable: false);
       expect(icons, hasLength(2));
       expect(icons.first.color, icons.last.color);
-      expect(icons.first.color, isNot(CategoryTone.slate.light));
+      expect(icons.first.color, isNot(CategoryTone.slate.color));
     });
   });
 
@@ -288,11 +283,7 @@ void main() {
         final text = tester.widget<Text>(find.text('+Rp 50.000'));
         expect(
           text.style?.color,
-          _expectedColor(
-            brightness,
-            AppColors.light.income,
-            AppColors.dark.income,
-          ),
+          _expectedColor(brightness, AppColors.light.income),
         );
       });
     }
@@ -460,6 +451,59 @@ void main() {
       expect(selection?.category, isNull);
       expect(selection?.period, FilterPeriod.all);
       expect(selection?.activeCycleOnly, isFalse);
+    });
+  });
+
+  group('AppSegmentedControl', () {
+    testWidgets('label satu baris dengan ukuran seragam di 360dp', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(360, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      var selected = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          home: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(1.3)),
+            child: Scaffold(
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: AppSegmentedControl(
+                  labels: const ['Semua', 'Pemasukan', 'Pengeluaran'],
+                  selectedIndex: selected,
+                  onChanged: (index) => selected = index,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final labels = tester
+          .widgetList<Text>(
+            find.descendant(
+              of: find.byType(AppSegmentedControl),
+              matching: find.byType(Text),
+            ),
+          )
+          .toList(growable: false);
+
+      expect(labels, hasLength(3));
+      expect(
+        labels.map((label) => label.style?.fontSize).toSet(),
+        hasLength(1),
+      );
+      for (final label in labels) {
+        expect(label.maxLines, 1);
+        expect(label.softWrap, isFalse);
+      }
+
+      await tester.tap(find.text('Pengeluaran'));
+      expect(selected, 2);
+      expect(tester.takeException(), isNull);
     });
   });
 
