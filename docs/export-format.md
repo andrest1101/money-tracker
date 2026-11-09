@@ -1,9 +1,9 @@
-# Format Ekspor — Savu
+# Format Ekspor — Dompetku
 
 Dokumen ini menjelaskan hasil ekspor **CSV Data** dan **Laporan Excel** agar
 aplikasi, pengguna, dan reviewer memakai definisi yang sama.
 
-- **Nama aplikasi di file:** `Savu` (sumber tunggal: `AppConfig.appName`).
+- **Nama aplikasi di file:** `Dompetku` (sumber tunggal: `AppConfig.appName`).
 - **Di luar scope:** PDF, impor, backup/restore JSON, dan perubahan skema Firestore.
 - **Semua angka** dihitung satu kali di `BuildReportSummary` sebagai rupiah bulat.
   Exporter hanya memformat.
@@ -14,8 +14,8 @@ aplikasi, pengguna, dan reviewer memakai definisi yang sama.
 
 | Format | File | Untuk siapa | Isi |
 | --- | --- | --- | --- |
-| Laporan Excel | `Savu_Laporan_{YYYY-MM-DD}_sd_{YYYY-MM-DD}.xlsx` | Pengguna biasa, dosen, orang tua | 5 sheet: Ringkasan, Transaksi, Per Kategori, Bulanan, Target Tabungan |
-| CSV Data | `Savu_Transaksi_{YYYY-MM-DD}_sd_{YYYY-MM-DD}.csv` | Pengguna yang ingin mengolah sendiri | Satu tabel datar 9 kolom |
+| Laporan Excel | `Dompetku_Laporan_{YYYY-MM-DD}_sd_{YYYY-MM-DD}.xlsx` | Pengguna biasa, dosen, orang tua | 5 sheet: Ringkasan, Transaksi, Per Kategori, Bulanan, Target Tabungan |
+| CSV Data | `Dompetku_Transaksi_{YYYY-MM-DD}_sd_{YYYY-MM-DD}.csv` | Pengguna yang ingin mengolah sendiri | Satu tabel datar 9 kolom |
 
 Nama file memakai **rentang tanggal data yang benar-benar diekspor**, bukan
 akhir periode yang diminta. Contoh ekspor "Bulan ini" pada 9 November

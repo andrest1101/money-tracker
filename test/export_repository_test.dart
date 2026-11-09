@@ -29,10 +29,10 @@ void main() {
     expect(shareService.shareCount, 1);
     expect(
       shareService.name,
-      'Savu_Transaksi_2026-08-29_sd_2026-11-08.csv',
+      'Dompetku_Transaksi_2026-08-29_sd_2026-11-08.csv',
     );
     expect(shareService.mimeType, 'text/csv');
-    expect(shareService.subject, 'Ekspor transaksi Savu');
+    expect(shareService.subject, 'Ekspor transaksi Dompetku');
     expect(shareService.bytes!.take(3).toList(), [0xEF, 0xBB, 0xBF]);
     final csv = utf8.decode(shareService.bytes!);
     expect(csv.startsWith('No;Tanggal;'), isTrue);
@@ -66,13 +66,13 @@ void main() {
     expect(shareService.shareCount, 1);
     expect(
       shareService.name,
-      'Savu_Laporan_2026-08-29_sd_2026-11-08.xlsx',
+      'Dompetku_Laporan_2026-08-29_sd_2026-11-08.xlsx',
     );
     expect(
       shareService.mimeType,
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );
-    expect(shareService.subject, 'Laporan keuangan Savu');
+    expect(shareService.subject, 'Laporan keuangan Dompetku');
     expect(shareService.bytes, isNotNull);
     expect(shareService.bytes!.length > 1000, isTrue);
     expect(shareService.bytes![0], 0x50); // P
@@ -92,7 +92,7 @@ void main() {
 
     expect(
       shareService.name,
-      'Savu_Transaksi_2026-11-01_sd_2026-11-08.csv',
+      'Dompetku_Transaksi_2026-11-01_sd_2026-11-08.csv',
     );
   });
 

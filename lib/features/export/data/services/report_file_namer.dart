@@ -32,7 +32,7 @@ String _sanitizeFileSegment(String value) {
       .replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '-')
       .replaceAll(RegExp(r'-+'), '-')
       .replaceAll(RegExp(r'^-|-$'), '');
-  return sanitized.isEmpty ? 'Savu' : sanitized;
+  return sanitized.isEmpty ? 'Dompetku' : sanitized;
 }
 
 String _date(DateTime value) {

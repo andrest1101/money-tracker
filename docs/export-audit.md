@@ -1,4 +1,4 @@
-# Export Audit — Savu Fase 6
+# Export Audit — Dompetku Fase 6
 
 > **Batch 0** dari PRD Addendum Fase 6 (Ekspor Data & Laporan).
 > Dokumen ini adalah inventaris kondisi kode **sebelum** fitur ekspor v2 dibuat.
@@ -9,7 +9,8 @@
 - **Basis:** `refactor/ui-v2` (working tree bersih selain `PRD_ekspor_CSV.md`)
 - **Baseline `flutter analyze`:** bersih, tanpa issue.
 - **Baseline `flutter test`:** 137/137 lulus.
-- **Nama aplikasi untuk ekspor:** `Savu` (diputuskan bersama pemilik aplikasi).
+- **Nama aplikasi untuk ekspor:** `Dompetku` (disesuaikan dengan nama aplikasi yang
+  dilihat pengguna; sebelumnya sempat direncanakan `Savu`).
 
 ---
 
@@ -246,7 +247,7 @@ Keputusan:
 | Sheet Target Tabungan memakai `currentAmount` | Progress adalah kondisi saat ini, bukan akhir periode historis | Label “Terkumpul (saat ini)”; opsional kolom “Dialokasikan di periode ini” |
 | Formula injection | CSV dan XLSX punya perilaku berbeda | CSV: prefix `'`; XLSX: tulis sebagai string cell agar tidak dieksekusi |
 | Isolate jika >2.000 baris | Belum ada bukti durasi | Implementasi sinkron dulu; ukur dan tambahkan di Batch 5 bila perlu |
-| Nama aplikasi | Package `savu`, UI masih `Dompetku` | Ekspor memakai `Savu`; penyelarasan judul UI menjadi commit terpisah |
+| Nama aplikasi | Package `savu`, UI menampilkan `Dompetku` | Ekspor memakai `Dompetku`; nama package tidak diubah |
 
 ---
 

@@ -88,7 +88,7 @@ void main() {
 
     final sheet = Excel.decodeBytes(bytes).tables[XlsxExporter.ringkasanSheet]!;
 
-    expect(_text(sheet.rows[0][0]), 'Savu');
+    expect(_text(sheet.rows[0][0]), 'Dompetku');
     expect(_text(sheet.rows[1][0]), 'Laporan Keuangan');
     expect(_text(sheet.rows[6][0]), 'Saldo akhir periode');
     expect(_number(sheet.rows[7][0]), 8508000);
